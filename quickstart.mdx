@@ -1,47 +1,83 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with Mintlify in Three Steps"
+sidebarTitle: "Quickstart"
+description: "Set up your Mintlify documentation site locally, deploy it to production, and make your first customization in under five minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+Mintlify connects to your GitHub repository and automatically deploys your docs on every push. This guide walks you through cloning your repository, previewing it locally, and going live for the first time.
 
 ## Prerequisites
 
-Before you begin, you must have:
+- A [Mintlify account](https://dashboard.mintlify.com) and an active docs project
+- [Node.js v19+](https://nodejs.org) installed
+- [Git](https://git-scm.com) installed
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+## Steps
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Clone your docs repository">
+    Your docs repository was created automatically during Mintlify onboarding. Find the link in your [dashboard](https://dashboard.mintlify.com).
 
     ```bash
-    npm install your-package
+    git clone https://github.com/your-org/your-docs
+    cd your-docs
     ```
+
+    <Tip>If you already have a docs repository, you can connect it from **Dashboard → Settings → GitHub**.</Tip>
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Install the Mintlify CLI and start a preview">
+    The Mintlify CLI (`mint`) lets you preview your docs locally with hot reload.
 
     ```bash
-    your-cli init
+    npm i -g mint
+    mint dev
     ```
+
+    Open [http://localhost:3000](http://localhost:3000) to see your docs. The preview updates automatically whenever you save a file.
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+
+  <Step title="Customize your site name and colors">
+    Open `docs.json` in your editor. Change the `name` and `colors.primary` fields to match your brand:
+
+    ```json docs.json
+    {
+      "name": "Your Product",
+      "colors": {
+        "primary": "#your-hex-color"
+      }
+    }
+    ```
+
+    Save the file and watch your preview update instantly.
+  </Step>
+
+  <Step title="Deploy to production">
+    Install the [Mintlify GitHub App](https://dashboard.mintlify.com/settings/organization/github-app) from your dashboard. Once installed, every push to your default branch triggers an automatic deployment — no CI/CD configuration required.
 
     ```bash
-    your-cli start
+    git add .
+    git commit -m "Initial docs setup"
+    git push
     ```
+
+    Your changes will be live within moments.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Next steps
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Local Development" icon="laptop-code" href="/development">
+    Learn CLI commands for previewing, port customization, and link validation.
+  </Card>
+  <Card title="Customize Your Site" icon="palette" href="/essentials/settings">
+    Control every aspect of your site's appearance through `docs.json`.
+  </Card>
+  <Card title="Set Up Navigation" icon="map" href="/essentials/navigation">
+    Organize pages into tabs, groups, and nested sections.
+  </Card>
+  <Card title="Write Content" icon="pen-fancy" href="/essentials/markdown">
+    Use MDX syntax and Mintlify components to build expressive pages.
+  </Card>
+</CardGroup>

@@ -1,0 +1,93 @@
+---
+title: "Configure Windsurf for Mintlify Documentation Workflows"
+sidebarTitle: "Windsurf"
+description: "Set up Windsurf's Cascade AI assistant with workspace rules to write and maintain Mintlify documentation more accurately and consistently."
+---
+
+Windsurf is an AI editor powered by the Cascade assistant. By adding a `.windsurf/rules.md` file to your docs repository, you give Cascade persistent context about your Mintlify setup — so it understands MDX syntax, available components, and your writing conventions without needing to be reminded each session.
+
+## Prerequisites
+
+- [Windsurf](https://codeium.com/windsurf) installed
+- Your docs repository cloned locally
+
+## Create workspace rules
+
+Create the rules file at `.windsurf/rules.md` in your documentation repository root:
+
+```markdown .windsurf/rules.md
+# Mintlify documentation project
+
+## Project context
+- Documentation platform: Mintlify
+- Page format: MDX files with YAML frontmatter
+- Configuration: `docs.json` controls navigation, theme, and site settings
+- Follow technical writing best practices
+
+## Writing standards
+- Second person ("you") for all instructions
+- Active voice and present tense
+- Prerequisites before procedures
+- Expected outcomes after major steps
+- Keyword-rich, descriptive headings
+
+## Frontmatter (required on every page)
+```yaml
+---
+title: "Descriptive, 50-60 character title"
+sidebarTitle: "1-3 Word Label"
+description: "130-155 character description unique to this page"
+---
+```
+
+## Mintlify components to use
+- `<Steps>` for sequential procedures
+- `<CodeGroup>` for multi-language code examples
+- `<Tabs>` for platform-specific content
+- `<Accordion>` for collapsible Q&A
+- `<Card>` / `<CardGroup>` for link grids
+- `<Note>`, `<Tip>`, `<Warning>`, `<Info>` for callouts
+- `<ParamField>` and `<ResponseField>` for API docs
+- `<Frame>` around all images
+
+## Code block rules
+- Language tag required on every block
+- Add filename title for context
+- Use `<CodeGroup>` for multi-language examples
+- Use relative paths for internal links
+
+## Quality checklist
+- [ ] Frontmatter complete (title, sidebarTitle, description)
+- [ ] Code examples are complete and runnable
+- [ ] Internal links use root-relative paths
+- [ ] Images wrapped in `<Frame>` with alt text
+- [ ] Headings start at H2
+```
+
+## How to use Windsurf with your docs
+
+<Steps>
+  <Step title="Open your docs repository">
+    Open the docs folder in Windsurf so that `.windsurf/rules.md` is automatically picked up as workspace context.
+  </Step>
+  <Step title="Start a Cascade conversation">
+    Open the Cascade panel and ask it to help with a documentation task. Cascade will apply your workspace rules automatically.
+  </Step>
+  <Step title="Review before committing">
+    AI-generated content is a starting point. Review technical accuracy, verify code examples, and check that internal links resolve correctly before pushing.
+  </Step>
+</Steps>
+
+## Tips for better output
+
+<AccordionGroup>
+  <Accordion title="Be specific about Mintlify components">
+    Mention components by name when you want them used: "Structure this as a `<Steps>` block" or "Add a `<Warning>` callout before the delete step."
+  </Accordion>
+  <Accordion title="Ask for a page skeleton first">
+    For new pages, ask Cascade to generate the frontmatter and heading structure first. Review the outline before filling in the body content.
+  </Accordion>
+  <Accordion title="Share rules with your team">
+    Commit `.windsurf/rules.md` to your repository so everyone on the team benefits from the same AI context.
+  </Accordion>
+</AccordionGroup>

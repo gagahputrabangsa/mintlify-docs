@@ -1,0 +1,129 @@
+---
+title: "Structure Your Docs with Navigation Groups and Tabs"
+sidebarTitle: "Navigation"
+description: "Organize your Mintlify documentation into tabs, groups, and nested pages by configuring the navigation object in docs.json."
+---
+
+Mintlify's navigation is configured entirely in the `navigation` object inside `docs.json`. You define which pages appear in the sidebar, how they're grouped, and whether your site has multiple top-level tabs. New pages must be added to `docs.json` to appear in the sidebar — they won't show up automatically.
+
+## Navigation object
+
+The `navigation` field must be an **object** (not an array). Use `tabs` for multi-section sites or `groups` for a single-section site.
+
+### Single section (groups only)
+
+```json docs.json
+{
+  "navigation": {
+    "groups": [
+      {
+        "group": "Get Started",
+        "pages": ["introduction", "quickstart"]
+      },
+      {
+        "group": "Guides",
+        "pages": ["guides/authentication", "guides/webhooks"]
+      }
+    ]
+  }
+}
+```
+
+### Multiple sections (tabs)
+
+```json docs.json
+{
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          { "group": "Get Started", "pages": ["introduction", "quickstart"] }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          { "group": "Endpoints", "pages": ["api-reference/get-users"] }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Nested groups
+
+You can nest groups inside a page list to create sub-sections in the sidebar:
+
+```json docs.json
+{
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "quickstart",
+              {
+                "group": "Advanced Setup",
+                "pages": ["advanced/custom-domain", "advanced/versioning"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+## Folder-based pages
+
+Organize pages into folders and reference them with their relative path in `docs.json`. You do not include the `.mdx` extension.
+
+For a page at `guides/authentication.mdx`, add it as:
+
+```json
+"pages": ["guides/authentication"]
+```
+
+This page will be available at `https://yoursite.com/guides/authentication`.
+
+<Warning>
+  Do not use `api` as a top-level folder name — Next.js reserves it. Use `api-reference` or any other name instead.
+</Warning>
+
+## Hidden pages
+
+Any `.mdx` file that is **not** listed in `docs.json` is still accessible via direct URL and search, but it will not appear in the sidebar. This is useful for draft pages or content you want to link to without surfacing in navigation.
+
+## Global anchors
+
+Add persistent links below the sidebar (useful for external resources like your blog or community) using the `global.anchors` field:
+
+```json docs.json
+{
+  "navigation": {
+    "tabs": [...],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Blog",
+          "href": "https://yoursite.com/blog",
+          "icon": "newspaper"
+        },
+        {
+          "anchor": "Community",
+          "href": "https://yoursite.com/community",
+          "icon": "users"
+        }
+      ]
+    }
+  }
+}
+```
+
+Icons use [Font Awesome](https://fontawesome.com/icons) icon names.

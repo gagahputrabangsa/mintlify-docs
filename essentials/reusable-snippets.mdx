@@ -1,0 +1,100 @@
+---
+title: "Reuse Content Across Pages with Snippets"
+sidebarTitle: "Snippets"
+description: "Create reusable MDX snippets to keep shared content like prerequisites, warnings, and code examples in sync across your documentation."
+---
+
+Snippets let you write content once and import it into multiple documentation pages. When you update a snippet, the change appears everywhere it's used — no find-and-replace required. This is ideal for prerequisites, shared warnings, repeated code examples, and product-wide notices.
+
+## How snippets work
+
+Any `.mdx` file inside the `snippets/` directory is treated as a snippet. These files are not rendered as standalone pages — they're imported and used as components in other pages.
+
+## Create a snippet
+
+Create a file in the `snippets/` folder:
+
+```mdx snippets/prerequisites.mdx
+You need the following before getting started:
+- Node.js v19 or higher
+- A Mintlify account
+```
+
+## Import and use a snippet
+
+Import the snippet at the top of any page and render it like a JSX component:
+
+```mdx my-page.mdx
+---
+title: "My Page"
+description: "..."
+---
+
+import Prerequisites from '/snippets/prerequisites.mdx';
+
+<Prerequisites />
+
+The rest of your page content goes here.
+```
+
+## Snippets with props
+
+Snippets can accept props — useful when you need slight variations of the same content.
+
+**Define the snippet with a variable:**
+
+```mdx snippets/install-package.mdx
+Install the `{packageName}` package:
+
+```bash
+npm install {packageName}
+```
+```
+
+**Pass the prop when importing:**
+
+```mdx destination.mdx
+import InstallPackage from '/snippets/install-package.mdx';
+
+<InstallPackage packageName="my-sdk" />
+```
+
+## Reusable variables
+
+Export constants from a snippet and import them into pages:
+
+```mdx snippets/constants.mdx
+export const apiBaseUrl = 'https://api.example.com/v1';
+export const sdkVersion = '2.4.0';
+```
+
+```mdx my-page.mdx
+import { apiBaseUrl, sdkVersion } from '/snippets/constants.mdx';
+
+The current SDK version is **{sdkVersion}**. The base URL is `{apiBaseUrl}`.
+```
+
+## Reusable components
+
+For more complex reuse, export an arrow function component from your snippet:
+
+```mdx snippets/callout-box.mdx
+export const CalloutBox = ({ title, children }) => (
+  <div>
+    <strong>{title}</strong>
+    <p>{children}</p>
+  </div>
+);
+```
+
+```mdx my-page.mdx
+import { CalloutBox } from '/snippets/callout-box.mdx';
+
+<CalloutBox title="Important">
+  This action cannot be undone.
+</CalloutBox>
+```
+
+<Warning>
+  MDX does not compile inside arrow function bodies. Use plain HTML tags (not Markdown) inside component definitions, or use a default export if you need full MDX rendering.
+</Warning>

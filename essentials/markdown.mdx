@@ -1,0 +1,99 @@
+---
+title: "Write Docs with Markdown and MDX Syntax"
+sidebarTitle: "Markdown"
+description: "Use standard Markdown formatting and MDX-specific features to write expressive, structured documentation pages in Mintlify."
+---
+
+Mintlify pages are written in MDX — a superset of Markdown that supports JSX components. Everything you know from standard Markdown works here, plus you can drop in Mintlify's built-in components anywhere in your content.
+
+## Headings
+
+Use `##` for section headings and `###` for subsection headings. Each heading automatically generates an anchor link and appears in the right-side table of contents.
+
+```md
+## Section heading
+### Subsection heading
+```
+
+<Tip>Reserve `#` (H1) for the page title — Mintlify renders it from the `title` frontmatter field. Start your body content at `##`.</Tip>
+
+## Text formatting
+
+| Style         | Syntax            | Result          |
+| ------------- | ----------------- | --------------- |
+| Bold          | `**bold**`        | **bold**        |
+| Italic        | `_italic_`        | _italic_        |
+| Strikethrough | `~strikethrough~` | ~strikethrough~ |
+| Code          | `` `code` ``      | `code`          |
+
+You can combine styles: `**_bold and italic_**` produces **_bold and italic_**.
+
+For superscript and subscript, use HTML tags:
+- `<sup>superscript</sup>` → <sup>superscript</sup>
+- `<sub>subscript</sub>` → <sub>subscript</sub>
+
+## Links
+
+Wrap link text in `[]` and the URL in `()`:
+
+```md
+[Visit Mintlify](https://mintlify.com)
+```
+
+For links to other pages in your docs, use root-relative paths:
+
+```md
+[See the Quickstart](/quickstart)
+```
+
+<Warning>Avoid relative links like `../quickstart` — they load slower because Mintlify cannot pre-optimize them.</Warning>
+
+## Lists
+
+```md
+- Unordered item one
+- Unordered item two
+
+1. First ordered step
+2. Second ordered step
+```
+
+## Blockquotes
+
+Prefix a line with `>` to create a blockquote:
+
+```md
+> This is a blockquote.
+```
+
+> This is a blockquote.
+
+## Tables
+
+```md
+| Column A | Column B | Column C |
+| -------- | -------- | -------- |
+| Value 1  | Value 2  | Value 3  |
+```
+
+## LaTeX math
+
+Mintlify supports LaTeX through the `<Latex>` component:
+
+```mdx
+<Latex>E = mc^2</Latex>
+```
+
+## Frontmatter
+
+Every page starts with a YAML frontmatter block. The required fields are `title` and `description`:
+
+```yaml
+---
+title: "My Page Title"
+sidebarTitle: "Short Title"
+description: "A concise description for search and navigation (130–155 characters)."
+---
+```
+
+Optional frontmatter fields include `icon` (Font Awesome icon name shown next to the sidebar link) and `mode` (set to `"wide"` to disable the right-side table of contents).

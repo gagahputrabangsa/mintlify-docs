@@ -1,28 +1,11 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
+  "projectType": "saas",
+  "projectName": "Mintlify",
+  "projectDescription": "Mintlify is a documentation platform that lets teams create, customize, and publish beautiful documentation sites from MDX files with zero infrastructure management.",
   "theme": "luma",
-  "name": "Mintlify",
-  "colors": {
-    "primary": "#54545c"
-  },
-  "favicon": "/favicon.svg",
-  "logo": {
-    "light": "https://media.brand.dev/99d23bb0-7527-48e5-b2c1-71011df3a4d8.svg",
-    "dark": "https://media.brand.dev/99d23bb0-7527-48e5-b2c1-71011df3a4d8.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
+  "primaryColor": "#54545c",
+  "lightColor": null,
+  "darkColor": null,
   "navigation": {
     "tabs": [
       {
@@ -82,27 +65,28 @@
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Community",
-          "href": "https://mintlify.com/community",
-          "icon": "users"
-        }
-      ]
-    }
+    ]
   },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
-  }
+  "keyFeatures": [
+    "MDX-based documentation authoring",
+    "Live local preview with Mintlify CLI",
+    "Automatic GitHub-based deployment",
+    "Fully customizable branding and navigation via docs.json",
+    "Auto-generated API reference from OpenAPI specs",
+    "Reusable content snippets",
+    "AI editor integrations (Cursor, Claude Code, Windsurf)",
+    "Rich component library (Cards, Steps, Tabs, Accordions, Code blocks)"
+  ],
+  "publicApiSurface": [
+    "mint dev",
+    "mint dev --port <port>",
+    "npm i -g mint",
+    "mint update",
+    "mint broken-links",
+    "GET /plants",
+    "POST /plants",
+    "DELETE /plants/{id}",
+    "WEBHOOK /plant/webhook",
+    "docs.json: name, colors, navigation, logo, favicon, navbar, footer, contextual"
+  ]
 }

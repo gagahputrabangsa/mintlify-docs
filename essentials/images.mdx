@@ -1,0 +1,78 @@
+---
+title: "Embed Images and Media in Your Documentation"
+sidebarTitle: "Images & Media"
+description: "Add images, videos, and iframes to Mintlify docs pages using Markdown syntax, HTML embeds, and the Frame component."
+---
+
+Mintlify supports standard Markdown image syntax, raw HTML embeds, and the `<Frame>` component for adding borders and captions. Images are served from your repository; for files larger than 5 MB, host them externally and embed the URL.
+
+## Markdown image syntax
+
+The simplest way to add an image:
+
+```md
+![Alt text describing the image](/path/to/image.png)
+```
+
+Place image files anywhere in your repository (a top-level `images/` folder is common) and reference them with a root-relative path.
+
+<Note>Image files must be under 5 MB. For larger images, upload them to a CDN like [Cloudinary](https://cloudinary.com) or [Amazon S3](https://aws.amazon.com/s3) and use the hosted URL.</Note>
+
+## HTML image embed
+
+For more control over dimensions and styling, use an HTML `<img>` tag:
+
+```html
+<img height="200" src="/path/to/image.png" alt="Description of image" />
+```
+
+## Frame component
+
+Wrap an image in `<Frame>` to add a styled border and an optional caption:
+
+```mdx
+<Frame caption="The dashboard overview">
+  <img src="/images/dashboard.png" alt="Dashboard showing analytics overview" />
+</Frame>
+```
+
+Always include descriptive `alt` text on every image for accessibility.
+
+## Videos
+
+### Self-hosted video
+
+```mdx
+<video
+  controls
+  className="w-full aspect-video rounded-xl"
+  src="https://example.com/demo.mp4"
+></video>
+```
+
+### YouTube embed
+
+Embed a YouTube video with an iframe. Replace the video ID in the `src`:
+
+```html
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+  title="Video title"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+  allowFullScreen
+  style={{ width: '100%', borderRadius: '0.5rem' }}
+></iframe>
+```
+
+## Other iframes
+
+Mintlify supports any HTML element, including iframes for embedding external content:
+
+```html
+<iframe src="https://example.com/embed"></iframe>
+```
+
+<Tip>Mintlify renders standard HTML tags inside MDX. Use HTML when you need customization that Markdown alone can't provide.</Tip>

@@ -1,0 +1,79 @@
+---
+title: "Add Code Blocks and Syntax Highlighting to Docs"
+sidebarTitle: "Code Blocks"
+description: "Display inline code, syntax-highlighted code blocks, multi-language examples, and interactive diffs in your Mintlify documentation pages."
+---
+
+Mintlify uses [Shiki](https://shiki.matsu.io) for syntax highlighting, which means every fenced code block gets accurate, theme-aware highlighting automatically. You can add titles, line numbers, diffs, and multi-language tabs with minimal syntax.
+
+## Inline code
+
+Wrap a word or short phrase in backticks to render it as inline code:
+
+```md
+Run `mint dev` to start the preview server.
+```
+
+## Basic code block
+
+Open and close a code block with three backticks. Add the language name immediately after the opening backticks for syntax highlighting:
+
+```javascript
+console.log("Hello, world!");
+```
+
+## Code block with a title
+
+Add a filename or label after the language tag to display it as a header on the code block:
+
+```javascript app.js
+console.log("Hello, world!");
+```
+
+## Useful meta options
+
+Add these options after the language tag to enhance your code blocks:
+
+| Option              | Effect                                          |
+| ------------------- | ----------------------------------------------- |
+| `lines`             | Shows line numbers on the left side             |
+| `wrap`              | Wraps long lines instead of horizontal scroll   |
+| `expandable`        | Collapses long blocks with a "show more" toggle |
+| `highlight={1,3-5}` | Highlights specific line numbers                |
+
+```python app.py lines
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+
+print(greet("world"))
+```
+
+## Diff markers
+
+Show added and removed lines by appending `// [!code ++]` or `// [!code --]` as comments (use the correct comment syntax for your language):
+
+```javascript app.js lines
+const greeting = "Hello";
+console.log("Hi there!"); // [!code --]
+console.log(greeting);    // [!code ++]
+```
+
+## Multi-language examples with CodeGroup
+
+Use `<CodeGroup>` to present the same concept in multiple languages. Readers can switch between tabs:
+
+<CodeGroup>
+```bash npm
+npm install my-package
+```
+```bash yarn
+yarn add my-package
+```
+```bash pnpm
+pnpm add my-package
+```
+</CodeGroup>
+
+Each code block inside `<CodeGroup>` must have a title — it becomes the tab label.
+
+<Tip>Code groups automatically sync with other code groups and `<Tabs>` on the same page when their labels match — great for letting users pick their preferred language once.</Tip>

@@ -1,0 +1,206 @@
+---
+title: "Configure Your Mintlify Site with docs.json"
+sidebarTitle: "Global Settings"
+description: "Use the docs.json file to control your site's name, colors, logo, favicon, navigation, and more — all in one place."
+---
+
+Every Mintlify site is configured through a single `docs.json` file at the root of your repository. This file controls everything visible to your readers: the site name, brand colors, logo, navigation structure, navbar links, and footer. Changes to `docs.json` take effect immediately in the local preview and on the next deployment.
+
+## Required fields
+
+<ResponseField name="$schema" type="string">
+  The Mintlify JSON schema URL. Set this to get autocomplete in VS Code:
+  `https://mintlify.com/docs.json`
+</ResponseField>
+
+<ResponseField name="name" type="string" required>
+  The display name of your project, shown in the browser tab and as the default site title.
+
+  ```json
+  "name": "Acme Docs"
+  ```
+</ResponseField>
+
+<ResponseField name="navigation" type="object" required>
+  Defines the sidebar navigation. Use `tabs` for multi-section sites or `groups` for a single section. See [Navigation](/essentials/navigation) for full syntax.
+</ResponseField>
+
+## Branding
+
+<ResponseField name="theme" type="string">
+  The Mintlify theme. Options: `mint`, `luma`, `willow`, `palm`, `almond`, `aspen`, `maple`, `sequoia`.
+
+  ```json
+  "theme": "luma"
+  ```
+</ResponseField>
+
+<ResponseField name="colors" type="object">
+  Brand colors used throughout the site.
+
+  <Expandable title="Color fields">
+    <ResponseField name="primary" type="string" required>
+      Primary accent color (hex). Used for links, active states, and highlights.
+
+      ```json
+      "colors": { "primary": "#54545c" }
+      ```
+    </ResponseField>
+    <ResponseField name="light" type="string">
+      Lighter variant of the primary color, used in light mode.
+    </ResponseField>
+    <ResponseField name="dark" type="string">
+      Darker variant of the primary color, used in dark mode.
+    </ResponseField>
+    <ResponseField name="background" type="object">
+      Custom background colors. Accepts `light` and `dark` hex values.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="logo" type="object">
+  Logo images shown in the navbar.
+
+  <Expandable title="Logo fields">
+    <ResponseField name="light" type="string">
+      Path or URL to the logo shown in light mode.
+    </ResponseField>
+    <ResponseField name="dark" type="string">
+      Path or URL to the logo shown in dark mode.
+    </ResponseField>
+    <ResponseField name="href" type="string">
+      URL the logo links to when clicked. Defaults to the root of your docs.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="favicon" type="string">
+  Path or URL to the favicon file (`.ico`, `.svg`, or `.png`).
+
+  ```json
+  "favicon": "/favicon.svg"
+  ```
+</ResponseField>
+
+## Navbar
+
+<ResponseField name="navbar" type="object">
+  Configuration for the top navigation bar.
+
+  <Expandable title="Navbar fields">
+    <ResponseField name="links" type="array">
+      Secondary links displayed in the navbar. Each item needs a `label` and `href`.
+
+      ```json
+      "links": [{ "label": "Support", "href": "mailto:hi@example.com" }]
+      ```
+    </ResponseField>
+    <ResponseField name="primary" type="object">
+      The primary call-to-action button or link. Requires both `type` and `href`.
+
+      ```json
+      "primary": { "type": "button", "label": "Dashboard", "href": "https://dashboard.example.com" }
+      ```
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Footer
+
+<ResponseField name="footer" type="object">
+  Footer configuration.
+
+  <Expandable title="Footer fields">
+    <ResponseField name="socials" type="object">
+      Social media links displayed in the footer. Supported keys: `x`, `github`, `linkedin`, `discord`, `slack`, `youtube`.
+
+      ```json
+      "footer": {
+        "socials": {
+          "x": "https://x.com/yourhandle",
+          "github": "https://github.com/yourorg"
+        }
+      }
+      ```
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## API configuration
+
+<ResponseField name="api" type="object">
+  Settings for the API playground and reference generation.
+
+  <Expandable title="API fields">
+    <ResponseField name="baseUrl" type="string">
+      Base URL for API requests made from the interactive playground.
+    </ResponseField>
+    <ResponseField name="auth" type="object">
+      Authentication method for the playground. Supported types: `bearer`, `basic`, `key`.
+    </ResponseField>
+    <ResponseField name="playground" type="object">
+      Controls whether the interactive API playground is shown. Set `{ "mode": "hide" }` to disable it.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="openapi" type="string | array">
+  Path(s) or URL(s) to your OpenAPI specification file(s). When set, Mintlify auto-generates endpoint pages.
+
+  ```json
+  "openapi": "api-reference/openapi.json"
+  ```
+</ResponseField>
+
+## Contextual integrations
+
+<ResponseField name="contextual" type="object">
+  Options for the contextual menu that appears when readers select text. Enable integrations with AI assistants and developer tools.
+
+  ```json
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "cursor", "vscode"]
+  }
+  ```
+</ResponseField>
+
+## Complete example
+
+```json docs.json
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "luma",
+  "name": "Acme Docs",
+  "colors": {
+    "primary": "#6C47FF"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [{ "label": "Support", "href": "mailto:support@acme.com" }],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.acme.com"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          { "group": "Get Started", "pages": ["introduction", "quickstart"] }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/acme"
+    }
+  }
+}
+```

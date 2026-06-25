@@ -1,0 +1,74 @@
+---
+title: "Mintlify: Beautiful Docs Without the Overhead"
+sidebarTitle: "Introduction"
+description: "Mintlify is a documentation platform that turns MDX files into polished, searchable docs sites — no infrastructure, no build pipelines, just great documentation."
+---
+
+Mintlify transforms your MDX files into a fully-hosted, beautifully designed documentation site. Connect your GitHub repository, configure `docs.json`, and your docs are live — with search, versioning, and a rich component library included out of the box.
+
+## What you can do with Mintlify
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get your docs site running in three steps — from clone to live in minutes.
+  </Card>
+  <Card title="Local Preview" icon="laptop-code" href="/development">
+    Run a live-reloading preview server locally with the Mintlify CLI.
+  </Card>
+  <Card title="Customize Your Site" icon="palette" href="/essentials/settings">
+    Control colors, logos, fonts, and layout through a single `docs.json` file.
+  </Card>
+  <Card title="Navigation" icon="map" href="/essentials/navigation">
+    Organize your content with tabs, groups, and nested pages.
+  </Card>
+  <Card title="Write with MDX" icon="pen-fancy" href="/essentials/markdown">
+    Use Markdown plus powerful React components to create expressive pages.
+  </Card>
+  <Card title="API Reference" icon="terminal" href="/api-reference/introduction">
+    Auto-generate interactive API docs from an OpenAPI specification.
+  </Card>
+</CardGroup>
+
+## Get started in three steps
+
+<Steps>
+  <Step title="Clone your repository">
+    During onboarding, Mintlify creates a GitHub repository for your docs. Clone it locally to start editing:
+    ```bash
+    git clone https://github.com/your-org/your-docs
+    cd your-docs
+    ```
+  </Step>
+  <Step title="Preview your docs">
+    Install the Mintlify CLI and start the local preview server:
+    ```bash
+    npm i -g mint
+    mint dev
+    ```
+    Your docs are now live at `http://localhost:3000` and update as you save files.
+  </Step>
+  <Step title="Publish your changes">
+    Push to your default branch. The Mintlify GitHub app picks up the changes and deploys them automatically — no CI pipeline needed.
+  </Step>
+</Steps>
+
+## Explore the platform
+
+<CardGroup cols={2}>
+  <Card title="AI Editor Integrations" icon="wand-magic-sparkles" href="/ai-tools/cursor">
+    Configure Cursor, Claude Code, or Windsurf to write and maintain docs with AI assistance.
+  </Card>
+  <Card title="Reusable Snippets" icon="recycle" href="/essentials/reusable-snippets">
+    Write content once and reuse it across multiple pages.
+  </Card>
+  <Card title="Code Blocks" icon="code" href="/essentials/code">
+    Add syntax-highlighted, multi-language code examples to any page.
+  </Card>
+  <Card title="Images & Embeds" icon="image" href="/essentials/images">
+    Embed images, videos, and iframes with a single line of MDX.
+  </Card>
+</CardGroup>
+
+<Note>
+  Need help? Visit [mintlify.com/docs](https://mintlify.com/docs) for the full platform reference, or reach out at [hi@mintlify.com](mailto:hi@mintlify.com).
+</Note>

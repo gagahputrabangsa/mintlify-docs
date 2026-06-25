@@ -1,0 +1,98 @@
+---
+title: "Configure Cursor for Mintlify Documentation Writing"
+sidebarTitle: "Cursor"
+description: "Set up Cursor's AI assistant with project-specific rules to write, edit, and maintain your Mintlify documentation more effectively."
+---
+
+Cursor is an AI-powered code editor that can draft and edit documentation when given the right context about your project. By adding a `.cursor/rules.md` file to your docs repository, you teach Cursor's AI how Mintlify works, what components are available, and what writing standards to follow.
+
+## Prerequisites
+
+- [Cursor](https://cursor.sh) installed
+- Your docs repository cloned locally
+
+## Add project rules
+
+Project rules give Cursor's AI context that applies to every conversation in this repository. Create the rules file:
+
+```bash
+mkdir -p .cursor
+```
+
+Then create `.cursor/rules.md` with your documentation standards. Below is a recommended starting point:
+
+```markdown .cursor/rules.md
+# Mintlify technical writing rules
+
+## Project context
+- This is a Mintlify documentation project
+- Pages are MDX files with YAML frontmatter
+- Navigation and site settings live in `docs.json`
+- Use Mintlify components (see below)
+
+## Writing standards
+- Second-person voice ("you")
+- Active voice and present tense
+- Prerequisites before instructions
+- Expected outcomes after major steps
+- Descriptive headings for navigation and SEO
+
+## Required frontmatter
+Every page needs:
+- `title`: 50-60 characters, describes the page's goal
+- `sidebarTitle`: 1-3 words for the sidebar label
+- `description`: 130-155 characters, unique across the site
+
+## Key Mintlify components
+- `<Steps>` — sequential procedures
+- `<CodeGroup>` — multi-language code examples
+- `<Tabs>` — alternative content views
+- `<Accordion>` — collapsible sections
+- `<Card>` / `<CardGroup>` — navigation and feature grids
+- `<Note>`, `<Tip>`, `<Warning>`, `<Info>` — callouts
+- `<ParamField>` — API parameter docs
+- `<ResponseField>` — API response docs
+- `<Frame>` — styled image wrapper
+
+## Code block rules
+- Always include a language tag
+- Add a filename/title for context: ```python app.py
+- Use `<CodeGroup>` for multi-language examples
+- Never include real API keys or secrets
+
+## Do not
+- Skip frontmatter
+- Use absolute URLs for internal links
+- Include untested code examples
+- Make assumptions — ask for clarification
+```
+
+## How to use Cursor with your docs
+
+<Steps>
+  <Step title="Open your docs folder">
+    Open the docs repository root in Cursor so the `.cursor/rules.md` file is picked up automatically.
+  </Step>
+  <Step title="Ask Cursor to draft a page">
+    Open the Cursor chat panel (`Cmd+L` / `Ctrl+L`) and ask it to write or edit a page. For example:
+
+    > "Write a new page explaining how to use the webhook endpoint. Save it as `guides/webhooks.mdx`."
+  </Step>
+  <Step title="Review and refine">
+    Always review AI-generated content for accuracy. Cursor can draft structure and boilerplate quickly, but you should verify technical details and code examples before publishing.
+  </Step>
+</Steps>
+
+## Tips for better results
+
+<AccordionGroup>
+  <Accordion title="Reference specific Mintlify components">
+    When asking Cursor to add components, name them explicitly: "Use a `<Steps>` block for this procedure" or "Wrap this in a `<CodeGroup>` with npm and yarn tabs."
+  </Accordion>
+  <Accordion title="Ask for inline code comments">
+    Request that Cursor add explanatory comments to complex code examples — this makes AI-generated code easier to verify.
+  </Accordion>
+  <Accordion title="Keep rules up to date">
+    Update `.cursor/rules.md` whenever your writing conventions change. Share the file via version control so the whole team benefits.
+  </Accordion>
+</AccordionGroup>

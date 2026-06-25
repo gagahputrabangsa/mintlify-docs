@@ -1,7 +1,7 @@
 ---
-title: "Preview and Develop Your Docs Locally"
+title: "Mintlify CLI: Preview and Develop Your Docs Locally"
 sidebarTitle: "Local Development"
-description: "Use the Mintlify CLI to run a live-reloading local preview, validate links, and keep your docs in sync with production."
+description: "Use the Mintlify CLI to run a live-reloading local preview server, validate internal links, and keep your docs in sync with production."
 ---
 
 The Mintlify CLI (`mint`) gives you a local preview server with instant hot-reload so you can see your changes before pushing to production. This page covers installation, running the server, useful CLI commands, and common troubleshooting steps.
@@ -61,7 +61,7 @@ The CLI scans every page and reports any links that point to non-existent paths.
 Each CLI release targets a specific Mintlify version. If your local preview doesn't match production, update to the latest CLI:
 
 ```bash
-npm mint update
+mint update
 ```
 
 ## Deployment
@@ -94,7 +94,7 @@ For the best editing experience in VS Code, install these extensions:
   </Accordion>
 
   <Accordion title="Preview doesn't match production">
-    Run `npm mint update` to ensure your local CLI version matches the version your site is built with in production.
+    Run `mint update` to ensure your local CLI version matches the version your site is built with in production.
   </Accordion>
 
   <Accordion title="Unknown error on startup">

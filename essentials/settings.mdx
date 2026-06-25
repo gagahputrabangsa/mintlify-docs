@@ -1,7 +1,7 @@
 ---
-title: "Configure Your Mintlify Site with docs.json"
+title: "docs.json Settings Reference for Your Mintlify Site"
 sidebarTitle: "Global Settings"
-description: "Use the docs.json file to control your site's name, colors, logo, favicon, navigation, and more — all in one place."
+description: "Use docs.json to configure your Mintlify site's name, brand colors, logo, favicon, navigation, navbar, footer, API playground, and more."
 ---
 
 Every Mintlify site is configured through a single `docs.json` file at the root of your repository. This file controls everything visible to your readers: the site name, brand colors, logo, navigation structure, navbar links, and footer. Changes to `docs.json` take effect immediately in the local preview and on the next deployment.
@@ -9,12 +9,12 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
 ## Required fields
 
 <ResponseField name="$schema" type="string">
-  The Mintlify JSON schema URL. Set this to get autocomplete in VS Code:
+  The Mintlify JSON schema URL. Set this to get autocomplete and validation in VS Code:
   `https://mintlify.com/docs.json`
 </ResponseField>
 
 <ResponseField name="name" type="string" required>
-  The display name of your project, shown in the browser tab and as the default site title.
+  The name of your project, organization, or product. Appears in the browser tab title and throughout your site.
 
   ```json
   "name": "Acme Docs"
@@ -22,35 +22,35 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
 </ResponseField>
 
 <ResponseField name="navigation" type="object" required>
-  Defines the sidebar navigation. Use `tabs` for multi-section sites or `groups` for a single section. See [Navigation](/essentials/navigation) for full syntax.
+  Defines the sidebar navigation structure. Use `tabs` for multi-section sites or `groups` for a single section. See [Navigation](/essentials/navigation) for full syntax.
 </ResponseField>
 
 ## Branding
 
-<ResponseField name="theme" type="string">
-  The Mintlify theme. Options: `mint`, `luma`, `willow`, `palm`, `almond`, `aspen`, `maple`, `sequoia`.
+<ResponseField name="theme" type="string" required>
+  The layout theme for your site. Options: `mint`, `maple`, `palm`, `willow`, `linden`, `almond`, `aspen`, `sequoia`, `luma`.
 
   ```json
   "theme": "luma"
   ```
 </ResponseField>
 
-<ResponseField name="colors" type="object">
-  Brand colors used throughout the site.
+<ResponseField name="colors" type="object" required>
+  Brand colors used throughout the site. If you only set `primary`, it applies to all color elements.
 
   <Expandable title="Color fields">
     <ResponseField name="primary" type="string" required>
-      Primary accent color (hex). Used for links, active states, and highlights.
+      The primary accent color (hex). Generally used for emphasis in light mode — links, active states, and highlighted content.
 
       ```json
-      "colors": { "primary": "#54545c" }
+      "colors": { "primary": "#0D9373" }
       ```
     </ResponseField>
     <ResponseField name="light" type="string">
-      Lighter variant of the primary color, used in light mode.
+      The color used for emphasis in dark mode. Must be a hex code beginning with `#`.
     </ResponseField>
     <ResponseField name="dark" type="string">
-      Darker variant of the primary color, used in dark mode.
+      The color used for buttons and hover states across both light and dark modes. Must be a hex code beginning with `#`.
     </ResponseField>
     <ResponseField name="background" type="object">
       Custom background colors. Accepts `light` and `dark` hex values.
@@ -58,24 +58,24 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
   </Expandable>
 </ResponseField>
 
-<ResponseField name="logo" type="object">
-  Logo images shown in the navbar.
+<ResponseField name="logo" type="string | object">
+  Your site logo. Provide a single image path or separate images for light and dark mode.
 
   <Expandable title="Logo fields">
     <ResponseField name="light" type="string">
-      Path or URL to the logo shown in light mode.
+      Path to the logo file for light mode. Include the file extension. Example: `/logo/light.svg`.
     </ResponseField>
     <ResponseField name="dark" type="string">
-      Path or URL to the logo shown in dark mode.
+      Path to the logo file for dark mode. Include the file extension. Example: `/logo/dark.svg`.
     </ResponseField>
     <ResponseField name="href" type="string">
-      URL the logo links to when clicked. Defaults to the root of your docs.
+      URL the logo links to when clicked. Defaults to the first page of your docs.
     </ResponseField>
   </Expandable>
 </ResponseField>
 
-<ResponseField name="favicon" type="string">
-  Path or URL to the favicon file (`.ico`, `.svg`, or `.png`).
+<ResponseField name="favicon" type="string | object">
+  Path to your favicon file (`.ico`, `.svg`, or `.png`). Mintlify automatically resizes it to the appropriate favicon sizes.
 
   ```json
   "favicon": "/favicon.svg"
@@ -89,14 +89,14 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
 
   <Expandable title="Navbar fields">
     <ResponseField name="links" type="array">
-      Secondary links displayed in the navbar. Each item needs a `label` and `href`.
+      Secondary links displayed in the navbar. Each item requires a `label` and `href`. Optionally set `type` to `"github"` or `"discord"` for branded link styles.
 
       ```json
       "links": [{ "label": "Support", "href": "mailto:hi@example.com" }]
       ```
     </ResponseField>
     <ResponseField name="primary" type="object">
-      The primary call-to-action button or link. Requires both `type` and `href`.
+      The primary call-to-action button in the navbar. Requires `type` (`"button"`, `"github"`, or `"discord"`), `label`, and `href`.
 
       ```json
       "primary": { "type": "button", "label": "Dashboard", "href": "https://dashboard.example.com" }
@@ -108,11 +108,11 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
 ## Footer
 
 <ResponseField name="footer" type="object">
-  Footer configuration.
+  Footer configuration, including social media links and link columns.
 
   <Expandable title="Footer fields">
     <ResponseField name="socials" type="object">
-      Social media links displayed in the footer. Supported keys: `x`, `github`, `linkedin`, `discord`, `slack`, `youtube`.
+      Social media profile links displayed in the footer. Each key is a platform name and each value is your profile URL. Supported keys: `x`, `github`, `linkedin`, `discord`, `slack`, `youtube`, `facebook`, `instagram`, `bluesky`, `reddit`, `medium`, `telegram`, `website`, and more.
 
       ```json
       "footer": {
@@ -123,6 +123,9 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
       }
       ```
     </ResponseField>
+    <ResponseField name="links" type="array">
+      Link columns shown in the footer. Maximum 4 columns. Each column requires a `header` and an `items` array of `{ label, href }` objects.
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -132,24 +135,28 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
   Settings for the API playground and reference generation.
 
   <Expandable title="API fields">
-    <ResponseField name="baseUrl" type="string">
-      Base URL for API requests made from the interactive playground.
-    </ResponseField>
-    <ResponseField name="auth" type="object">
-      Authentication method for the playground. Supported types: `bearer`, `basic`, `key`.
+    <ResponseField name="openapi" type="string | array | object">
+      Path(s) or URL(s) to your OpenAPI specification file(s). When set, Mintlify auto-generates endpoint pages from your spec.
+
+      ```json
+      "api": {
+        "openapi": "api-reference/openapi.json"
+      }
+      ```
     </ResponseField>
     <ResponseField name="playground" type="object">
-      Controls whether the interactive API playground is shown. Set `{ "mode": "hide" }` to disable it.
+      Controls the interactive API playground display mode. Set `display` to `"interactive"` (default), `"simple"`, `"none"` (hidden), or `"auth"`.
+
+      ```json
+      "api": {
+        "playground": { "display": "none" }
+      }
+      ```
+    </ResponseField>
+    <ResponseField name="mdx" type="object">
+      Settings for API pages built from MDX files, including `auth.method` (`"bearer"`, `"basic"`, or `"key"`) and `server` (the base URL prepended to relative API paths).
     </ResponseField>
   </Expandable>
-</ResponseField>
-
-<ResponseField name="openapi" type="string | array">
-  Path(s) or URL(s) to your OpenAPI specification file(s). When set, Mintlify auto-generates endpoint pages.
-
-  ```json
-  "openapi": "api-reference/openapi.json"
-  ```
 </ResponseField>
 
 ## Contextual integrations
@@ -172,7 +179,9 @@ Every Mintlify site is configured through a single `docs.json` file at the root 
   "theme": "luma",
   "name": "Acme Docs",
   "colors": {
-    "primary": "#6C47FF"
+    "primary": "#6C47FF",
+    "light": "#8B6FFF",
+    "dark": "#6C47FF"
   },
   "favicon": "/favicon.svg",
   "logo": {

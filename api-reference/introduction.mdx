@@ -1,7 +1,7 @@
 ---
-title: "Plant Store API Reference Overview"
+title: "Plant Store API Reference — Endpoints & Authentication"
 sidebarTitle: "Introduction"
-description: "Overview of the Plant Store API — a sample OpenAPI-powered reference built with Mintlify showing authentication, endpoints, and interactive playground features."
+description: "Learn how to authenticate and call the Plant Store API. Browse all four endpoints — list, create, delete, and webhook — with examples and response schemas."
 ---
 
 The Plant Store API is a sample REST API that demonstrates how Mintlify renders interactive API reference documentation from an [OpenAPI specification](https://mintlify.com/docs/api-playground/openapi/setup). Every endpoint shown here is generated automatically from `api-reference/openapi.json` — no hand-written API docs needed.
@@ -16,26 +16,10 @@ All Plant Store API endpoints require a Bearer token passed in the `Authorizatio
 
 ```bash
 curl -H "Authorization: Bearer YOUR_API_TOKEN" \
-     https://sandbox.mintlify.com/plants
+     http://sandbox.mintlify.com/plants
 ```
 
-In your OpenAPI spec, authentication is declared as a security scheme:
-
-```json openapi.json
-{
-  "security": [{ "bearerAuth": [] }],
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
-      }
-    }
-  }
-}
-```
-
-Mintlify reads this scheme and adds an **Authorization** field to the interactive API playground automatically — readers can enter their token once and test all endpoints without leaving the docs.
+Mintlify reads the Bearer scheme from the OpenAPI spec and adds an **Authorization** field to the interactive API playground automatically — readers can enter their token once and test all endpoints without leaving the docs.
 
 ## Base URL
 
@@ -59,24 +43,3 @@ http://sandbox.mintlify.com
     `WEBHOOK /plant/webhook` — Receive notifications when a plant is added.
   </Card>
 </CardGroup>
-
-## How Mintlify generates API docs
-
-To generate an API reference like this one from your own OpenAPI spec:
-
-1. Add your spec file to the repo (e.g., `api-reference/openapi.json`)
-2. Reference it in `docs.json`:
-   ```json docs.json
-   {
-     "openapi": "api-reference/openapi.json"
-   }
-   ```
-3. Create an MDX file for each endpoint with the `openapi` frontmatter field:
-   ```mdx api-reference/endpoint/list-users.mdx
-   ---
-   title: "List Users"
-   openapi: "GET /users"
-   ---
-   ```
-
-Mintlify renders the full interactive playground, request parameters, response schemas, and code samples automatically.

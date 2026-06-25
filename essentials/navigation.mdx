@@ -1,7 +1,7 @@
 ---
 title: "Structure Your Docs with Navigation Groups and Tabs"
 sidebarTitle: "Navigation"
-description: "Organize your Mintlify documentation into tabs, groups, and nested pages by configuring the navigation object in docs.json."
+description: "Organize your Mintlify documentation into sidebar groups, top-level tabs, nested sub-sections, and persistent anchor links by editing docs.json."
 ---
 
 Mintlify's navigation is configured entirely in the `navigation` object inside `docs.json`. You define which pages appear in the sidebar, how they're grouped, and whether your site has multiple top-level tabs. New pages must be added to `docs.json` to appear in the sidebar — they won't show up automatically.
@@ -102,12 +102,19 @@ Any `.mdx` file that is **not** listed in `docs.json` is still accessible via di
 
 ## Global anchors
 
-Add persistent links below the sidebar (useful for external resources like your blog or community) using the `global.anchors` field:
+Add persistent links below the sidebar (useful for external resources like your blog or community) using the `navigation.global.anchors` field:
 
 ```json docs.json
 {
   "navigation": {
-    "tabs": [...],
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          { "group": "Get Started", "pages": ["introduction", "quickstart"] }
+        ]
+      }
+    ],
     "global": {
       "anchors": [
         {

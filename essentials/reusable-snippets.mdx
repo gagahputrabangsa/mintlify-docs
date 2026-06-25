@@ -1,5 +1,5 @@
 ---
-title: "Reuse Content Across Pages with Snippets"
+title: "Reusing Content Across Multiple Pages with MDX Snippets"
 sidebarTitle: "Snippets"
 description: "Create reusable MDX snippets to keep shared content like prerequisites, warnings, and code examples in sync across your documentation."
 ---
@@ -43,13 +43,13 @@ Snippets can accept props — useful when you need slight variations of the same
 
 **Define the snippet with a variable:**
 
-```mdx snippets/install-package.mdx
+````mdx snippets/install-package.mdx
 Install the `{packageName}` package:
 
 ```bash
 npm install {packageName}
 ```
-```
+````
 
 **Pass the prop when importing:**
 

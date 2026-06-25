@@ -1,0 +1,93 @@
+---
+title: 'Gemini原生（视频）'
+description: 'Google Veo 视频生成模型'
+api: 'POST https://llm.ai-nebula.com/v1/video/generations'
+---
+
+## 简介
+
+Veo 是 Google Vertex AI 推出的多模态视频生成模型，支持**文生视频（T2V）**、**首帧约束**与**首尾帧约束**（仅 3.1 系列）生成连贯视频。通过 Nebula 统一视频接口调用：先 [提交任务](/cn/api-reference/endpoint/submit-video-task) 获取 `task_id`，再 [查询任务](/cn/api-reference/endpoint/query-video-task) 轮询状态并获取结果。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 支持的模型
+
+| 模型 ID | 说明 |
+|---------|------|
+| `veo-3.0-fast-generate-001` | 文生视频、首帧模式，快速版（默认含音频） |
+| `veo-3.1-fast-generate-preview` | 文生视频、首帧/首尾帧模式，快速版 |
+| `veo-3.0-generate-preview` | 文生视频、首帧模式 |
+| `veo-3.1-generate-preview` | 文生视频、首帧/首尾帧模式 |
+
+## 调用流程
+
+1. **提交任务**：`POST /v1/video/generations`，传入 `model`、`prompt` 及 Veo 专用参数。  
+2. **轮询状态**：`GET /v1/video/generations/{task_id}`，直到 `status` 为 `succeeded` 或 `failed`。  
+3. **获取结果**：成功时响应中的 `url` 为视频数据（Veo 可能为 `data:video/mp4;base64,...` 或 OSS 链接）。
+
+## Veo 专用参数
+
+<ParamField body="prompt" type="string" required>
+  视频生成提示词，描述画面与动作。
+</ParamField>
+
+<ParamField body="durationSeconds" type="integer" default="4">
+  视频时长（秒），支持：`4`、`6`、`8`。
+</ParamField>
+
+<ParamField body="aspectRatio" type="string" default="16:9">
+  宽高比，仅支持：`16:9`、`9:16`。
+</ParamField>
+
+<ParamField body="resolution" type="string" default="1080p">
+  分辨率：`720p`、`1080p`。
+</ParamField>
+
+<ParamField body="image" type="string">
+  首帧参考图（URL 或 Base64），用于图生视频/首帧约束。
+</ParamField>
+
+<ParamField body="lastFrame" type="string">
+  尾帧参考图（仅 `veo-3.1` 系列支持），与首帧配合实现首尾帧约束。
+</ParamField>
+
+<ParamField body="generateAudio" type="boolean" default="false">
+  是否生成同步音频。快速版模型会忽略该参数并始终包含音频。
+</ParamField>
+
+<ParamField body="sampleCount" type="integer" default="1">
+  每次生成的视频数量，范围 `1-4`。
+</ParamField>
+
+更多参数（如 `personGeneration`、`addWatermark`、`seed`）见 [提交视频任务](/cn/api-reference/endpoint/submit-video-task)。
+
+## 请求示例
+
+**提交 Veo 任务（文生视频）：**
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/video/generations" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "veo-3.1-fast-generate-preview",
+    "prompt": "清晨阳光洒在赛博城市的高楼群，镜头慢慢推进",
+    "durationSeconds": 6,
+    "aspectRatio": "16:9",
+    "resolution": "1080p",
+    "generateAudio": false
+  }'
+```
+
+**查询任务状态：**
+
+```bash
+curl -X GET "https://llm.ai-nebula.com/v1/video/generations/{task_id}" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx"
+```
+
+完整请求/响应说明与多模型对比请参见 [提交视频任务](/cn/api-reference/endpoint/submit-video-task) 与 [查询视频任务](/cn/api-reference/endpoint/query-video-task)。

@@ -1,0 +1,159 @@
+---
+title: 'Postman'
+description: 'Test and explore the Nebula Unified API interactively with Postman'
+---
+
+## Introduction
+
+[Postman](https://www.postman.com/) is the industry-standard API testing platform. By importing the **Nebula Unified API** collection, you can explore and test all Nebula endpoints — chat completions, image generation, video generation, embeddings, reranking, and more — directly from a friendly GUI, with zero coding required.
+
+## Download Files
+
+Download both files below and import them into Postman:
+
+<CardGroup cols={2}>
+  <Card
+    title="Nebula Unified API Collection"
+    icon="download"
+    href="/downloads/Nebula_Unified_API.postman_collection.json"
+  >
+    The full API collection with pre-built requests for every endpoint, organized into folders.
+  </Card>
+  <Card
+    title="Nebula Environment"
+    icon="sliders"
+    href="/downloads/Nebula_Unified_API.postman_environment.json"
+  >
+    Pre-configured environment variables: `base_url`, `api_key`, and default model IDs for each capability.
+  </Card>
+</CardGroup>
+
+## Quick Setup
+
+### Step 1 — Import the Collection
+
+1. Open **Postman** and click **Import** (top-left).
+2. Drag and drop **`Nebula_Unified_API.postman_collection.json`** onto the import dialog, or use **Upload Files**.
+3. Click **Import** to confirm.
+
+### Step 2 — Import the Environment
+
+1. Click **Import** again.
+2. Upload **`Nebula_Unified_API.postman_environment.json`**.
+3. Click **Import** to confirm.
+
+### Step 3 — Set Your API Key
+
+<Warning>
+  Your API key is **not** included in the environment file. You must add it manually to keep it private.
+</Warning>
+
+1. In Postman, open the **Environments** panel (left sidebar).
+2. Select **Nebula Unified API - Environment**.
+3. Find the `api_key` variable row and enter your Nebula API key in the **Current value** column.
+4. Click **Save** (Ctrl/Cmd + S).
+
+<Tip>
+  Always fill in **Current value**, not Initial value. Current value is local to your machine and is never synced to Postman's cloud.
+</Tip>
+
+### Step 4 — Activate the Environment
+
+In the top-right corner of Postman, open the environment dropdown and select **Nebula Unified API - Environment**.
+
+### Step 5 — Send Your First Request
+
+1. Expand the **Nebula Unified API** collection in the left panel.
+2. Open folder **`00 - Getting Started`** → click **`Smoke Test - Chat Completion`**.
+3. Click **Send**.
+4. You should receive a `200 OK` with the message `Nebula API is ready.`
+
+---
+
+## Collection Structure
+
+The collection is organized into logical folders:
+
+| Folder | What's inside |
+|--------|---------------|
+| `00 - Getting Started` | List Models, Smoke Test Chat |
+| `01 - Text / OpenAI-compatible` | Chat Completion, Streaming, Responses API, Web Search, Structured Output |
+| `02 - Native Provider APIs` | Claude Messages (incl. streaming & token count), Gemini generateContent (incl. streaming & image output) |
+| `03 - Embeddings & Retrieval` | OpenAI-compatible Embeddings, Gemini Embed/Batch, Rerank |
+| `04 - Image Generation` | Gemini, Doubao Seedream (text-to-image), Doubao Seededit (image edit), GPT Image, Qwen Image |
+| `05 - Video Generation` | Submit & poll tasks for Sora 2, Veo, Kling, Wan, and more |
+| `06 - Realtime` | WebSocket / realtime voice endpoints |
+| Provider model folders | Auto-generated folders grouped by provider and capability from `/v1/models` |
+
+---
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `base_url` | `https://llm.ai-nebula.com` | Nebula API base URL — do not change |
+| `api_key` | *(empty)* | **Your Nebula API key — fill this in** |
+| `default_chat_model` | `glm-5` | Model used in chat completion requests |
+| `default_responses_model` | `gpt-5.2` | Model used in Responses API requests |
+| `default_claude_model` | `claude-sonnet-4-5-20250929` | Model used for Claude native endpoints |
+| `default_gemini_model` | `gemini-3-pro-preview` | Model used for Gemini native endpoints |
+| `default_image_model` | `gemini-2.5-flash-image` | Default image generation model |
+| `default_video_model` | `veo-3.1-fast-generate-preview` | Default video generation model |
+| `default_embedding_model` | `text-embedding-3-small` | Default embedding model |
+| `default_rerank_model` | `rerank-v1` | Default rerank model |
+| `video_task_id` | *(example)* | Auto-filled by video submit test scripts |
+| `image_base64` | *(placeholder)* | Replace with a real base64 data URL for image-edit requests |
+| `image_url` | `https://example.com/image.jpg` | Replace with a real image URL for image-edit requests |
+
+---
+
+## Tips & Best Practices
+
+<AccordionGroup>
+  <Accordion title="Switching Models">
+    You can override the environment model for any single request without changing the environment variable. In the request **Body**, simply replace `{{default_chat_model}}` with the exact model ID you want, e.g. `claude-sonnet-4-6`.
+  </Accordion>
+
+  <Accordion title="Streaming Requests">
+    Postman supports Server-Sent Events (SSE). Open a streaming request (e.g. **Chat Completion - Streaming**) and look for the **Visualize** tab or the raw response body to see streamed chunks in real time.
+  </Accordion>
+
+  <Accordion title="Video Generation (Async Workflow)">
+    Video generation is asynchronous:
+    1. Send **Submit Video Task** — the test script auto-saves `task_id` to `video_task_id`.
+    2. Send **Query Video Task** (uses `{{video_task_id}}`) — repeat until `status` is `succeeded`.
+    3. Use the returned URL or call **Download Video** to retrieve your file.
+  </Accordion>
+
+  <Accordion title="Image Edit Requests">
+    For image-edit endpoints (e.g. Doubao Seededit, Qwen Image Edit):
+    - Set `image_base64` in the environment to a `data:image/png;base64,...` string, **or**
+    - Set `image_url` to a publicly accessible image URL.
+  </Accordion>
+
+  <Accordion title="Saving Responses as Examples">
+    After a successful run, click **Save as Example** to capture the response. This makes it easy to share reference responses with your team.
+  </Accordion>
+</AccordionGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="401 Unauthorized">
+    - Confirm the environment is selected (top-right dropdown).
+    - Verify `api_key` has a value in **Current value** (not just Initial value).
+    - Make sure your Nebula account has sufficient credit.
+  </Accordion>
+
+  <Accordion title="Could not get response / Connection Error">
+    - Check your internet connection.
+    - Ensure `base_url` is exactly `https://llm.ai-nebula.com` with no trailing slash.
+    - If you are behind a corporate firewall, configure a Postman proxy.
+  </Accordion>
+
+  <Accordion title="Model not found (404)">
+    - Some models require specific account permissions or are region-restricted.
+    - Try switching to a different `default_chat_model` like `glm-5` or `gpt-5.2`.
+    - Run **List Models** in the `00 - Getting Started` folder to see models available to your key.
+  </Accordion>
+</AccordionGroup>

@@ -1,0 +1,175 @@
+---
+title: 'Query Video Task'
+api: 'GET https://llm.ai-nebula.com/v1/video/generations/{task_id}'
+---
+
+## Introduction
+
+The query video task API is used to query the status and results of a video generation task by task ID. After submitting a task, you need to periodically poll this API to check the task status until the task completes or fails.
+
+**Important Note**: It is recommended to poll the task status every 3-5 seconds until the task status becomes `succeeded` or `failed`.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Path Parameters
+
+<ParamField path="task_id" type="string" required>
+  Video generation task ID returned by the submit task API
+</ParamField>
+
+## Response Description
+
+### Task Status
+
+| Status | Description | Suggested Action |
+|--------|-------------|------------------|
+| `queued` | Task queued, waiting for processing | Continue polling |
+| `in_progress` | Task being processed | Continue polling |
+| `succeeded` | Task completed successfully | Download video or get video URL |
+| `failed` | Task failed | View error reason |
+
+### Response Example (Queued)
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "queued",
+  "format": "mp4"
+}
+```
+
+### Response Example (In Progress)
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "in_progress",
+  "format": "mp4"
+}
+```
+
+### Response Example (Completed)
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "succeeded",
+  "format": "mp4",
+  "url": "https://nebula-ads.oss-cn-guangzhou.aliyuncs.com/2025/11/18/abc123/video.mp4"
+}
+```
+
+**Note**: For Veo and Ali Wanxiang, the video URL is directly included in the response when the task succeeds. For Sora 2, you need to use the download API to get the video.
+
+### Response Example (Failed)
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "failed",
+  "format": "mp4",
+  "error": {
+    "code": 400,
+    "message": "Prompt contains inappropriate content"
+  }
+}
+```
+
+## Usage Example
+
+```bash
+curl -X GET "https://llm.ai-nebula.com/v1/video/generations/video_69095b4ce0048190893a01510c0c98b0" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx"
+```
+
+## Polling Examples
+
+### Python Example
+
+```python
+import requests
+import time
+
+def poll_task_status(task_id, api_key, max_wait_time=300):
+    """Poll task status until completion"""
+    url = f"https://llm.ai-nebula.com/v1/video/generations/{task_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    start_time = time.time()
+    while True:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        status = data.get("status")
+        
+        print(f"Current status: {status}")
+        
+        if status == "succeeded":
+            video_url = data.get("url")
+            print(f"✅ Task completed! Video URL: {video_url}")
+            return video_url
+        elif status == "failed":
+            error_msg = data.get("error", {}).get("message", "Unknown error")
+            print(f"❌ Task failed: {error_msg}")
+            return None
+        
+        # Check timeout
+        if time.time() - start_time > max_wait_time:
+            print("⏰ Timeout")
+            return None
+        
+        # Wait 5 seconds before querying again
+        time.sleep(5)
+```
+
+### JavaScript Example
+
+```javascript
+async function pollTaskStatus(taskId, apiKey, maxWaitTime = 300000) {
+  const url = `https://llm.ai-nebula.com/v1/video/generations/${taskId}`;
+  const headers = { 'Authorization': `Bearer ${apiKey}` };
+  
+  const startTime = Date.now();
+  
+  while (true) {
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+    const status = data.status;
+    
+    console.log(`Current status: ${status}`);
+    
+    if (status === 'succeeded') {
+      const videoUrl = data.url;
+      console.log(`✅ Task completed! Video URL: ${videoUrl}`);
+      return videoUrl;
+    } else if (status === 'failed') {
+      const errorMsg = data.error?.message || 'Unknown error';
+      console.error(`❌ Task failed: ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+    
+    // Check timeout
+    if (Date.now() - startTime > maxWaitTime) {
+      throw new Error('Timeout');
+    }
+    
+    // Wait 5 seconds before querying again
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+```
+
+## Related APIs
+
+<Columns cols={2}>
+  <Card title="Submit Video Task" icon="upload" href="/en/api-reference/endpoint/submit-video-task">
+    Submit video generation task
+  </Card>
+  <Card title="Download Video" icon="download" href="/en/api-reference/endpoint/download-video">
+    Download completed video files (Sora 2 only)
+  </Card>
+</Columns>
+

@@ -1,0 +1,182 @@
+---
+title: 'Cursor'
+description: 'Cursor Code Editor Integration Guide'
+---
+
+## Introduction
+
+Cursor is an AI-powered code editor. By integrating with **Nebula Api**, you get powerful AI assistance for code generation, completion, explanation, and optimization. Nebula Api now supports Cursor Agent capabilities (Auto Apply / multi-file editing, etc.) when configured properly.
+
+## Quick Setup
+
+<Warning>
+**Important**: Currently, Cursor has official restrictions for using third-party API keys (including Nebula Api). You must meet the following requirements:
+- Must have an active **Pro Plan** (paid subscription). **Free Plan cannot use third-party API keys**
+- Requires VPN/proxy configuration to connect to third-party API services
+- This is an official Cursor policy restriction, not a limitation of Nebula Api
+</Warning>
+
+### 1. Open Settings
+
+Click the gear icon ⚙️ in the top right, select **Models**.
+
+### 2. Configure API
+
+- **OpenAI API Key**: Enter your Nebula Api key
+- **Override OpenAI Base URL**: Check and enter `https://llm.ai-nebula.com/v1`
+- Click **Verify** to validate
+
+<Tip>
+- Nebula Api is compatible with Cursor Agent (Auto Apply, etc.). To enable Agent, pick models that support Agent.  
+- For GPT family, prefix model name with `openai/`. For example, use `openai/gpt-5.4` instead of `gpt-5.4`. Other providers keep their original model IDs.
+</Tip>
+
+### 3. Agent Mode Tips
+
+- Use Agent-capable models (e.g., Claude, DeepSeek, Grok, and GPT with `openai/` prefix)
+- Ensure Base URL is `https://llm.ai-nebula.com/v1`
+- On first enable, try a small change to verify auto-apply in Cursor sidebar
+- If a model doesn’t support Agent, fall back to Chat and apply manually
+
+## Recommended Models
+
+| Type | Model ID | Features |
+|------|----------|----------|
+| Coding | `claude-sonnet-4-6` | Latest Sonnet model with strong coding and long-task performance |
+| | `openai/gpt-5.4` | OpenAI's latest mainline model with strong overall capability |
+| | `deepseek-v3-2-251201` | Cost-effective hybrid reasoning model with strong coding performance |
+| Cost-effective | `openai/gpt-5.4-mini` | Lightweight but capable |
+| | `claude-haiku-4-5-20251001` | Fast and budget-friendly Claude model |
+| | `gemini-3.1-flash-lite-preview` | Fast and low-cost Google model |
+| Reasoning | `o4-mini` | Top reasoning for coding |
+| | `o3-mini` | Complex reasoning & algorithms |
+
+### Add Custom Models
+
+Add in Cursor settings:
+
+```
+claude-sonnet-4-6
+openai/gpt-5.4
+deepseek-v3-2-251201
+o4-mini
+gemini-3.1-pro-preview
+```
+
+## Usage Modes
+
+### Chat Mode Workflow
+
+1. **Generate code**: `Ctrl/Cmd + L` to open chat, describe requirements
+2. **Apply code**: Copy and paste to target file, or use "Apply" button
+3. **Iterate**: Continue conversation for modifications
+
+### Alternatives Comparison
+
+| Tool | Agent Mode | Pros | Cons |
+|------|------------|------|------|
+| Cursor | ✅ | Elegant UI, great completion, Agent now supported | Third-party keys require Pro plan and stricter network setup |
+| Cline (VS Code) | ✅ | Full Agent functionality | Requires VS Code |
+| RooCode (VS Code) | ✅ | Multi-file editing | Newer, evolving |
+| Continue (VS Code) | ✅ | Open source, customizable | Complex setup |
+
+## Core Features
+
+### Smart Code Completion
+
+- **Tab completion**: Press Tab to accept suggestions
+- **Multi-line**: Function-level code generation
+- **Context-aware**: Precise suggestions based on project
+
+### AI Chat
+
+- `Ctrl/Cmd + K`: Open command palette
+- `Ctrl/Cmd + L`: Open sidebar chat
+- **Code explanation**: Select code and ask AI
+
+### Code Editing
+
+- **Generate**: Describe requirements, AI generates code
+- **Refactor**: Get optimization suggestions
+- **Fix errors**: AI helps locate and fix issues
+
+## Shortcuts
+
+| Shortcut | Function |
+|----------|----------|
+| `Ctrl/Cmd + K` | Open AI command palette |
+| `Ctrl/Cmd + L` | Open AI chat sidebar |
+| `Tab` | Accept suggestion |
+| `Esc` | Cancel suggestion |
+
+## Tips
+
+### Provide Clear Context
+
+```javascript
+// @context: React component for user auth
+// @requirements: Support OAuth2 login
+// @constraints: Compatible with NextJS 13+
+```
+
+### Optimize Prompts
+
+- **Bad**: `"Fix this function"`
+- **Good**: `"Fix the floating point precision issue in calculateTotal function, ensure amounts are accurate to 2 decimal places"`
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection Timeout">
+    - Check network connection
+    - Verify API URL is `https://llm.ai-nebula.com/v1`
+    - Validate API key
+  </Accordion>
+  <Accordion title="Model Not Responding">
+    - Check account balance
+    - Try switching models
+    - Restart Cursor
+  </Accordion>
+  <Accordion title="Poor Suggestions">
+    - Provide more project context
+    - Use more specific prompts
+    - Switch to better performing model
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Project Config
+
+Create `.cursor-settings.json` in project root:
+
+```json
+{
+  "model": "openai/gpt-5.4",
+  "temperature": 0.7,
+  "contextFiles": ["README.md", "package.json"],
+  "rules": [
+    "Use TypeScript strict mode",
+    "Follow ESLint rules",
+    "Add appropriate comments"
+  ]
+}
+```
+
+### Code Review
+
+```
+Please review this code, focus on:
+1. Performance issues
+2. Security vulnerabilities
+3. Code standards
+4. Best practices
+```
+
+## About Agent Mode
+
+For auto multi-file editing and complex refactoring, consider:
+
+- **Cline**: VS Code plugin with full Agent functionality
+- **RooCode**: Emerging VS Code AI Agent plugin
+

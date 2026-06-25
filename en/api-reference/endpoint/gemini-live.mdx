@@ -1,0 +1,529 @@
+---
+title: 'Gemini Live'
+description: 'Real-time voice and video interaction API'
+---
+
+## Introduction
+
+Gemini Live API supports low-latency, real-time voice and video interactions with Gemini. It can process continuous audio, video, or text streams to provide instant, natural, and realistic voice responses.
+
+**Key Features:**
+- ✅ High-quality audio: Provides natural, realistic voices in multiple languages
+- ✅ Multi-language support: Supports conversations in 24 languages
+- ✅ Interruption capability: Users can interrupt the model at any time for responsive interactions
+- ✅ Empathetic conversations: Adjusts response style and tone based on the emotional expression of user input
+- ✅ Tool usage: Integrates function calling and Google Search
+- ✅ Audio transcription: Provides text transcription of user input and model output
+- ✅ Proactive audio: Controls when and in which contexts the model responds
+
+## API Endpoint
+
+**Endpoint:** `wss://llm.ai-nebula.com/v1beta/models/{model}/liveStream`
+
+**Features:**
+- Uses Gemini Live API native format
+- Direct passthrough, no protocol conversion
+- Supports all native Gemini features
+
+**Example:**
+```javascript
+const ws = new WebSocket('wss://llm.ai-nebula.com/v1beta/models/gemini-live-2.5-flash-native-audio/liveStream', {
+  headers: {
+    'Authorization': 'Bearer sk-xxxx'
+  }
+});
+```
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Supported Models
+
+The following models support Gemini Live API:
+
+| Model ID | Availability | Use Case | Key Features |
+|----------|--------------|----------|--------------|
+| `gemini-live-2.5-flash-native-audio` | Generally Available | **Recommended**. Low-latency voice agent. Supports seamless multi-language switching and emotional tone. | Native audio, audio transcription, voice activity detection, empathetic conversations, proactive audio, tool usage |
+
+## Voice and Language Configuration
+
+### Voice Configuration
+
+Gemini Live API supports 30 different preset voices, each with unique expression characteristics:
+
+| Voice Name | Style | Voice Name | Style | Voice Name | Style |
+|------------|-------|------------|-------|------------|-------|
+| Zephyr | Bright | Puck | Cheerful | Charon | Informative |
+| Kore | Firm | Fenrir | Excited | Leda | Youthful |
+| Orus | Firm | Aoede | Light | Callirrhoe | Easy-going |
+| Autonoe | Bright | Enceladus | Breathy | Iapetus | Clear |
+| Umbriel | Relaxed | Algieba | Smooth | Despina | Natural |
+| Erinome | Clear | Algenib | Hoarse | Rasalgethi | Informative |
+| Laomedeia | Cheerful | Achernar | Soft | Alnilam | Strong |
+| Schedar | Steady | Gacrux | Mature | Pulcherrima | Positive |
+| Achird | Friendly | Zubenelgenubi | Casual | Vindemiatrix | Gentle |
+| Sadachbia | Lively | Sadaltager | Learned | Sulafat | Warm |
+
+**Default Voice:** Zephyr (Bright)
+
+### Language Configuration
+
+Supports 24 languages, specified via BCP-47 language codes:
+
+| Language | Code | Language | Code |
+|----------|------|----------|------|
+| Arabic (Egypt) | ar-EG | German (Germany) | de-DE |
+| English (US) | en-US | Spanish (US) | es-US |
+| French (France) | fr-FR | Hindi (India) | hi-IN |
+| Indonesian | id-ID | Italian (Italy) | it-IT |
+| Japanese (Japan) | ja-JP | Korean (Korea) | ko-KR |
+| Portuguese (Brazil) | pt-BR | Russian (Russia) | ru-RU |
+| Dutch (Netherlands) | nl-NL | Polish (Poland) | pl-PL |
+| Thai (Thailand) | th-TH | Turkish (Turkey) | tr-TR |
+| Vietnamese (Vietnam) | vi-VN | Romanian | ro-RO |
+| Ukrainian | uk-UA | Bengali | bn-BD |
+| English (India) | en-IN | Marathi (India) | mr-IN |
+| Tamil (India) | ta-IN | Telugu (India) | te-IN |
+| Chinese (Simplified) | zh-CN | | |
+
+**Default Language:** Automatically inferred from the language in system instructions
+
+## Usage Examples
+
+### JavaScript Example
+
+```javascript
+const ws = new WebSocket('wss://llm.ai-nebula.com/v1beta/models/gemini-live-2.5-flash-native-audio/liveStream', {
+  headers: {
+    'Authorization': 'Bearer sk-xxxx'
+  }
+});
+
+ws.onopen = () => {
+  console.log('WebSocket connected');
+  
+  // Send setup message
+  ws.send(JSON.stringify({
+    setup: {
+      model: "gemini-live-2.5-flash-native-audio",
+      generationConfig: {
+        temperature: 0.7,
+        responseModalities: ["AUDIO"]
+      },
+      systemInstruction: {
+        parts: [
+          { text: "You are a helpful assistant. Speak naturally and conversationally." }
+        ]
+      },
+      speechConfig: {
+        voiceConfig: {
+          prebuiltVoiceConfig: {
+            voiceName: "Puck"
+          }
+        }
+      }
+    }
+  }));
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  console.log('Received:', message);
+  
+  if (message.serverContent) {
+    // Handle output transcription (audio to text)
+    if (message.serverContent.outputTranscription) {
+      const text = message.serverContent.outputTranscription.text;
+      if (text) {
+        console.log('[Transcription]', text);
+      }
+    }
+    
+    if (message.serverContent.modelTurn) {
+      // Handle model output
+      message.serverContent.modelTurn.parts.forEach(part => {
+        if (part.text) {
+          console.log('Text:', part.text);
+        }
+        if (part.inlineData && part.inlineData.mimeType === "audio/pcm") {
+          // Handle audio data
+          const audioData = part.inlineData.data;
+          // audioData is base64-encoded PCM audio
+        }
+      });
+    }
+    if (message.serverContent.turnComplete) {
+      console.log('Turn complete');
+    }
+  }
+  
+  if (message.setupComplete) {
+    console.log('Setup complete');
+  }
+};
+
+// Send realtime audio input
+function sendRealtimeAudio(audioBuffer) {
+  const base64Audio = btoa(
+    String.fromCharCode(...new Uint8Array(audioBuffer))
+  );
+  
+  ws.send(JSON.stringify({
+    realtimeInput: {
+      mediaChunks: [
+        {
+          mimeType: "audio/pcm;rate=16000",
+          data: base64Audio
+        }
+      ]
+    }
+  }));
+}
+
+// Send text message
+function sendText(text) {
+  ws.send(JSON.stringify({
+    clientContent: {
+      turns: [
+        {
+          role: "user",
+          parts: [
+            { text: text }
+          ]
+        }
+      ],
+      turnComplete: true
+    }
+  }));
+}
+```
+
+### Python Example
+
+```python
+import websocket
+import json
+import base64
+import threading
+
+def on_message(ws, message):
+    data = json.loads(message)
+    print(f"Received: {data}")
+    
+    # Handle output transcription
+    if "serverContent" in data:
+        server_content = data["serverContent"]
+        
+        if "outputTranscription" in server_content:
+            transcription = server_content["outputTranscription"]
+            text = transcription.get("text", "")
+            if text:
+                print(f"[Transcription] {text}")
+        
+        if "modelTurn" in server_content:
+            model_turn = server_content["modelTurn"]
+            if "parts" in model_turn:
+                for part in model_turn["parts"]:
+                    if "text" in part:
+                        print(f"Text: {part['text']}")
+                    elif "inlineData" in part:
+                        inline_data = part["inlineData"]
+                        if inline_data.get("mimeType") == "audio/pcm":
+                            audio_b64 = inline_data.get("data", "")
+                            if audio_b64:
+                                audio_data = base64.b64decode(audio_b64)
+                                # Handle audio data
+
+def on_error(ws, error):
+    print(f"Error: {error}")
+
+def on_close(ws, close_status_code, close_msg):
+    print("Connection closed")
+
+def on_open(ws):
+    print("WebSocket connected")
+    
+    # Send setup message
+    setup_message = {
+        "setup": {
+            "model": "gemini-live-2.5-flash-native-audio",
+            "generationConfig": {
+                "temperature": 0.7,
+                "responseModalities": ["AUDIO"]
+            },
+            "systemInstruction": {
+                "parts": [
+                    {"text": "You are a helpful assistant."}
+                ]
+            },
+            "speechConfig": {
+                "voiceConfig": {
+                    "prebuiltVoiceConfig": {
+                        "voiceName": "Puck"
+                    }
+                }
+            }
+        }
+    }
+    ws.send(json.dumps(setup_message))
+
+# Connect WebSocket
+ws_url = "wss://llm.ai-nebula.com/v1beta/models/gemini-live-2.5-flash-native-audio/liveStream"
+ws = websocket.WebSocketApp(
+    ws_url,
+    header={"Authorization": "Bearer sk-xxxx"},
+    on_open=on_open,
+    on_message=on_message,
+    on_error=on_error,
+    on_close=on_close
+)
+
+ws.run_forever()
+```
+
+## Configuration Examples
+
+### Example 1: Audio Only Mode
+
+```json
+{
+  "setup": {
+    "model": "gemini-live-2.5-flash-native-audio",
+    "generationConfig": {
+      "temperature": 0.7,
+      "responseModalities": ["AUDIO"],
+      "speechConfig": {
+        "voiceConfig": {
+          "prebuiltVoiceConfig": {
+            "voiceName": "Zephyr"
+          }
+        },
+        "languageCode": "zh-CN"
+      }
+    },
+    "systemInstruction": {
+      "parts": [
+        {"text": "你是一个友好的助手，请用自然、对话式的方式回答问题。"}
+      ]
+    }
+  }
+}
+```
+
+### Example 2: Audio + Text Transcription Mode (Recommended)
+
+```json
+{
+  "setup": {
+    "model": "gemini-live-2.5-flash-native-audio",
+    "generationConfig": {
+      "temperature": 0.7,
+      "responseModalities": ["AUDIO", "TEXT"],
+      "speechConfig": {
+        "voiceConfig": {
+          "prebuiltVoiceConfig": {
+            "voiceName": "Zephyr"
+          }
+        },
+        "languageCode": "zh-CN"
+      }
+    },
+    "systemInstruction": {
+      "parts": [
+        {"text": "你是一个友好的助手，请用自然、对话式的方式回答问题。"}
+      ]
+    },
+    "tools": {
+      "googleSearch": {}
+    },
+    "proactivity": {
+      "proactiveAudio": false,
+      "empatheticMode": true
+    },
+    "outputAudioTranscription": {},
+    "realtimeInputConfig": {
+      "automaticActivityDetection": {
+        "disabled": false,
+        "startOfSpeechSensitivity": "START_SENSITIVITY_LOW",
+        "endOfSpeechSensitivity": "END_SENSITIVITY_HIGH",
+        "prefixPaddingMs": 0,
+        "silenceDurationMs": 0
+      }
+    }
+  }
+}
+```
+
+**Configuration Notes:**
+- `responseModalities`: Response modality, choose one of the following:
+  - `["AUDIO"]` - Audio output only
+  - `["AUDIO", "TEXT"]` - Audio + text transcription (recommended, get both audio and text)
+- `voiceName`: Voice name, supports 30 preset voices (see voice configuration table above)
+- `languageCode`: Language code, supports 24 languages (see language configuration table above)
+- `googleSearch`: Enable Google Search functionality
+- `proactiveAudio`: Proactive audio, model can choose not to respond to irrelevant audio
+- `empatheticMode`: Empathetic conversations, adjusts response style based on emotions
+- `outputAudioTranscription`: Enable output audio-to-text transcription (requires `"TEXT"` in `responseModalities` to see transcription text)
+- `automaticActivityDetection`: Voice activity detection configuration
+
+## Message Types
+
+### Client Messages
+
+| Message Type | Description |
+|--------------|-------------|
+| `setup` | Session configuration |
+| `clientContent` | Client content (text/audio) |
+| `realtimeInput` | Realtime audio input |
+| `toolResponse` | Tool response |
+
+### Server Messages
+
+| Message Type | Description |
+|--------------|-------------|
+| `setupComplete` | Setup completion confirmation |
+| `serverContent` | Server content (text/audio/transcription) |
+| `toolCall` | Tool call |
+| `toolCallCancellation` | Tool call cancellation |
+| `usageMetadata` | Usage statistics |
+
+## Token Statistics
+
+The system separately tracks:
+- Text Tokens (input/output)
+- Audio Tokens (input/output)
+- Total Token Count
+
+Usage information is returned in `usageMetadata` messages:
+
+<ResponseExample>
+```json
+{
+  "usageMetadata": {
+    "totalTokenCount": 100,
+    "inputTokenCount": 50,
+    "outputTokenCount": 50,
+    "inputTokenDetails": {
+      "textTokens": 30,
+      "audioTokens": 20
+    },
+    "outputTokenDetails": {
+      "textTokens": 25,
+      "audioTokens": 25
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Pricing
+
+**Important Note:** Model prices may change. Please refer to the latest prices displayed in the model marketplace.
+
+Gemini Live API is billed by token, separately tracking text and audio tokens:
+- **Text Tokens**: Used for input text content and output text transcription
+- **Audio Tokens**: Used for input audio and output audio content
+
+The system returns detailed usage statistics in `usageMetadata` messages, including input/output token counts for both text and audio.
+
+## Technical Specifications
+
+### Audio Format
+
+**Input Audio:**
+- Format: 16-bit PCM
+- Sample Rate: 16kHz
+- Byte Order: Little-endian
+- Encoding: Base64
+
+**Output Audio:**
+- Format: 16-bit PCM
+- Sample Rate: 24kHz
+- Byte Order: Little-endian
+- Encoding: Base64
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="How to select a voice?">
+    Specify the voice name in `speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName` of the setup message. Supports 30 preset voices. See the [Voice Configuration](#voice-configuration) section above for the complete list. Default voice is Zephyr.
+  </Accordion>
+  
+  <Accordion title="How to enable audio-to-text transcription?">
+    Two conditions must be met:
+    1. Include `"TEXT"` in `generationConfig.responseModalities` (e.g., `["AUDIO", "TEXT"]`)
+    2. Add `outputAudioTranscription: {}` field in the setup message
+    
+    Once enabled, the server will return audio text transcription in `serverContent.outputTranscription`.
+  </Accordion>
+  
+  <Accordion title="How to enable Google Search?">
+    Add `tools: { googleSearch: {} }` field in the setup message. Once enabled, the model can search for the latest web information when answering questions.
+  </Accordion>
+  
+  <Accordion title="How to enable tool calling?">
+    Add tool definitions in the setup message:
+    ```json
+    {
+      "setup": {
+        "tools": {
+          "functionDeclarations": [
+            {
+              "name": "get_weather",
+              "description": "Get the weather",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="How to interrupt model response?">
+    Sending a new `realtimeInput` or `clientContent` message will interrupt the current response.
+  </Accordion>
+  
+  <Accordion title="Does it support video input?">
+    Yes, Gemini Live API supports video input. Video data (JPEG format, 1 FPS) can be included in `clientContent`.
+  </Accordion>
+  
+  <Accordion title="How to get usage statistics?">
+    The system sends `usageMetadata` messages during or after response completion, containing detailed usage statistics.
+  </Accordion>
+  
+  <Accordion title="How to configure speech recognition sensitivity?">
+    Configure in `realtimeInputConfig.automaticActivityDetection` of the setup message:
+    ```json
+    {
+      "realtimeInputConfig": {
+        "automaticActivityDetection": {
+          "startOfSpeechSensitivity": "START_SENSITIVITY_LOW",
+          "endOfSpeechSensitivity": "END_SENSITIVITY_HIGH",
+          "prefixPaddingMs": 0,
+          "silenceDurationMs": 0
+        }
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## References
+
+- [Gemini Live API Official Documentation](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/live-api?hl=en)
+- [WebSocket Protocol Documentation](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/live-api/get-started-websocket?hl=en)
+- [Sending Audio Video Streams](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/live-api/send-audio-video-streams?hl=en)
+- [Configuring Language and Voice](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/live-api/configure-language-voice?hl=en)
+
+

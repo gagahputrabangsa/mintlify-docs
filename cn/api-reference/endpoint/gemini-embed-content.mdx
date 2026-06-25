@@ -1,0 +1,140 @@
+---
+title: 'Gemini 文本向量（embedContent）'
+api: 'POST https://llm.ai-nebula.com/v1/models/{model}:embedContent'
+---
+
+## 简介
+
+使用 Gemini 原生接口将文本转换为向量嵌入。模型由 **URL 路径** 指定（如 `gemini-embedding-001`），适用于需要 Google 嵌入模型或与 Gemini API 对齐的场景。
+
+<Info>
+与 [文本向量化（Embedding）](/cn/api-reference/endpoint/embeddings) 的 OpenAI 格式互为补充：本文档为 Gemini 原生路径；同一能力也可通过 `POST /v1/embeddings` 调用。
+</Info>
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 路径参数
+
+<ParamField path="model" type="string" required>
+  嵌入模型名称，如 `gemini-embedding-001`。
+</ParamField>
+
+## 请求参数
+
+<ParamField body="content" type="object" required>
+  待嵌入内容。须包含 `parts` 数组，每项为 `{ "text": "文本内容" }`。
+</ParamField>
+
+<ParamField body="outputDimensionality" type="integer">
+  输出向量维度（仅部分模型支持，如 `gemini-embedding-001`、`text-embedding-004`）。
+</ParamField>
+
+<ParamField body="taskType" type="string">
+  任务类型，如 `RETRIEVAL_DOCUMENT`、`RETRIEVAL_QUERY`（可选）。
+</ParamField>
+
+## cURL 示例
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/models/gemini-embedding-001:embedContent" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "content": {
+      "parts": [
+        { "text": "要嵌入的文本内容" }
+      ]
+    }
+  }'
+```
+
+带维度：
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/models/gemini-embedding-001:embedContent" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "content": {
+      "parts": [
+        { "text": "要嵌入的文本内容" }
+      ]
+    },
+    "outputDimensionality": 768
+  }'
+```
+
+## Python 示例
+
+```python
+import requests
+
+url = "https://llm.ai-nebula.com/v1/models/gemini-embedding-001:embedContent"
+headers = {
+    "Content-Type": "application/json",
+    "Authorization": "Bearer sk-XyLy**************************mIqSt"
+}
+payload = {
+    "content": {
+        "parts": [
+            { "text": "要嵌入的文本内容" }
+        ]
+    }
+}
+
+response = requests.post(url, json=payload, headers=headers)
+data = response.json()
+embedding = data["embedding"]["values"]
+print(f"向量维度：{len(embedding)}")
+```
+
+<ResponseExample>
+```json
+{
+  "embedding": {
+    "values": [0.0023064255, -0.009327292, 0.015797347, ...]
+  },
+  "metadata": {
+    "usage": {
+      "prompt_tokens": 6,
+      "total_tokens": 6
+    }
+  }
+}
+```
+</ResponseExample>
+
+## 批量接口（batchEmbedContents）
+
+批量嵌入请使用：`POST /v1/models/{model}:batchEmbedContents`，请求体为 `requests` 数组，每项结构同单条（含 `content.parts`），且**不要**在每项中带 `model` 字段。
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/models/gemini-embedding-001:batchEmbedContents" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "requests": [
+      { "content": { "parts": [{ "text": "第一段文本" }] } },
+      { "content": { "parts": [{ "text": "第二段文本" }] } }
+    ]
+  }'
+```
+
+## 支持的模型
+
+| 模型 | 说明 |
+|------|------|
+| gemini-embedding-001 | 通用嵌入模型，支持 `outputDimensionality` |
+| text-embedding-004 | 高精度嵌入模型 |
+
+## 注意事项
+
+<Note>
+- 模型由 URL 路径指定，请求体不要包含 `model` 字段
+- `content.parts` 必填，至少一个 `text` 非空
+- 用量信息在响应的 `metadata.usage` 中（`prompt_tokens`、`total_tokens`）
+</Note>

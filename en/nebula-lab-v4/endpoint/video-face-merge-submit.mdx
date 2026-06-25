@@ -1,0 +1,51 @@
+---
+title: 'Image to Video - Face Swap - Submit Task'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/videoFaceMergeSubmit'
+---
+
+## Introduction
+
+Submit video face swap task, used to generate video with replaced face.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.imageUrl" type="string" required>
+  Face image URL
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.videoUrl" type="string" required>
+  Video URL
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.reqKey" type="string" required>
+  Request key
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.sourceSimilarity" type="string">
+  Source similarity
+</ParamField>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "output": {
+      "task_id": "task-1234567890",
+      "task_status": "PENDING"
+    },
+    "request_id": "request-1234567890"
+  }
+}
+```
+</ResponseExample>

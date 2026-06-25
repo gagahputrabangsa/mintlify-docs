@@ -1,0 +1,80 @@
+---
+title: 'AI Image - Text to Image'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit'
+---
+
+## Introduction
+
+Submit text-to-image task, used to generate new images based on text description.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="volcEngineReqDTO.req.prompt" type="string" required>
+  Image description prompt
+</ParamField>
+
+<ParamField body="volcEngineReqDTO.req.size" type="string">
+  Image size, e.g., 512x512, 1024x1024
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "req": {
+          "prompt": "A cute little cat playing on the grass",
+          "size": "1024x1024"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "req": {
+            "prompt": "A cute little cat playing on the grass",
+            "size": "1024x1024"
+        }
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "images": [{
+      "url": "https://example.com/image.jpg"
+    }]
+  }
+}
+```
+</ResponseExample>

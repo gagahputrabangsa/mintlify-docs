@@ -1,0 +1,63 @@
+---
+title: 'Get Token'
+api: 'POST https://ai-nebula.com/prod-api/v3/auth/getToken'
+---
+
+## Introduction
+
+Get access token (Token) using username and password for subsequent API authentication.
+
+## Request Parameters
+
+<ParamField body="username" type="string" required>
+  Username
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  Password
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/v3/auth/getToken" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "username": "your_username",
+        "password": "your_password"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/v3/auth/getToken"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "username": "your_username",
+        "password": "your_password"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+</ResponseExample>

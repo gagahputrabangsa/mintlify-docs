@@ -1,0 +1,105 @@
+---
+title: '万物迁移-创意模式'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit'
+---
+
+## 简介
+
+提交万物迁移-创意模式任务，用于生成创意风格的迁移图片。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="size" type="string" required>
+  图片尺寸
+</ParamField>
+
+<ParamField body="contents" type="object[]" required>
+  内容列表
+</ParamField>
+<ParamField body="contents[].parts" type="object[]" required>
+  内容片段列表
+</ParamField>
+<ParamField body="contents[].parts[].text" type="string">
+  文本内容
+</ParamField>
+<ParamField body="contents[].parts[].image" type="string">
+  图片内容（支持 base64 或 URL）
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "size": "1024x1024",
+        "contents": [
+          {
+            "parts": [
+              {
+                "text": "一只可爱的小猫在草地上玩耍"
+              },
+              {
+                "image": "https://example.com/cat.jpg"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "size": "1024x1024",
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": "一只可爱的小猫在草地上玩耍"
+                    },
+                    {
+                        "image": "https://example.com/cat.jpg"
+                    }
+                ]
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "url": "https://example.com/generated-image.jpg"
+  }
+}
+```
+</ResponseExample>

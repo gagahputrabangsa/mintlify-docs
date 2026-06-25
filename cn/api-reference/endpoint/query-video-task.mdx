@@ -1,0 +1,175 @@
+---
+title: '查询视频任务'
+api: 'GET https://llm.ai-nebula.com/v1/video/generations/{task_id}'
+---
+
+## 简介
+
+查询视频任务接口用于根据任务ID查询视频生成任务的状态和结果。提交任务后，您需要定期轮询此接口来检查任务状态，直到任务完成或失败。
+
+**重要提示**：建议每 3-5 秒轮询一次任务状态，直到任务状态变为 `succeeded` 或 `failed`。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 路径参数
+
+<ParamField path="task_id" type="string" required>
+  视频生成任务ID，由提交任务接口返回
+</ParamField>
+
+## 响应说明
+
+### 任务状态
+
+| 状态 | 说明 | 建议操作 |
+|------|------|----------|
+| `queued` | 任务已排队，等待处理 | 继续轮询 |
+| `in_progress` | 任务正在处理中 | 继续轮询 |
+| `succeeded` | 任务成功完成 | 下载视频或获取视频URL |
+| `failed` | 任务失败 | 查看失败原因 |
+
+### 响应示例（排队中）
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "queued",
+  "format": "mp4"
+}
+```
+
+### 响应示例（处理中）
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "in_progress",
+  "format": "mp4"
+}
+```
+
+### 响应示例（已完成）
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "succeeded",
+  "format": "mp4",
+  "url": "https://nebula-ads.oss-cn-guangzhou.aliyuncs.com/2025/11/18/abc123/video.mp4"
+}
+```
+
+**注意**：Veo 和阿里万相在任务成功后，视频URL直接包含在响应中。Sora 2 需要使用下载接口获取视频。
+
+### 响应示例（失败）
+
+```json
+{
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "status": "failed",
+  "format": "mp4",
+  "error": {
+    "code": 400,
+    "message": "提示词包含不当内容"
+  }
+}
+```
+
+## 使用示例
+
+```bash
+curl -X GET "https://llm.ai-nebula.com/v1/video/generations/video_69095b4ce0048190893a01510c0c98b0" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx"
+```
+
+## 轮询示例
+
+### Python 示例
+
+```python
+import requests
+import time
+
+def poll_task_status(task_id, api_key, max_wait_time=300):
+    """轮询任务状态直到完成"""
+    url = f"https://llm.ai-nebula.com/v1/video/generations/{task_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+    
+    start_time = time.time()
+    while True:
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        status = data.get("status")
+        
+        print(f"当前状态: {status}")
+        
+        if status == "succeeded":
+            video_url = data.get("url")
+            print(f"✅ 任务完成！视频URL: {video_url}")
+            return video_url
+        elif status == "failed":
+            error_msg = data.get("error", {}).get("message", "未知错误")
+            print(f"❌ 任务失败: {error_msg}")
+            return None
+        
+        # 检查超时
+        if time.time() - start_time > max_wait_time:
+            print("⏰ 等待超时")
+            return None
+        
+        # 等待5秒后再次查询
+        time.sleep(5)
+```
+
+### JavaScript 示例
+
+```javascript
+async function pollTaskStatus(taskId, apiKey, maxWaitTime = 300000) {
+  const url = `https://llm.ai-nebula.com/v1/video/generations/${taskId}`;
+  const headers = { 'Authorization': `Bearer ${apiKey}` };
+  
+  const startTime = Date.now();
+  
+  while (true) {
+    const response = await fetch(url, { headers });
+    const data = await response.json();
+    const status = data.status;
+    
+    console.log(`当前状态: ${status}`);
+    
+    if (status === 'succeeded') {
+      const videoUrl = data.url;
+      console.log(`✅ 任务完成！视频URL: ${videoUrl}`);
+      return videoUrl;
+    } else if (status === 'failed') {
+      const errorMsg = data.error?.message || '未知错误';
+      console.error(`❌ 任务失败: ${errorMsg}`);
+      throw new Error(errorMsg);
+    }
+    
+    // 检查超时
+    if (Date.now() - startTime > maxWaitTime) {
+      throw new Error('等待超时');
+    }
+    
+    // 等待5秒后再次查询
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+```
+
+## 相关接口
+
+<Columns cols={2}>
+  <Card title="提交视频任务" icon="upload" href="/cn/api-reference/endpoint/submit-video-task">
+    提交视频生成任务
+  </Card>
+  <Card title="下载视频" icon="download" href="/cn/api-reference/endpoint/download-video">
+    下载已完成的视频文件（仅 Sora 2）
+  </Card>
+</Columns>
+

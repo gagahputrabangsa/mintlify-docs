@@ -1,0 +1,199 @@
+---
+title: 'Claude Code'
+description: 'Claude Code Client Integration Guide'
+---
+
+## 1. Install Node.js (Skip if installed)
+
+Ensure Node.js version ≥ 18.0
+
+<Tabs>
+  <Tab title="Windows">
+    Download: https://nodejs.org/dist/v22.18.0/node-v22.18.0-x64.msi
+  </Tab>
+  <Tab title="macOS">
+    ```bash
+    sudo xcode-select --install
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    brew install node
+    node --version
+    ```
+  </Tab>
+  <Tab title="Ubuntu / Debian">
+    ```bash
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash -
+    sudo apt-get install -y nodejs
+    node --version
+    ```
+  </Tab>
+</Tabs>
+
+### Uninstall Other Proxy Clients (Optional)
+
+Check installation:
+
+```bash
+npm ls @anthropic-ai/claude-code
+npm ls -g @anthropic-ai/claude-code
+```
+
+Uninstall:
+
+```bash
+npm uninstall @anthropic-ai/claude-code
+npm uninstall -g @anthropic-ai/claude-code
+```
+
+## 2. Install Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+Verify installation:
+
+```bash
+claude --version
+```
+
+## 3. Get API Key
+
+```
+base_url = "https://llm.ai-nebula.com"
+api_key = "sk-zbTYx*******************************fceTvn5"
+```
+
+## 4. Configure Environment Variables
+
+### Basic Configuration Example
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+### Dual Model Configuration
+
+Claude Code uses a dual-threaded model architecture by default:
+
+- **Main Thread Model**: Configured via `ANTHROPIC_MODEL` environment variable  
+  - Used for primary code generation, conversations, and complex task processing
+
+- **Secondary Thread Model**: Configured via `ANTHROPIC_DEFAULT_HAIKU_MODEL` environment variable  
+  - Purpose: Lightweight / fast-task model  
+  - Use cases:  
+    - Background tasks (file monitoring, linter checks, etc.)  
+    - Quick responses (simple questions, completion suggestions)  
+    - Low-priority auxiliary tasks
+
+### Basic Configuration (Dual Model, Recommended)
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4-5-20251001"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    set ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4-5-20251001"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+### Single Model Configuration (Optional)
+
+If you only need to use a single model, there are two configuration methods:
+
+**Method 1: Configure both environment variables to the same model**
+
+Set both `ANTHROPIC_MODEL` and `ANTHROPIC_DEFAULT_HAIKU_MODEL` to the same model (for example, both use `kimi-k2-250905`):
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    set ANTHROPIC_DEFAULT_HAIKU_MODEL=kimi-k2-250905
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+**Method 2: Switch main thread model after startup**
+
+Keep environment variables configured as in "Basic Configuration (Dual Model)". After starting Claude Code, in the interactive interface, enter:
+
+```
+/model haiku
+```
+
+The main thread will switch to use the model configured by `ANTHROPIC_DEFAULT_HAIKU_MODEL` (i.e., `claude-haiku-4-5-20251001`).
+

@@ -1,0 +1,81 @@
+---
+title: 'Gemini Native (Image)'
+description: 'Gemini image generation models: text-to-image and image-to-image'
+api: 'POST https://llm.ai-nebula.com/v1/images/generations'
+---
+
+## Introduction
+
+Nano Banana refers to Google Gemini image generation models: **Nano Banana** (`gemini-2.5-flash-image`) and **Nano Banana Pro** (`gemini-3-pro-image-preview`). They are called via the unified image API `POST /v1/images/generations`, supporting text-to-image, image-to-image, and multi-image composition.
+
+For full parameters and multi-model details, see [Image Generation](/en/api-reference/endpoint/image-generation).
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Supported models
+
+| Model ID | Description |
+|----------|-------------|
+| `gemini-2.5-flash-image` | Nano Banana, cost-effective text/image-to-image |
+| `gemini-3-pro-image-preview` | Nano Banana Pro, higher quality and controllability |
+
+## Request examples
+
+<Tabs>
+  <Tab title="Text-to-image">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gemini-2.5-flash-image",
+        "prompt": "A cute orange cat sitting in a garden, sunny, high-quality photo",
+        "size": "16:9",
+        "quality": "high",
+        "n": 1,
+        "response_format": "b64_json",
+        "image_size": "2K",
+        "mime_type": "image/png",
+        "response_modalities": "image"
+      }'
+    ```
+  </Tab>
+  <Tab title="Image-to-image">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gemini-2.5-flash-image",
+        "size": "16:9",
+        "quality": "high",
+        "image_size": "3K",
+        "response_format": "b64_json",
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {"text": "Generate an aerial view of Canton Tower based on this image"},
+              {"image": "data:image/png;base64,iVBORw0KGgo..."}
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## Common parameters
+
+- **prompt**: Text prompt for text-to-image  
+- **size**: Aspect ratio, e.g. `16:9`, `1:1`  
+- **quality**: Quality level, e.g. `high`  
+- **image_size**: Output size, e.g. `1K`, `2K`, `3K`  
+- **response_format**: Gemini series only supports `b64_json` (base64 image)  
+- **contents**: Used for image-to-image or multi-turn; format in [Image Generation](/en/api-reference/endpoint/image-generation)
+
+For more parameters and model differences, see [Image Generation](/en/api-reference/endpoint/image-generation).

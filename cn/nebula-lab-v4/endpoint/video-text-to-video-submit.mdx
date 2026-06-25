@@ -1,0 +1,98 @@
+---
+title: '文生视频-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions'
+---
+
+## 简介
+
+提交文生视频生成任务，用于根据文本描述生成视频。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="model" type="string" required>
+  模型名称
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  视频生成的文本提示词
+</ParamField>
+
+<ParamField body="duration" type="string" required>
+  视频时长，支持格式：3，5, 8, 10, 12
+</ParamField>
+
+<ParamField body="aspect_ratio" type="string" required>
+  画面比例
+</ParamField>
+
+<ParamField body="resolution" type="string">
+  视频分辨率
+</ParamField>
+
+<ParamField body="return_url" type="boolean">
+  是否返回视频URL
+</ParamField>
+
+<ParamField body="req_key" type="string">
+  请求标识
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "video-model-v1",
+        "prompt": "一只可爱的小猫在草地上玩耍",
+        "duration": 5,
+        "aspect_ratio": "16:9"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "model": "video-model-v1",
+        "prompt": "一只可爱的小猫在草地上玩耍",
+        "duration": 5,
+        "aspect_ratio": "16:9"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "task_id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

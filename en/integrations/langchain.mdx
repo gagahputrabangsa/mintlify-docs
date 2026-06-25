@@ -1,0 +1,273 @@
+---
+title: 'LangChain'
+description: 'LangChain Framework Integration Guide'
+---
+
+## Introduction
+
+LangChain is a powerful framework for building language model applications. By integrating with **Nebula Api**, you can flexibly call various AI models in LangChain.
+
+## Quick Start
+
+### 1. Install Dependencies
+
+```bash
+pip install langchain langchain-openai
+```
+
+### 2. Basic Configuration
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+os.environ["OPENAI_API_KEY"] = "Your Nebula Api Key"
+os.environ["OPENAI_BASE_URL"] = "https://llm.ai-nebula.com/v1"
+
+llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=0.7
+)
+```
+
+## Core Features
+
+### 1. Basic Chat
+
+```python
+from langchain.schema import HumanMessage, SystemMessage
+
+messages = [
+    SystemMessage(content="You are a helpful assistant"),
+    HumanMessage(content="Introduce Python's main features")
+]
+
+response = llm.invoke(messages)
+print(response.content)
+```
+
+### 2. Conversation Chain (with Memory)
+
+```python
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+
+memory = ConversationBufferMemory()
+conversation = ConversationChain(llm=llm, memory=memory, verbose=True)
+
+conversation.predict(input="I want to learn machine learning")
+conversation.predict(input="Recommend some beginner resources")
+```
+
+### 3. Document QA (RAG)
+
+```python
+from langchain.document_loaders import TextLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+
+embeddings = OpenAIEmbeddings(
+    api_key="Your Nebula Api Key",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+loader = TextLoader("document.txt")
+documents = loader.load()
+
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+texts = text_splitter.split_documents(documents)
+
+vectorstore = FAISS.from_documents(texts, embeddings)
+
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+
+result = qa.run("What are the key concepts in the document?")
+```
+
+## Model Switching
+
+```python
+gpt4 = ChatOpenAI(
+    model="gpt-4",
+    api_key="Your Nebula Api Key",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+claude = ChatOpenAI(
+    model="claude-opus-4-5-20251101",
+    api_key="Your Nebula Api Key",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+```
+
+## Advanced Applications
+
+### 1. Agent System
+
+```python
+from langchain.agents import create_openai_functions_agent, AgentExecutor
+from langchain.tools import Tool
+from langchain import hub
+
+def get_weather(location: str) -> str:
+    return f"Weather in {location}: Sunny, 25°C"
+
+weather_tool = Tool(
+    name="Weather",
+    func=get_weather,
+    description="Get weather info for a location"
+)
+
+prompt = hub.pull("hwchase17/openai-functions-agent")
+agent = create_openai_functions_agent(llm, [weather_tool], prompt)
+agent_executor = AgentExecutor(agent=agent, tools=[weather_tool])
+
+result = agent_executor.invoke({"input": "What's the weather in Beijing?"})
+```
+
+### 2. Batch Processing
+
+```python
+prompts = ["Explain AI", "What is ML", "Deep learning applications"]
+
+responses = llm.batch([HumanMessage(content=p) for p in prompts])
+
+for response in responses:
+    print(response.content)
+```
+
+### 3. Streaming Output
+
+```python
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+streaming_llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()]
+)
+
+streaming_llm.invoke("Write a poem about spring")
+```
+
+### 4. Cost Monitoring
+
+```python
+from langchain.callbacks import get_openai_callback
+
+with get_openai_callback() as cb:
+    response = llm.invoke("Hello, introduce LangChain")
+    print(f"Tokens: {cb.total_tokens}")
+    print(f"Cost: ${cb.total_cost:.6f}")
+```
+
+## Best Practices
+
+### Model Selection
+
+| Task | Model | Reason |
+|------|-------|--------|
+| Simple chat | gpt-3.5-turbo | Fast, low cost |
+| Complex reasoning | gpt-4 | High accuracy |
+| Long text | claude-3-opus | Longer context |
+| Creative writing | claude-sonnet-4-5-20250929 | Fluent generation |
+
+### Cost Optimization
+
+```python
+class CostOptimizedLLM:
+    def __init__(self):
+        self.cheap_model = ChatOpenAI(model="gpt-3.5-turbo")
+        self.premium_model = ChatOpenAI(model="gpt-4")
+    
+    def smart_invoke(self, message, complexity="low"):
+        model = self.premium_model if complexity == "high" else self.cheap_model
+        return model.invoke(message)
+```
+
+### Caching
+
+```python
+from langchain.cache import InMemoryCache
+from langchain.globals import set_llm_cache
+
+set_llm_cache(InMemoryCache())
+
+response1 = llm.invoke("What is AI?")
+response2 = llm.invoke("What is AI?")  # Uses cache
+```
+
+### Async Processing
+
+```python
+import asyncio
+from langchain_openai import AsyncChatOpenAI
+
+async def async_chat():
+    async_llm = AsyncChatOpenAI(
+        model="gpt-3.5-turbo",
+        api_key="Your Nebula Api Key",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+    response = await async_llm.ainvoke("Async generated content")
+    return response.content
+
+result = asyncio.run(async_chat())
+```
+
+## Deployment
+
+### Production Config
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+class ProductionLLM:
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
+            temperature=float(os.getenv("LLM_TEMPERATURE", "0.7")),
+            max_tokens=int(os.getenv("LLM_MAX_TOKENS", "1000")),
+            request_timeout=int(os.getenv("LLM_REQUEST_TIMEOUT", "60"))
+        )
+    
+    def chat(self, message):
+        try:
+            return self.llm.invoke(message)
+        except Exception:
+            return "Sorry, service unavailable"
+```
+
+### Retry Mechanism
+
+```python
+import time
+from functools import wraps
+
+def retry_llm_call(max_retries=3, delay=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(delay * (2 ** attempt))
+            return None
+        return wrapper
+    return decorator
+
+@retry_llm_call(max_retries=3)
+def robust_llm_call(llm, message):
+    return llm.invoke(message)
+```
+

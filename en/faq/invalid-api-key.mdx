@@ -1,0 +1,203 @@
+---
+title: 'Why is my API Key invalid?'
+description: 'Resolve API Key invalid errors and learn correct Base URL configuration'
+---
+
+## Common Error
+
+When you see an error like this:
+
+```json
+{
+  "error": {
+    "message": "Incorrect API key provided: sk-QqHvK***...",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key"
+  }
+}
+```
+
+This usually **isn't** a problem with your API Key itself, but rather a **Base URL misconfiguration**.
+
+<Warning>
+Most common mistake: Using Nebula Api's Key but the request URL still points to OpenAI's `https://api.openai.com`
+</Warning>
+
+## What is Base URL?
+
+**Base URL** is the target server address for API requests. Different providers use different Base URLs.
+
+### Base URL and API Key Must Match
+
+| Provider | Base URL | API Key Format | Match? |
+|----------|----------|----------------|--------|
+| **Nebula Api** | https://llm.ai-nebula.com | sk-xxxx... | ✅ Correct |
+| **OpenAI Official** | https://api.openai.com | sk-xxxx... | ✅ Correct |
+| ❌ Nebula Key | https://api.openai.com | sk-xxxx... | ❌ **Wrong** |
+| ❌ OpenAI Key | https://llm.ai-nebula.com | sk-xxxx... | ❌ **Wrong** |
+
+<Note>
+Key principle: Use the provider's Base URL that matches your API Key
+</Note>
+
+## Correct Configuration
+
+### Method 1: Modify Base URL (Recommended)
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-your-nebula-key",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Hello"}]
+    )
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    import OpenAI from 'openai';
+
+    const client = new OpenAI({
+      apiKey: 'sk-your-nebula-key',
+      baseURL: 'https://llm.ai-nebula.com/v1'
+    });
+
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [{ role: 'user', content: 'Hello' }]
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl https://llm.ai-nebula.com/v1/chat/completions \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-your-nebula-key" \
+      -d '{
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### Method 2: Environment Variables
+
+<Tabs>
+  <Tab title="Linux/macOS">
+    ```bash
+    export OPENAI_API_KEY="sk-your-nebula-key"
+    export OPENAI_BASE_URL="https://llm.ai-nebula.com/v1"
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:OPENAI_API_KEY="sk-your-nebula-key"
+    $env:OPENAI_BASE_URL="https://llm.ai-nebula.com/v1"
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set OPENAI_API_KEY=sk-your-nebula-key
+    set OPENAI_BASE_URL=https://llm.ai-nebula.com/v1
+    ```
+  </Tab>
+</Tabs>
+
+## Supported URL Formats
+
+| Format | URL | Use Case |
+|--------|-----|----------|
+| With /v1 (recommended) | `https://llm.ai-nebula.com/v1` | Most libraries |
+| With trailing slash | `https://llm.ai-nebula.com/v1/` | Some frameworks |
+| Full path | `https://llm.ai-nebula.com/v1/chat/completions` | cURL requests |
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Changed Base URL but still getting errors">
+    **Possible causes**:
+    1. **Multiple configurations**: Check config files, env vars, code initialization
+    2. **Proxy or middleware**: Some tools may redirect requests
+    3. **Cache issues**: Restart program or clear cache
+    4. **Typos**: Verify the URL spelling
+  </Accordion>
+  <Accordion title="How to verify Key is valid?">
+    Check in Nebula Api console:
+    1. Login to [Nebula Api](https://ai-nebula.com)
+    2. Go to "Tokens" page
+    3. Check if Key status is "Enabled"
+    4. Confirm account balance is sufficient
+  </Accordion>
+  <Accordion title="How to configure third-party tools?">
+    Most tools have "Custom API" options:
+    - **API URL / Base URL**: `https://llm.ai-nebula.com/v1`
+    - **API Key**: Copy from Nebula Api console
+    - **Model name**: Refer to model list
+  </Accordion>
+</AccordionGroup>
+
+## Wrong vs Correct Examples
+
+### ❌ Wrong Configuration
+
+```python
+client = OpenAI(
+    api_key="sk-nebula-key",
+    base_url="https://api.openai.com/v1"
+    # ❌ Using OpenAI's URL
+)
+```
+
+**Result**: OpenAI server rejects Nebula Api's Key
+
+### ✅ Correct Configuration
+
+```python
+client = OpenAI(
+    api_key="sk-nebula-key",
+    base_url="https://llm.ai-nebula.com/v1"
+    # ✅ Using Nebula Api URL
+)
+```
+
+**Result**: Request successfully sent to Nebula Api
+
+## Quick Test
+
+Verify configuration with cURL:
+
+```bash
+curl https://llm.ai-nebula.com/v1/models \
+  -H "Authorization: Bearer sk-your-nebula-key"
+```
+
+**Expected result**: Returns available models list
+
+```json
+{
+  "data": [
+    {
+      "id": "gpt-4o",
+      "object": "model"
+    }
+  ]
+}
+```
+
+If you get an error, check:
+1. API Key copied correctly (no extra spaces)
+2. Network connection is working
+3. Account balance is sufficient
+
+<Tip>
+Remember: Match the Key to its URL. Nebula Api Key uses `https://llm.ai-nebula.com/v1`
+</Tip>
+

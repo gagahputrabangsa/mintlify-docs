@@ -1,0 +1,84 @@
+---
+title: '万物迁移-标准模式-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit'
+---
+
+## 简介
+
+提交万物迁移-标准模式任务，用于将产品图片迁移到指定模板中。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="productImageUrl" type="string" required>
+  商品图链接
+</ParamField>
+
+<ParamField body="productMaskUrl" type="string" required>
+  商品遮罩图链接
+</ParamField>
+
+<ParamField body="templateImageUrl" type="string" required>
+  模板图片链接
+</ParamField>
+
+<ParamField body="templateMaskUrl" type="string" required>
+  模板图片遮罩链接
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "productImageUrl": "https://example.com/product.png",
+        "productMaskUrl": "https://example.com/product-mask.png",
+        "templateImageUrl": "https://example.com/template.png",
+        "templateMaskUrl": "https://example.com/template-mask.png"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "productImageUrl": "https://example.com/product.png",
+        "productMaskUrl": "https://example.com/product-mask.png",
+        "templateImageUrl": "https://example.com/template.png",
+        "templateMaskUrl": "https://example.com/template-mask.png"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": "task-1234567890"
+}
+```
+</ResponseExample>

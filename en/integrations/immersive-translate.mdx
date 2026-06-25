@@ -1,0 +1,218 @@
+---
+title: 'Immersive Translate'
+description: 'Immersive Translate Browser Extension Integration Guide'
+---
+
+## Introduction
+
+Immersive Translate is an excellent browser translation extension supporting bilingual webpage reading. By integrating with **Nebula Api**, you can leverage powerful AI models for more accurate translations.
+
+## Quick Install
+
+### Supported Browsers
+
+- Chrome / Edge / Brave
+- Firefox
+- Safari
+
+### Installation
+
+1. Visit your browser's extension store
+2. Search "Immersive Translate"
+3. Click "Install" and add to toolbar
+4. Or visit [Immersive Translate](https://immersivetranslate.com)
+
+## Configure Nebula Api
+
+1. **Open Settings**: Click extension icon, select "Settings"
+2. **Select Service**: Click "Translation Service", find "OpenAI"
+3. **Fill Config**:
+   - **APIKEY**: Your Nebula Api key
+   - **Custom API URL**: `https://llm.ai-nebula.com/v1/chat/completions`
+   - **Custom Model**: Optional (e.g. `gpt-3.5-turbo`)
+
+## Core Features
+
+### 1. Webpage Translation
+
+**Auto Translate**
+- Auto-detect language on foreign pages
+- Click toolbar "Translate" button
+
+**Manual Translate**
+- Click extension icon, select "Translate this page"
+
+### 2. Translation Modes
+
+**Bilingual (Recommended)**
+- Keep original format, translation below
+- Great for learning and terminology
+
+**Translation Only**
+- Replace original text completely
+
+### 3. Selection Translation
+
+- Select text, click popup "Translate" button
+- Copy, pronunciation features available
+
+## Advanced Settings
+
+### 1. Custom Prompts
+
+<Tabs>
+  <Tab title="Technical Docs">
+    ```
+    As a technical translator:
+    1. Keep all technical terms in original
+    2. Provide Chinese explanation in brackets
+    3. Preserve code and command format
+    ```
+  </Tab>
+  <Tab title="Academic Papers">
+    ```
+    As an academic translator:
+    1. Use academic language standards
+    2. Preserve citation formats
+    3. Translate terms accurately
+    ```
+  </Tab>
+  <Tab title="Literature">
+    ```
+    As a literary translator:
+    1. Maintain literary aesthetics
+    2. Handle cultural context
+    3. Preserve rhetorical effects
+    ```
+  </Tab>
+</Tabs>
+
+### 2. Translation Rules
+
+Set auto-translate for specific sites:
+1. Go to "Translation Rules"
+2. Add domain (e.g. `en.wikipedia.org`)
+3. Choose: Always / Never / Smart
+
+### 3. Style Customization
+
+```css
+.immersive-translate-target {
+    font-family: "Microsoft YaHei", sans-serif;
+    font-size: 14px;
+    color: #333;
+}
+
+.immersive-translate-target-wrapper {
+    background-color: #f5f5f5;
+    padding: 5px;
+    margin: 5px 0;
+    border-radius: 3px;
+}
+```
+
+## Special Features
+
+### 1. PDF Translation
+
+- Support online PDF translation
+- Keep original format, bilingual display
+
+### 2. Video Subtitle Translation
+
+Supports YouTube, Netflix, Bilibili:
+1. Enable "Video Subtitle Translation"
+2. Select display mode
+3. Adjust subtitle style
+
+### 3. E-book Translation
+
+- Upload EPUB format
+- Select language and mode
+- Download bilingual version
+
+### 4. Input Box Translation
+
+- Type in input box
+- Press `Alt + S` to translate
+- One-click replace
+
+## Shortcuts
+
+| Function | Default |
+|----------|---------|
+| Translate/Show Original | `Alt + T` |
+| Switch Mode | `Alt + M` |
+| Translate Selection | `Alt + S` |
+| Open Settings | `Alt + O` |
+
+## Model Recommendations
+
+| Content Type | Model | Reason |
+|--------------|-------|--------|
+| News | `gpt-3.5-turbo` | Fast, accurate, cost-effective |
+| Technical Docs | `gpt-4` | Precise terminology |
+| Academic Papers | `claude-3-opus` | Strong long-text understanding |
+| Literature | `claude-sonnet-4-5-20250929` | Preserves literary beauty |
+| Daily Web | `gpt-3.5-turbo` | Fast, meets basic needs |
+
+## Performance Optimization
+
+### 1. Caching
+
+- Enable "Translation Cache"
+- Set cache duration (24 hours recommended)
+
+### 2. Batch Translation
+
+- Adjust batch size (5-10 paragraphs)
+- Set concurrency (2-3)
+
+### 3. Trigger Conditions
+
+- Minimum length: 10 characters
+- Ignore nav menus, ads
+- Delay: 200ms
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Translation Failed">
+    - Verify API key
+    - Check network connection
+    - Refresh page or switch mode
+    - Check console (F12) for errors
+  </Accordion>
+  <Accordion title="Slow Translation">
+    - Switch to faster model
+    - Reduce text per batch
+    - Enable caching
+    - Check network latency
+  </Accordion>
+  <Accordion title="Format Issues">
+    - Toggle bilingual/translation-only mode
+    - Adjust translation layout styles
+    - Add custom rules for site
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+### Reading Experience
+
+- Choose clear fonts
+- Increase contrast between original and translation
+- Set 1.5x line height
+
+### Learning
+
+- Use bilingual mode for comparison
+- Use selection translation for terms
+- Export translations for review
+
+### Cost Control
+
+- Use `gpt-3.5-turbo` for daily browsing
+- Use `gpt-4` or Claude for important docs
+- Leverage caching to reduce repeats
+

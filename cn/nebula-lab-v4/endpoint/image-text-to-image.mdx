@@ -1,0 +1,112 @@
+---
+title: 'AI生图-文生图'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit'
+---
+
+## 简介
+
+提交文生图任务，用于根据文本描述生成新的图片。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+请求体为 JSON，根级字段 `req` 对应示例中的 `"req"` 对象。
+
+<ParamField body="req.prompt" type="string" required>
+  图片描述提示词
+</ParamField>
+
+<ParamField body="req.size" type="string" required>
+  图片尺寸，如：512x512, 1024x1024
+</ParamField>
+
+<ParamField body="req.value" type="string" required>
+  图片尺寸枚举值，与 size 一致即可，如：1024x1024
+</ParamField>
+
+<ParamField body="req.req_key" type="string" required>
+  请求标识，用于业务侧关联与去重
+</ParamField>
+
+<ParamField body="req.return_url" type="boolean">
+  是否返回图片 URL
+</ParamField>
+
+<ParamField body="req.width" type="integer">
+  图片宽度。推荐 1.3K 左右分辨率；宽高乘积小于 2048×2048 均可出图
+</ParamField>
+
+<ParamField body="req.height" type="integer">
+  图片高度。推荐 1.3K 左右分辨率；宽高乘积小于 2048×2048 均可出图
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "req": {
+          "prompt": "一只可爱的小猫在草地上玩耍",
+          "size": "1024x1024",
+          "value": "1024x1024",
+          "req_key": "req-001",
+          "return_url": true,
+          "width": 1024,
+          "height": 1024
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/text2imageSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "req": {
+            "prompt": "一只可爱的小猫在草地上玩耍",
+            "size": "1024x1024",
+            "value": "1024x1024",
+            "req_key": "req-001",
+            "return_url": True,
+            "width": 1024,
+            "height": 1024
+        }
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "images": [{
+      "url": "https://example.com/image.jpg"
+    }]
+  }
+}
+```
+</ResponseExample>

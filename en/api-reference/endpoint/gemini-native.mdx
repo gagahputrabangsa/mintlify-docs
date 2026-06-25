@@ -1,0 +1,431 @@
+---
+title: 'Gemini Native (Text)'
+description: 'Call Nebula API using Google Gemini native format'
+api: 'POST https://llm.ai-nebula.com/v1beta/models/{model}:generateContent'
+---
+
+## Introduction
+
+The Gemini Native API uses Google Gemini's request and response format. It is suitable for Google official clients (e.g. the `google-generativeai` SDK) or when you need to work directly with Gemini data structures. The API follows the Gemini specification and supports thinking mode, multimodal input, tool calling, **Google Search (Grounding)**, context caching, image generation, and other full capabilities.
+
+<Note>
+If you use an OpenAI-compatible client (e.g. OpenAI SDK), use the [`/v1/chat/completions`](/en/api-reference/endpoint/chat-openai) endpoint instead.
+</Note>
+
+### Difference from OpenAI format
+
+| Aspect | Gemini Native | OpenAI-compatible (/v1/chat/completions) |
+|--------|----------------|------------------------------------------|
+| Message structure | `contents[].parts[]` (text / inlineData / fileData) | `messages[].content` |
+| Roles | `user` / `model` | `user` / `assistant` / `system` |
+| System prompt | `systemInstruction.parts` | `messages` with role=system |
+| Streaming | `streamGenerateContent?alt=sse` | `stream: true` |
+| Thinking mode | `generationConfig.thinkingConfig` or model suffix | Model suffix (e.g. `-thinking`) |
+
+## API endpoints
+
+| Feature | Method | Path |
+|---------|--------|------|
+| Text generation (non-streaming) | POST | `/v1beta/models/{model}:generateContent` |
+| Text generation (streaming) | POST | `/v1beta/models/{model}:streamGenerateContent?alt=sse` |
+| Single Embedding | POST | `/v1beta/models/{model}:embedContent` |
+| Batch Embedding | POST | `/v1beta/models/{model}:batchEmbedContents` |
+
+Replace `{model}` in the path with the actual model ID, e.g. `gemini-2.5-pro`, `gemini-3-pro-preview`.
+
+## Authentication
+
+Any of the following is supported:
+
+<ParamField header="Authorization" type="string">
+  Bearer token: `Bearer sk-xxxxxxxxxx` (recommended, consistent with other Nebula endpoints)
+</ParamField>
+
+<ParamField header="x-goog-api-key" type="string">
+  Google-style API key: `x-goog-api-key: sk-xxxxxxxxxx`
+</ParamField>
+
+You can also pass the key in the URL: `?key=sk-xxxxxxxxxx`.
+
+## Request parameters
+
+### generateContent / streamGenerateContent
+
+<ParamField body="contents" type="array" required>
+  List of conversation contents. Each item has `role` (`user` or `model`) and `parts`. Each part can be: `{"text": "..."}`, `{"inlineData": {"mimeType": "...", "data": "base64..."}}`, or `{"fileData": {"mimeType": "...", "fileUri": "gs://..."}}`.
+</ParamField>
+
+<ParamField body="generationConfig" type="object">
+  Generation config.
+  - `temperature`: 0–2, randomness
+  - `topP`: nucleus sampling
+  - `topK`: top-K sampling
+  - `maxOutputTokens`: max output tokens
+  - `stopSequences`: stop sequences
+  - `responseMimeType`: e.g. `text/plain`
+  - `responseModalities`: e.g. `["TEXT"]` or `["IMAGE"]`
+  - `thinkingConfig`: thinking mode (see below)
+  - `imageConfig`: image generation config (see below)
+</ParamField>
+
+<ParamField body="systemInstruction" type="object">
+  System instruction: `{"parts": [{"text": "..."}]}`.
+</ParamField>
+
+<ParamField body="safetySettings" type="array">
+  Safety levels, e.g. `[{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "OFF"}]`.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Tool declarations (function calling), see advanced features.
+</ParamField>
+
+<ParamField body="toolConfig" type="object">
+  Tool config, e.g. `functionCallingConfig.mode`: `AUTO` / `ANY` / `NONE`.
+</ParamField>
+
+<ParamField body="cachedContent" type="string">
+  Context caching ID returned by the API; used to reuse cached context.
+</ParamField>
+
+## Response format
+
+Non-streaming `generateContent` returns JSON:
+
+<ResponseExample>
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [{"text": "Response text"}],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0,
+      "safetyRatings": []
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 10,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 30,
+    "thoughtsTokenCount": 0,
+    "cachedContentTokenCount": 0
+  },
+  "modelVersion": "gemini-2.5-pro",
+  "createTime": "2025-01-01T00:00:00Z"
+}
+```
+</ResponseExample>
+
+The streaming endpoint returns SSE; each line starts with `data: ` and contains a JSON fragment (e.g. `candidates[].content.parts`).
+
+## Basic examples
+
+<Tabs>
+  <Tab title="cURL (non-streaming)">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1beta/models/gemini-2.5-pro:generateContent" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "contents": [
+          {"role": "user", "parts": [{"text": "Describe AI in one sentence"}]}
+        ],
+        "generationConfig": {
+          "temperature": 0.7,
+          "maxOutputTokens": 1024
+        }
+      }'
+    ```
+  </Tab>
+
+  <Tab title="cURL (streaming)">
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1beta/models/gemini-2.5-pro:streamGenerateContent?alt=sse" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "contents": [
+          {"role": "user", "parts": [{"text": "Describe AI in one sentence"}]}
+        ],
+        "generationConfig": {"maxOutputTokens": 1024}
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python (google-generativeai)">
+    ```python
+    import google.generativeai as genai
+
+    genai.configure(
+        api_key="sk-xxxxxxxxxx",
+        transport="rest",
+        client_options={"api_endpoint": "https://llm.ai-nebula.com"}
+    )
+
+    model = genai.GenerativeModel("gemini-2.5-pro")
+    response = model.generate_content("Describe AI in one sentence")
+    print(response.text)
+    ```
+  </Tab>
+
+  <Tab title="Node.js">
+    ```javascript
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+    const genAI = new GoogleGenerativeAI("sk-xxxxxxxxxx");
+    genAI.apiKey = "sk-xxxxxxxxxx";
+    // If the SDK supports a custom baseUrl, set it to https://llm.ai-nebula.com
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+
+    const result = await model.generateContent("Describe AI in one sentence");
+    const text = result.response.text();
+    console.log(text);
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+By default, `google-generativeai` calls Google's API. To use Nebula, set `api_endpoint` to `https://llm.ai-nebula.com` via `client_options` or environment variables. See your SDK docs for details.
+</Note>
+
+## Advanced features
+
+### Thinking mode
+
+Supported in three ways:
+
+1. **generationConfig.thinkingConfig** (Gemini 2.5 Pro): use `thinkingBudget` (token count)  
+2. **thinkingConfig.thinkingLevel** (Gemini 3 Pro): use `LOW` / `HIGH`  
+3. **Model suffix**: `-thinking`, `-thinking-8192`, `-nothinking`, `-thinking-low`, `-thinking-high`
+
+<Tabs>
+  <Tab title="thinkingBudget (2.5 Pro)">
+    ```json
+    {
+      "contents": [{"role": "user", "parts": [{"text": "Give a geometry problem and solve it step by step"}]}],
+      "generationConfig": {
+        "maxOutputTokens": 8192,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingBudget": 8192
+        }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="thinkingLevel (3 Pro)">
+    ```json
+    {
+      "contents": [{"role": "user", "parts": [{"text": "Give a geometry problem and solve it step by step"}]}],
+      "generationConfig": {
+        "maxOutputTokens": 8192,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingLevel": "HIGH"
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### Multimodal input
+
+Mix text and media in `contents[].parts`:
+
+```json
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {"text": "Describe this image"},
+        {
+          "inlineData": {
+            "mimeType": "image/jpeg",
+            "data": "/9j/4AAQSkZJRg..."
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **Image**: `inlineData` with base64 `data`, or `fileData` with `fileUri` (e.g. `gs://...`)  
+- **Audio**: `inlineData` with `mimeType` such as `audio/mp3`
+
+### Tool calling (Function Calling)
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "What is the weather in Shanghai today?"}]}],
+  "tools": [
+    {
+      "functionDeclarations": [
+        {
+          "name": "get_weather",
+          "description": "Get weather for a city",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {"type": "string"}
+            },
+            "required": ["location"]
+          }
+        }
+      ]
+    }
+  ],
+  "toolConfig": {
+    "functionCallingConfig": {
+      "mode": "AUTO",
+      "allowedFunctionNames": []
+    }
+  }
+}
+```
+
+The model may return a `functionCall` part; include the corresponding `functionResponse` in the next `contents` and send another request.
+
+### Google Search (Grounding)
+
+When enabled, the model can use real-time web search to improve answers (e.g. weather, news). Add `googleSearch` to `tools`:
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "What is the weather in Beijing today?"}]}],
+  "tools": [
+    {
+      "googleSearch": {}
+    }
+  ],
+  "toolConfig": {
+    "functionCallingConfig": {
+      "mode": "AUTO"
+    }
+  }
+}
+```
+
+To use both function calling and Google Search, include `googleSearch: {}` and `functionDeclarations` as separate elements in the same `tools` array. Responses may include retrieval metadata (e.g. `groundingMetadata`).
+
+### Streaming
+
+Use: `POST /v1beta/models/{model}:streamGenerateContent?alt=sse`. Request body is the same as `generateContent`. Response is SSE; each `data:` line is a JSON chunk.
+
+### Context caching
+
+First request does not include `cachedContent`. If the server returns a cache ID, subsequent requests can send:
+
+```json
+{
+  "cachedContent": "cached-content-id",
+  "contents": [{"role": "user", "parts": [{"text": "Continue from the context above"}]}]
+}
+```
+
+This reduces cost and latency for long repeated context.
+
+### Image generation (e.g. Gemini 2.5 Flash)
+
+When the model supports image output, set in `generationConfig`:
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "Draw a cat"}]}],
+  "generationConfig": {
+    "responseModalities": ["IMAGE"],
+    "imageConfig": {
+      "aspectRatio": "1:1",
+      "imageSize": "1K",
+      "imageOutputOptions": {"mimeType": "image/png"}
+    }
+  }
+}
+```
+
+Response `candidates[].content.parts` may include `inlineData` (e.g. base64 image).
+
+## Embedding API
+
+### Single: embedContent
+
+**Endpoint**: `POST https://llm.ai-nebula.com/v1beta/models/{model}:embedContent`
+
+**Request body example**:
+
+```json
+{
+  "model": "text-embedding-004",
+  "content": {
+    "parts": [{"text": "Text to embed"}]
+  }
+}
+```
+
+Or put `model` in the path: `/v1beta/models/text-embedding-004:embedContent`, with body containing only `content`.
+
+### Batch: batchEmbedContents
+
+**Endpoint**: `POST https://llm.ai-nebula.com/v1beta/models/{model}:batchEmbedContents`
+
+**Request body example**:
+
+```json
+{
+  "requests": [
+    {"content": {"parts": [{"text": "First text"}]}},
+    {"content": {"parts": [{"text": "Second text"}]}}
+  ]
+}
+```
+
+Response is an array, one embedding per request.
+
+## Error handling
+
+Errors are returned as HTTP status codes and JSON body, for example:
+
+<ResponseExample>
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid request: ...",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+</ResponseExample>
+
+Common cases:
+
+| Status | Meaning |
+|--------|--------|
+| 400 | Invalid request (e.g. missing `contents`, unsupported parameter) |
+| 401 | Authentication failed (invalid or missing API key) |
+| 404 | Model not found or wrong path |
+| 429 | Rate limited; retry later |
+| 500 | Server error |
+
+Parse `error.message` in your client and handle retries or user messaging accordingly.
+
+## Comparison with OpenAI format
+
+| Item | Gemini Native | OpenAI (/v1/chat/completions) |
+|------|----------------|-------------------------------|
+| Base path | `/v1beta/models/{model}:generateContent` | `/v1/chat/completions` |
+| Auth | `Authorization: Bearer sk-xxx` or `x-goog-api-key` | `Authorization: Bearer sk-xxx` |
+| Message format | `contents[].parts[]` (text/inlineData/fileData) | `messages[].content` (string or array) |
+| System prompt | `systemInstruction.parts` | `messages` with `role: "system"` |
+| Streaming | `streamGenerateContent?alt=sse` | `stream: true` |
+| Thinking | `thinkingConfig` or model suffix | Model suffix (e.g. `-thinking`) |
+| Tools | `tools[].functionDeclarations` | `tools[].function` (OpenAI shape) |
+| Typical clients | Google SDK, custom HTTP client | OpenAI SDK, OpenAI-compatible clients |
+
+Use the native endpoint when you rely on Google Gemini tooling or need Gemini-specific fields (e.g. `thinkingConfig`, native multimodal parts). Use `/v1/chat/completions` when you want to stay within the OpenAI ecosystem.

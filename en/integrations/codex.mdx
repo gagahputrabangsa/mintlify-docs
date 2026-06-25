@@ -1,0 +1,120 @@
+---
+title: 'Codex'
+description: 'Codex integration guide (Nebula Api)'
+---
+
+## Overview
+
+Codex is primarily designed as a terminal-based coding agent. Using **Nebula API** (which is OpenAI-compatible), you can access popular GPT models like gpt-5.4 and gpt-5.2 through a single API key.
+
+## Prerequisites
+
+- Create an API key in the [Nebula Api console](https://ai-nebula.com/#/keys)
+- Install Codex on your machine (follow Codex installation instructions for your OS)
+
+## Configure Nebula Api
+
+Codex requires an OpenAI-compatible **API key** and **Base URL**.
+
+<Tip>
+Use `https://llm.ai-nebula.com/v1` as the Base URL (must end with `/v1`).
+</Tip>
+
+### Configuration (TOML - required)
+
+Environment variables may not work reliably. Please configure Nebula directly in your TOML config.
+
+Define a custom provider and point it to the `/v1` base URL:
+
+```toml
+model = "gpt-5.4"
+model_provider = "openai-custom"
+personality = "pragmatic"
+model_reasoning_effort = "high"
+
+[model_providers.openai-custom]
+name = "Nebula"
+base_url = "https://llm.ai-nebula.com/v1"
+wire_api = "responses"
+
+# If your Codex config does not automatically inject the API key for custom providers:
+[model_providers.openai-custom.http_headers]
+Authorization = "Bearer YOUR_API_KEY"
+Content-Type = "application/json"
+```
+
+
+
+## Choose a model
+
+Pick a GPT-family model ID from the [Nebula model list](https://ai-nebula.com/#/models).
+<Tip>
+Codex currently supports GPT-family model IDs only (for example `gpt-5.4`).
+</Tip>
+
+## Personality & Performance
+
+Codex allows you to customize how the model behaves using two optional settings: **personality** and **reasoning effort**.
+
+### Personality
+
+The `personality` setting controls the **tone and style** of responses.
+
+```toml
+personality = "pragmatic"
+```
+
+Common options:
+
+* `pragmatic` → direct and practical, minimal explanation
+* `concise` → short and to the point
+* `detailed` → more explanation and context
+* `analytical` → structured and logic-focused
+* `creative` → more expressive and flexible
+
+<Tip>
+Personality is a soft preference and may not always be strictly enforced. For precise control, use a system prompt.
+</Tip>
+
+---
+
+### Reasoning Effort (Performance)
+
+The `model_reasoning_effort` setting controls how much effort the model uses when solving problems.
+
+```toml
+model_reasoning_effort = "high"
+```
+
+Available options:
+
+* `low` → fastest responses, simpler reasoning
+* `medium` → balanced speed and quality
+* `high` → deeper reasoning, better for complex tasks
+
+<Tip>
+Higher reasoning effort may increase response time but improves accuracy for coding, debugging, and complex logic.
+</Tip>
+
+---
+
+### Example
+
+```toml
+model = "gpt-5.4"
+model_provider = "openai-custom"
+personality = "pragmatic"
+model_reasoning_effort = "high"
+```
+
+This configuration provides:
+
+* clear and practical responses
+* stronger reasoning for complex tasks
+
+---
+## Troubleshooting
+
+- **401 / invalid API key**: re-check your key in the Nebula console and make sure you didn't add extra spaces
+- **404 / wrong endpoint**: confirm the Base URL ends with `/v1`
+- **Model not found**: verify the model ID exists in the Nebula model list

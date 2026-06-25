@@ -1,0 +1,118 @@
+---
+title: 'Codex'
+description: 'Codex 集成指南 (Nebula API)'
+---
+
+## 概览
+
+Codex 主要设计为一款基于终端的编程 Agent。通过使用 **Nebula API**（兼容 OpenAI 接口），你可以通过单一 API Key 访问 gpt-5.4 和 gpt-5.2 等热门 GPT 模型。
+
+## 前置条件
+
+- 在 [Nebula API 控制台](https://ai-nebula.com/#/keys) 创建 API Key。
+- 在你的机器上安装 Codex（请根据你的操作系统参考 Codex 安装指南）。
+
+## 配置 Nebula API
+
+Codex 需要一个兼容 OpenAI 的 **API Key** 和 **Base URL**。
+
+<Tip>
+请使用 `https://llm.ai-nebula.com/v1` 作为 Base URL（必须以 `/v1` 结尾）。
+</Tip>
+
+### 配置 (TOML - 必需)
+
+环境变量可能无法稳定运行。请直接在你的 TOML 配置文件中配置 Nebula。
+
+定义一个自定义供应商（provider）并将其指向 `/v1` 接口：
+
+```toml
+model = "gpt-5.4"
+model_provider = "openai-custom"
+personality = "pragmatic"
+model_reasoning_effort = "high"
+
+[model_providers.openai-custom]
+name = "Nebula"
+base_url = "https://llm.ai-nebula.com/v1"
+wire_api = "responses"
+
+# 如果你的 Codex 配置不会为自定义供应商自动注入 API Key：
+[model_providers.openai-custom.http_headers]
+Authorization = "Bearer 你的_API_KEY"
+Content-Type = "application/json"
+```
+
+## 选择模型
+
+从 [Nebula 模型列表](https://ai-nebula.com/#/models) 中选择一个 GPT 家族的模型 ID。
+<Tip>
+Codex 目前仅支持 GPT 家族的模型 ID（例如 `gpt-5.4`）。
+</Tip>
+
+## 性格与性能 (Personality & Performance)
+
+Codex 允许你通过两个可选设置来自定义模型的行为：**personality（性格）** 和 **reasoning effort（推理强度）**。
+
+### 性格 (Personality)
+
+`personality` 设置控制响应的 **语气和风格**。
+
+```toml
+personality = "pragmatic"
+```
+
+常见选项：
+
+* `pragmatic` (务实) → 直接且实用，最少化解释
+* `concise` (简洁) → 简明扼要
+* `detailed` (详细) → 提供更多解释和背景信息
+* `analytical` (分析) → 结构化且注重逻辑
+* `creative` (创意) → 更具表达力和灵活性
+
+<Tip>
+性格设置是一种软性偏好，并不总能严格执行。如需精确控制，请使用 System Prompt。
+</Tip>
+
+---
+
+### 推理强度 (Reasoning Effort)
+
+`model_reasoning_effort` 设置控制模型在解决问题时投入的思考量。
+
+```toml
+model_reasoning_effort = "high"
+```
+
+可用选项：
+
+* `low` (低) → 响应速度最快，推理较简单
+* `medium` (中) → 平衡速度与质量
+* `high` (高) → 深度推理，适合复杂任务
+
+<Tip>
+较高的推理强度可能会增加响应时间，但会提高代码编写、调试和复杂逻辑处理的准确性。
+</Tip>
+
+---
+
+### 示例
+
+```toml
+model = "gpt-5.4"
+model_provider = "openai-custom"
+personality = "pragmatic"
+model_reasoning_effort = "high"
+```
+
+该配置将提供：
+* 清晰且实用的回答
+* 针对复杂任务的更强推理能力
+
+---
+
+## 故障排查
+
+- **401 / invalid API key**: 重新检查 Nebula 控制台中的 Key，确保没有添加多余的空格。
+- **404 / wrong endpoint**: 确认 Base URL 以 `/v1` 结尾。
+- **Model not found**: 核实该模型 ID 是否存在于 Nebula 模型列表中。

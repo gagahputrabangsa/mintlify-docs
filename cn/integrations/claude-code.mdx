@@ -1,0 +1,199 @@
+---
+title: 'Claude Code'
+description: 'Claude Code 客户端集成指南'
+---
+
+## 一、安装 Node.js（已安装可跳过）
+
+确保 Node.js 版本 ≥ 18.0
+
+<Tabs>
+  <Tab title="Windows">
+    下载安装包：https://nodejs.org/dist/v22.18.0/node-v22.18.0-x64.msi
+  </Tab>
+  <Tab title="macOS">
+    ```bash
+    sudo xcode-select --install
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    brew install node
+    node --version
+    ```
+  </Tab>
+  <Tab title="Ubuntu / Debian">
+    ```bash
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo bash -
+    sudo apt-get install -y nodejs
+    node --version
+    ```
+  </Tab>
+</Tabs>
+
+### 卸载其他中转客户端（可选）
+
+检查安装位置：
+
+```bash
+npm ls @anthropic-ai/claude-code
+npm ls -g @anthropic-ai/claude-code
+```
+
+执行卸载：
+
+```bash
+npm uninstall @anthropic-ai/claude-code
+npm uninstall -g @anthropic-ai/claude-code
+```
+
+## 二、安装 Claude Code
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+检查是否安装成功：
+
+```bash
+claude --version
+```
+
+## 三、获取密钥
+
+```
+base_url = "https://llm.ai-nebula.com"
+api_key = "sk-zbTYx*******************************fceTvn5"
+```
+
+## 四、配置环境变量
+
+### 基础配置示例
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+### 双模型配置说明
+
+Claude Code 默认使用双线程模型架构：
+
+- **主线程模型**：使用 `ANTHROPIC_MODEL` 环境变量配置  
+  - 用于主要的代码生成、对话和复杂任务处理
+
+- **副线程模型**：使用 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 环境变量配置  
+  - 用途：轻量级 / 快速任务模型  
+  - 使用场景：  
+    - 背景任务（文件监控、linter 检查等）  
+    - 快速响应（简单问题、补全建议）  
+    - 低优先级的辅助任务
+
+### 基础配置（双模型，推荐）
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4-5-20251001"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    set ANTHROPIC_DEFAULT_HAIKU_MODEL=claude-haiku-4-5-20251001
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="claude-haiku-4-5-20251001"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+### 单模型配置（可选）
+
+如果只需要使用一个模型，有两种配置方法：
+
+**方法一：两个环境变量配置为同一个模型**
+
+将 `ANTHROPIC_MODEL` 和 `ANTHROPIC_DEFAULT_HAIKU_MODEL` 都设置为相同的模型（例如都使用 `kimi-k2-250905`）：
+
+<Tabs>
+  <Tab title="Mac / Linux">
+    ```bash
+    export ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    export ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    export ANTHROPIC_MODEL="kimi-k2-250905"
+    export ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows CMD">
+    ```cmd
+    set ANTHROPIC_BASE_URL=https://llm.ai-nebula.com
+    set ANTHROPIC_AUTH_TOKEN=sk-zbTYx*******************************fceTvn5
+    set ANTHROPIC_MODEL=kimi-k2-250905
+    set ANTHROPIC_DEFAULT_HAIKU_MODEL=kimi-k2-250905
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+  <Tab title="Windows PowerShell">
+    ```powershell
+    $env:ANTHROPIC_BASE_URL="https://llm.ai-nebula.com"
+    $env:ANTHROPIC_AUTH_TOKEN="sk-zbTYx*******************************fceTvn5"
+    $env:ANTHROPIC_MODEL="kimi-k2-250905"
+    $env:ANTHROPIC_DEFAULT_HAIKU_MODEL="kimi-k2-250905"
+    cd your-project-folder
+    claude
+    ```
+  </Tab>
+</Tabs>
+
+**方法二：启动后使用命令切换主线程模型**
+
+保持环境变量按「基础配置（双模型）」设置，启动 Claude Code 后，在交互界面中输入：
+
+```
+/model haiku
+```
+
+主线程会切换为使用 `ANTHROPIC_DEFAULT_HAIKU_MODEL`（即 `claude-haiku-4-5-20251001`）对应的模型。
+

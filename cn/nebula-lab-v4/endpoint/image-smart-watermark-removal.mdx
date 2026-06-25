@@ -1,0 +1,133 @@
+---
+title: 'AI生图-智能去印'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/smartWatermarkRemovalSubmit'
+---
+
+## 简介
+
+提交智能去印生图任务，用于生成智能去印的图片。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="batchImageGenerationDTO.model" type="string" required>
+  模型名称
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.prompt" type="string" required>
+  图片描述提示词
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.n" type="integer" required>
+  生成图片数量
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.size" type="string" required>
+  图片尺寸
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.temperature" type="integer" required>
+  生成温度
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.watermark" type="boolean" required>
+  是否添加水印
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.image" type="string">
+  参考图片地址
+</ParamField>
+<ParamField body="batchImageGenerationDTO.promptOptions" type="object">
+  提示词配置
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.optimizePrompt" type="string">
+  优化提示词
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.quality" type="string">
+  图片质量
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.responseFormat" type="string">
+  响应格式
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.score" type="number">
+  评分阈值
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.sequentialImageGeneration" type="string">
+  顺序生成图片开关
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.sequentialImageGenerationOptions" type="object">
+  顺序生成图片配置
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/smartWatermarkRemovalSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "去除图片中的水印，保持画面自然",
+        "n": 1,
+        "size": "1024x1024",
+        "temperature": 1,
+        "watermark": false,
+        "image": "https://example.com/with-watermark.jpg"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/smartWatermarkRemovalSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "去除图片中的水印，保持画面自然",
+        "n": 1,
+        "size": "1024x1024",
+        "temperature": 1,
+        "watermark": False,
+        "image": "https://example.com/with-watermark.jpg"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "images": [{
+      "url": "https://example.com/image.jpg"
+    }]
+  }
+}
+```
+</ResponseExample>

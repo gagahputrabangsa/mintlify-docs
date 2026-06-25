@@ -1,0 +1,57 @@
+---
+title: 'Cline 插件（VS Code）'
+description: 'Cline for VS Code 插件安装与配置指南'
+---
+
+## 第一步：安装 Cline 插件
+
+1. 打开 VS Code 编辑器，进入左侧「扩展」面板（快捷键：Ctrl+Shift+X）。
+2. 在扩展市场搜索框中输入「Cline」，找到官方发布的插件。
+3. 点击「安装」按钮完成插件安装。
+<Frame>
+  <img src="/images/cline-start.png" alt="Cline Extension Installation" />
+</Frame>
+<Frame>
+
+## 第二步：打开 Cline 设置
+
+1. 安装完成后，点击左侧活动栏中的 Cline 图标打开插件面板。
+2. 点击顶部工具栏的「设置」齿轮图标进入配置页面。
+  <img src="/images/cline-1.png" alt="Cline 插件安装" />
+</Frame>
+
+
+## 第三步：配置 API 提供商
+
+在设置面板中进行以下配置：
+
+1. **API 提供商**：下拉选择「OpenAI Compatible」。
+<Frame>
+  <img src="/images/cline-2.png" alt="Cline 设置位置指引" />
+</Frame>
+2. **基础 URL**：输入 `https://llm.ai-nebula.com/v1`。
+<Frame>
+  <img src="/images/cline-3.png" alt="Cline API 提供商配置" />
+</Frame>
+3. **API 密钥**：填写你的 API 密钥（sk-xxxxx）。
+<Frame>
+  <img src="/images/cline-4.png" alt="Cline 保存配置" />
+</Frame>
+4. **模型**：输入需要使用的模型名称（例如 `claude-sonnet-4-6`）。
+<Frame>
+  <img src="/images/cline-5.png" alt="Cline 配置成功展示" />
+</Frame>
+
+
+## 第四步：保存配置
+
+1. 填写完所有字段后，点击 **「保存」** 按钮应用设置。
+2. Cline 将自动使用你的配置连接到 Nebula API。
+
+
+## 第五步：验证连接
+
+1. 配置完成后，打开任意代码文件或新建一个 Cline 对话。
+2. 输入测试内容（例如"你好"或"解释这段代码"）。
+3. 如果能收到回复，说明配置成功。
+

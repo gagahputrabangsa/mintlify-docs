@@ -1,0 +1,148 @@
+---
+title: "Nebula Api - Enterprise AI Model API Gateway"
+description: "Enterprise-grade AI model API gateway supporting 200+ popular AI models"
+---
+
+## Welcome to Nebula Api
+
+**Nebula Api** is an enterprise-grade AI model API gateway based on the unified OpenAI API standard, supporting 200+ popular AI models. One token to access OpenAI, Claude, Gemini, DeepSeek, Qwen, Kimi, GLM and all mainstream large language models.
+
+## 📖 Getting Started
+
+<Columns cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/en/quickstart">
+    Get started in three simple steps
+  </Card>
+  <Card title="API Reference" icon="book" href="/en/api-reference/models">
+    Complete API documentation and developer guide
+  </Card>
+</Columns>
+
+## 🔧 Core APIs
+
+<Columns cols={2}>
+  <Card title="Chat Completions API" icon="comments" href="/en/api-reference/endpoint/chat-openai">
+    Create multi-turn conversations and text generation
+  </Card>
+  <Card title="Image Generation API" icon="image" href="/en/api-reference/endpoint/image-generation">
+    Text-to-image, image-to-image, context-aware generation
+  </Card>
+  <Card title="Realtime Voice API" icon="microphone" href="/en/api-reference/realtime">
+    Low-latency text/voice real-time conversations
+  </Card>
+  <Card title="Models API" icon="list" href="/en/api-reference/introduction">
+    Get all available model information
+  </Card>
+</Columns>
+
+## 💡 Supported Models
+
+### OpenAI Series
+- GPT-5.4 / GPT-5.3 / GPT-5.2 series
+- o3-mini (reasoning models)
+- GPT-Image-1/1.5 (image generation)
+
+### Anthropic Series
+- **Claude Sonnet 4.6** (latest flagship)
+- Claude Opus 4.6
+- Claude Haiku 4.5 (cost-effective)
+
+### Google Series
+- **Gemini 3.1 Pro Preview** (latest multimodal)
+- Gemini 3.1 Flash series (fast response)
+
+### Chinese Models
+- DeepSeek V3.2 / R1 (hybrid reasoning)
+- Kimi K2.5 (Moonshot AI)
+- Qwen 3.5 / Qwen3-Max (Alibaba)
+- GLM-5 (Zhipu AI)
+
+## 🎯 Use Cases
+
+<Columns cols={2}>
+  <Card title="AI Chat" icon="message" href="/en/integrations/cherry-studio">
+    Cherry Studio, Chatbox and other AI chat clients
+  </Card>
+  <Card title="Coding" icon="code" href="/en/integrations/cursor">
+    Cursor, Claude Code, Cline and other AI coding tools
+  </Card>
+  <Card title="Frameworks" icon="cube" href="/en/integrations/langchain">
+    LangChain, Dify and other AI development frameworks
+  </Card>
+  <Card title="Translation" icon="language" href="/en/integrations/immersive-translate">
+    Immersive Translate, Bob and other translation tools
+  </Card>
+</Columns>
+
+## 🚀 Why Nebula Api?
+
+### One API, Multiple Models
+
+No need to manage separate accounts and API keys for each AI service:
+- **One account**: Manage all AI services
+- **One API key**: Access all models
+- **One standard**: OpenAI API compatible
+
+### 🔧 Easy to Use
+
+Switching models is as simple as changing a parameter:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-xxxxxxxxxx",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+# Use GPT-5.4
+response = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# Switch to Claude - just change the model name
+response = client.chat.completions.create(
+    model="claude-sonnet-4-6",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+### 🛡️ Stable & Reliable
+
+- **High Availability**: Multi-node deployment, smart routing
+- **Auto Fallback**: Automatic switching when model unavailable
+- **Load Balancing**: Smart request distribution, avoid rate limits
+- **Real-time Monitoring**: 24/7 service status monitoring
+
+### 💰 Cost Optimization
+
+- **Unified Billing**: All models use unified balance
+- **Transparent Pricing**: Clear pricing structure
+- **Usage Statistics**: Detailed usage reports
+- **Flexible Payments**: Multiple payment methods supported
+
+## 🚀 Get Started
+
+<Steps>
+  <Step title="Register">
+    Visit [Nebula Api](https://ai-nebula.com) to create your account
+  </Step>
+  <Step title="Get API Key">
+    Generate your API key in the console
+  </Step>
+  <Step title="Start Using">
+    Check [API Documentation](/en/api-reference/introduction) to begin integration
+  </Step>
+</Steps>
+
+## 🔗 Quick Links
+
+<Columns cols={2}>
+  <Card title="Register Now" icon="user-plus" href="https://ai-nebula.com">
+    Create account and get free test credits
+  </Card>
+  <Card title="Dashboard" icon="gauge" href="https://ai-nebula.com">
+    Manage API keys, view usage and billing
+  </Card>
+</Columns>

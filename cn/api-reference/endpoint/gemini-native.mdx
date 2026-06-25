@@ -1,0 +1,431 @@
+---
+title: 'Gemini原生 （文本）'
+description: '使用 Google Gemini 原生格式调用 Nebula API'
+api: 'POST https://llm.ai-nebula.com/v1beta/models/{model}:generateContent'
+---
+
+## 简介
+
+Gemini 原生 API 采用 Google Gemini 的请求与响应格式，适用于 Google 官方客户端（如 `google-generativeai` SDK）或需要直接使用 Gemini 数据结构的场景。该接口遵循 Gemini API 规范，支持思考模式（Thinking）、多模态输入、工具调用、**Google 搜索（Grounding）**、Context Caching、图像生成等完整能力。
+
+<Note>
+若使用 OpenAI 兼容客户端（如 OpenAI SDK），请使用 [`/v1/chat/completions`](/cn/api-reference/endpoint/chat) 接口。
+</Note>
+
+### 与 OpenAI 格式的区别
+
+| 特性 | Gemini 原生 | OpenAI 兼容（/v1/chat/completions） |
+|------|-------------|-------------------------------------|
+| 消息结构 | `contents[].parts[]`（text / inlineData / fileData） | `messages[].content` |
+| 角色 | `user` / `model` | `user` / `assistant` / `system` |
+| 系统提示 | `systemInstruction.parts` | `messages` 中 role=system |
+| 流式 | `streamGenerateContent?alt=sse` | `stream: true` |
+| 思考模式 | `generationConfig.thinkingConfig` 或模型后缀 | 模型后缀（如 `-thinking`） |
+
+## API 端点
+
+| 功能 | 方法 | 路径 |
+|------|------|------|
+| 文本生成（非流式） | POST | `/v1beta/models/{model}:generateContent` |
+| 文本生成（流式） | POST | `/v1beta/models/{model}:streamGenerateContent?alt=sse` |
+| 单条 Embedding | POST | `/v1beta/models/{model}:embedContent` |
+| 批量 Embedding | POST | `/v1beta/models/{model}:batchEmbedContents` |
+
+路径中的 `{model}` 需替换为实际模型 ID，如 `gemini-2.5-pro`、`gemini-3-pro-preview`。
+
+## 认证
+
+支持以下任一方式：
+
+<ParamField header="Authorization" type="string">
+  Bearer Token：`Bearer sk-xxxxxxxxxx`（推荐，与 Nebula 其他接口一致）
+</ParamField>
+
+<ParamField header="x-goog-api-key" type="string">
+  Google 风格 API Key：`x-goog-api-key: sk-xxxxxxxxxx`
+</ParamField>
+
+也可在 URL 中传参：`?key=sk-xxxxxxxxxx`。
+
+## 请求参数
+
+### generateContent / streamGenerateContent
+
+<ParamField body="contents" type="array" required>
+  对话内容列表。每项包含 `role`（`user` 或 `model`）和 `parts` 数组。`parts` 元素可为：`{"text": "..."}`、`{"inlineData": {"mimeType": "...", "data": "base64..."}}`、`{"fileData": {"mimeType": "...", "fileUri": "gs://..."}}`。
+</ParamField>
+
+<ParamField body="generationConfig" type="object">
+  生成配置。
+  - `temperature`：0–2，随机性
+  - `topP`：核采样
+  - `topK`：Top-K 采样
+  - `maxOutputTokens`：最大输出 token 数
+  - `stopSequences`：停止序列
+  - `responseMimeType`：如 `text/plain`
+  - `responseModalities`：如 `["TEXT"]` 或 `["IMAGE"]`
+  - `thinkingConfig`：思考模式（见下文）
+  - `imageConfig`：图像生成配置（见下文）
+</ParamField>
+
+<ParamField body="systemInstruction" type="object">
+  系统指令，格式为 `{"parts": [{"text": "..."}]}`。
+</ParamField>
+
+<ParamField body="safetySettings" type="array">
+  安全等级，如 `[{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "OFF"}]`。
+</ParamField>
+
+<ParamField body="tools" type="array">
+  工具声明（Function Calling），见高级功能。
+</ParamField>
+
+<ParamField body="toolConfig" type="object">
+  工具配置，如 `functionCallingConfig.mode`：`AUTO` / `ANY` / `NONE`。
+</ParamField>
+
+<ParamField body="cachedContent" type="string">
+  Context Caching 返回的缓存 ID，用于复用已缓存上下文。
+</ParamField>
+
+## 响应格式
+
+非流式 `generateContent` 返回 JSON：
+
+<ResponseExample>
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [{"text": "回复文本"}],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "index": 0,
+      "safetyRatings": []
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 10,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 30,
+    "thoughtsTokenCount": 0,
+    "cachedContentTokenCount": 0
+  },
+  "modelVersion": "gemini-2.5-pro",
+  "createTime": "2025-01-01T00:00:00Z"
+}
+```
+</ResponseExample>
+
+流式接口返回 SSE，每行以 `data: ` 开头，内容为 JSON 片段（含 `candidates[].content.parts` 等）。
+
+## 基础示例
+
+<Tabs>
+  <Tab title="cURL（非流式）">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1beta/models/gemini-2.5-pro:generateContent" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "contents": [
+          {"role": "user", "parts": [{"text": "用一句话介绍人工智能"}]}
+        ],
+        "generationConfig": {
+          "temperature": 0.7,
+          "maxOutputTokens": 1024
+        }
+      }'
+    ```
+  </Tab>
+
+  <Tab title="cURL（流式）">
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1beta/models/gemini-2.5-pro:streamGenerateContent?alt=sse" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "contents": [
+          {"role": "user", "parts": [{"text": "用一句话介绍人工智能"}]}
+        ],
+        "generationConfig": {"maxOutputTokens": 1024}
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python（google-generativeai）">
+    ```python
+    import google.generativeai as genai
+
+    genai.configure(
+        api_key="sk-xxxxxxxxxx",
+        transport="rest",
+        client_options={"api_endpoint": "https://llm.ai-nebula.com"}
+    )
+
+    model = genai.GenerativeModel("gemini-2.5-pro")
+    response = model.generate_content("用一句话介绍人工智能")
+    print(response.text)
+    ```
+  </Tab>
+
+  <Tab title="Node.js">
+    ```javascript
+    const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+    const genAI = new GoogleGenerativeAI("sk-xxxxxxxxxx");
+    genAI.apiKey = "sk-xxxxxxxxxx";
+    // 若 SDK 支持自定义 baseUrl，设置为 https://llm.ai-nebula.com
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+
+    const result = await model.generateContent("用一句话介绍人工智能");
+    const text = result.response.text();
+    console.log(text);
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+`google-generativeai` 默认请求 Google 官方端点，接入 Nebula 时需通过 `client_options` 或环境变量将 `api_endpoint` 设为 `https://llm.ai-nebula.com`。具体以所用 SDK 文档为准。
+</Note>
+
+## 高级功能
+
+### 思考模式（Thinking）
+
+支持三种方式：
+
+1. **generationConfig.thinkingConfig**（Gemini 2.5 Pro）：使用 `thinkingBudget`（token 数）  
+2. **thinkingConfig.thinkingLevel**（Gemini 3 Pro）：使用 `LOW` / `HIGH`  
+3. **模型后缀**：`-thinking`、`-thinking-8192`、`-nothinking`、`-thinking-low`、`-thinking-high`
+
+<Tabs>
+  <Tab title="thinkingBudget（2.5 Pro）">
+    ```json
+    {
+      "contents": [{"role": "user", "parts": [{"text": "给一道几何题并分步解析"}]}],
+      "generationConfig": {
+        "maxOutputTokens": 8192,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingBudget": 8192
+        }
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="thinkingLevel（3 Pro）">
+    ```json
+    {
+      "contents": [{"role": "user", "parts": [{"text": "给一道几何题并分步解析"}]}],
+      "generationConfig": {
+        "maxOutputTokens": 8192,
+        "thinkingConfig": {
+          "includeThoughts": true,
+          "thinkingLevel": "HIGH"
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+### 多模态输入
+
+在 `contents[].parts` 中混合文本与媒体：
+
+```json
+{
+  "contents": [
+    {
+      "role": "user",
+      "parts": [
+        {"text": "描述这张图片"},
+        {
+          "inlineData": {
+            "mimeType": "image/jpeg",
+            "data": "/9j/4AAQSkZJRg..."
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+- **图片**：`inlineData` + base64 `data`，或 `fileData` + `fileUri`（如 `gs://...`）  
+- **音频**：`inlineData`，`mimeType` 如 `audio/mp3`
+
+### 工具调用（Function Calling）
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "上海今天天气怎么样？"}]}],
+  "tools": [
+    {
+      "functionDeclarations": [
+        {
+          "name": "get_weather",
+          "description": "获取指定城市的天气",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "location": {"type": "string"}
+            },
+            "required": ["location"]
+          }
+        }
+      ]
+    }
+  ],
+  "toolConfig": {
+    "functionCallingConfig": {
+      "mode": "AUTO",
+      "allowedFunctionNames": []
+    }
+  }
+}
+```
+
+模型可能返回 `functionCall` part，需在下一轮 `contents` 中附带 `functionResponse` 再请求。
+
+### Google 搜索（Grounding）
+
+启用后，模型可基于实时网络检索增强回答（如天气、新闻等）。在 `tools` 中加入 `googleSearch` 即可：
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "今天北京天气怎么样？"}]}],
+  "tools": [
+    {
+      "googleSearch": {}
+    }
+  ],
+  "toolConfig": {
+    "functionCallingConfig": {
+      "mode": "AUTO"
+    }
+  }
+}
+```
+
+若同时使用 Function Calling 与 Google 搜索，将 `googleSearch: {}` 与 `functionDeclarations` 放在同一 `tools` 数组的不同元素中即可。回答中可能包含检索来源信息（如 `groundingMetadata`）。
+
+### 流式输出
+
+使用端点：`POST /v1beta/models/{model}:streamGenerateContent?alt=sse`，请求体与 `generateContent` 相同。响应为 SSE 流，每条 `data:` 为一块 JSON。
+
+### Context Caching（上下文缓存）
+
+首次请求不带 `cachedContent`，若服务端返回可缓存标识，后续请求在 body 中带上：
+
+```json
+{
+  "cachedContent": "cached-content-id",
+  "contents": [{"role": "user", "parts": [{"text": "基于上文继续回答"}]}]
+}
+```
+
+可降低长上下文重复计费与延迟。
+
+### 图像生成（Gemini 2.5 Flash 等）
+
+当模型支持图像输出时，在 `generationConfig` 中指定：
+
+```json
+{
+  "contents": [{"role": "user", "parts": [{"text": "画一只猫"}]}],
+  "generationConfig": {
+    "responseModalities": ["IMAGE"],
+    "imageConfig": {
+      "aspectRatio": "1:1",
+      "imageSize": "1K",
+      "imageOutputOptions": {"mimeType": "image/png"}
+    }
+  }
+}
+```
+
+响应中 `candidates[].content.parts` 会包含 `inlineData`（如 base64 图片）。
+
+## Embedding API
+
+### 单条：embedContent
+
+**端点**：`POST https://llm.ai-nebula.com/v1beta/models/{model}:embedContent`
+
+**请求体示例**：
+
+```json
+{
+  "model": "text-embedding-004",
+  "content": {
+    "parts": [{"text": "要嵌入的文本"}]
+  }
+}
+```
+
+或使用 `model` 在 path 中：`/v1beta/models/text-embedding-004:embedContent`，body 仅含 `content`。
+
+### 批量：batchEmbedContents
+
+**端点**：`POST https://llm.ai-nebula.com/v1beta/models/{model}:batchEmbedContents`
+
+**请求体示例**：
+
+```json
+{
+  "requests": [
+    {"content": {"parts": [{"text": "第一段文本"}]}},
+    {"content": {"parts": [{"text": "第二段文本"}]}}
+  ]
+}
+```
+
+响应为数组，每项对应一条嵌入向量。
+
+## 错误处理
+
+接口使用 HTTP 状态码与 JSON body 表示错误，例如：
+
+<ResponseExample>
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "Invalid request: ...",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+</ResponseExample>
+
+常见情况：
+
+| 状态码 | 含义 |
+|--------|------|
+| 400 | 请求参数错误（如缺少 `contents`、模型不支持某参数） |
+| 401 | 认证失败（API Key 无效或未传） |
+| 404 | 模型不存在或路径错误 |
+| 429 | 限流，请稍后重试 |
+| 500 | 服务端错误 |
+
+建议在客户端统一解析 `error.message` 并做重试或提示。
+
+## 与 OpenAI 格式对比
+
+| 项目 | Gemini 原生 | OpenAI（/v1/chat/completions） |
+|------|-------------|-------------------------------|
+| 基础 URL 路径 | `/v1beta/models/{model}:generateContent` | `/v1/chat/completions` |
+| 认证 | `Authorization: Bearer sk-xxx` 或 `x-goog-api-key` | `Authorization: Bearer sk-xxx` |
+| 消息格式 | `contents[].parts[]`（text/inlineData/fileData） | `messages[].content`（字符串或数组） |
+| 系统提示 | `systemInstruction.parts` | `messages` 中 `role: "system"` |
+| 流式 | `streamGenerateContent?alt=sse` | `stream: true` |
+| 思考模式 | `thinkingConfig` 或模型后缀 | 模型后缀（如 `-thinking`） |
+| 工具定义 | `tools[].functionDeclarations` | `tools[].function`（OpenAI 格式） |
+| 适用客户端 | Google SDK、自建 HTTP 客户端 | OpenAI SDK、兼容 OpenAI 的各类客户端 |
+
+选择建议：已使用 Google Gemini 生态或需要 Gemini 独有字段（如 `thinkingConfig`、原生多模态 part）时用原生接口；希望与 OpenAI 生态统一时用 `/v1/chat/completions`。

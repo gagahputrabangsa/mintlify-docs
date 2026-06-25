@@ -1,0 +1,174 @@
+---
+title: '下载视频'
+api: 'GET https://llm.ai-nebula.com/v1/video/generations/download?id={videoId}'
+---
+
+## 简介
+
+下载视频接口用于获取已完成的视频文件数据。**注意：此接口仅 Sora 2 模型支持**。其他模型（Veo、阿里万相、豆包 Seedance）在任务成功后，视频URL会直接包含在查询任务接口的响应中，无需额外下载步骤。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 查询参数
+
+<ParamField query="id" type="string" required>
+  视频ID，由查询任务接口返回的 `task_id`
+</ParamField>
+
+## 使用示例
+
+```bash
+curl -X GET "https://llm.ai-nebula.com/v1/video/generations/download?id=video_69095b4ce0048190893a01510c0c98b0" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx"
+```
+
+## 响应示例
+
+```json
+{
+  "success": true,
+  "generation_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+  "format": "mp4",
+  "size": 15728640,
+  "base64": "AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAB...",
+  "data_url": "data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAB..."
+}
+```
+
+## 响应字段说明
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| `success` | boolean | 是否成功 |
+| `generation_id` | string | 生成ID（与 videoId 相同） |
+| `task_id` | string | 任务ID |
+| `format` | string | 视频格式（固定为 `"mp4"`） |
+| `size` | number | 视频文件大小（字节） |
+| `base64` | string | Base64 编码的视频数据 |
+| `data_url` | string | Data URL 格式的视频数据，可直接用于前端 `<video>` 标签 |
+
+## 使用说明
+
+### 前端使用 data_url
+
+`data_url` 字段可以直接用于 HTML `<video>` 标签：
+
+```html
+<video src="data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAB..." controls></video>
+```
+
+### 下载保存文件
+
+使用 `base64` 字段可以将视频保存为文件：
+
+#### JavaScript 示例
+
+```javascript
+// 从响应中获取 base64 数据
+const response = await fetch('https://llm.ai-nebula.com/v1/video/generations/download?id=video_xxx', {
+  headers: {
+    'Authorization': 'Bearer sk-xxxxxxxxxx'
+  }
+});
+const data = await response.json();
+
+// 将 base64 转换为 Blob
+const binaryString = atob(data.base64);
+const bytes = new Uint8Array(binaryString.length);
+for (let i = 0; i < binaryString.length; i++) {
+  bytes[i] = binaryString.charCodeAt(i);
+}
+const blob = new Blob([bytes], { type: 'video/mp4' });
+
+// 创建下载链接
+const url = URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'video.mp4';
+a.click();
+URL.revokeObjectURL(url);
+```
+
+#### Python 示例
+
+```python
+import requests
+import base64
+
+def download_video(video_id, api_key):
+    """下载视频并保存为文件"""
+    url = f"https://llm.ai-nebula.com/v1/video/generations/download?id={video_id}"
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+
+    if data.get("success"):
+        # 解码 base64 数据
+        video_data = base64.b64decode(data["base64"])
+
+        # 保存为文件
+        with open("video.mp4", "wb") as f:
+            f.write(video_data)
+
+        print(f"✅ 视频已保存: video.mp4 (大小: {data['size']} 字节)")
+        return True
+    else:
+        print("❌ 下载失败")
+        return False
+```
+
+## 完整流程示例（Sora 2）
+
+1. **提交视频生成任务**
+   ```bash
+   curl -X POST "https://llm.ai-nebula.com/v1/video/generations" \
+     -H "Authorization: Bearer sk-xxxxxxxxxx" \
+     -H "Content-Type: application/json" \
+     -d '{
+       "model": "sora-2",
+       "prompt": "一只可爱的小猫在花园里玩耍",
+       "seconds": "4",
+       "size": "720x1280"
+     }'
+   ```
+
+   响应：
+   ```json
+   {
+     "task_id": "video_69095b4ce0048190893a01510c0c98b0",
+     "status": "submitted",
+     "format": "mp4"
+   }
+   ```
+
+2. **查询任务状态**（轮询直到成功）
+   ```bash
+   curl -X GET "https://llm.ai-nebula.com/v1/video/generations/video_69095b4ce0048190893a01510c0c98b0" \
+     -H "Authorization: Bearer sk-xxxxxxxxxx"
+   ```
+
+   当状态为 `succeeded` 时，继续下一步。
+
+3. **下载视频文件**
+   ```bash
+   curl -X GET "https://llm.ai-nebula.com/v1/video/generations/download?id=video_69095b4ce0048190893a01510c0c98b0" \
+     -H "Authorization: Bearer sk-xxxxxxxxxx"
+   ```
+
+## 相关接口
+
+<Columns cols={2}>
+  <Card title="提交视频任务" icon="upload" href="/cn/api-reference/endpoint/submit-video-task">
+    提交视频生成任务
+  </Card>
+  <Card title="查询视频任务" icon="search" href="/cn/api-reference/endpoint/query-video-task">
+    查询视频生成任务的状态和结果
+  </Card>
+</Columns>
+

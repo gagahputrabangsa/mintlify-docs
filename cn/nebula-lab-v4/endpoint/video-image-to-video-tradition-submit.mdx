@@ -1,0 +1,101 @@
+---
+title: '图生视频-传统模式-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/image2VideoTradition'
+---
+
+## 简介
+
+提交传统模式图生视频任务，用于根据输入图片生成视频。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="image2VideoTraditionalDTO.image_urls" type="array[string]" required>
+  输入图片 URL 数组：
+  0：原始输入图片（三通道 RGB 图）
+  1：可选遮罩图（单通道灰度图；黑色区域为保留0，白色区域为消除255）
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.prompt" type="string" required>
+  提示词，用于描述目标视频效果
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.duration" type="string" required>
+  视频时长，支持多种格式：
+  30（秒）、30s、1m、1m30s（分钟+秒）
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.resolution" type="string" required>
+  视频分辨率（枚举）：480p、720p、1080p
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.req_key" type="string">
+  请求标识，可用于业务侧关联与去重
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.return_url" type="boolean">
+  是否直接返回生成结果的 URL（默认关闭）
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/image2VideoTradition" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "image_urls": ["https://example.com/input.jpg"],
+        "prompt": "镜头缓慢推进，人物微笑",
+        "duration": "5",
+        "resolution": "720p",
+        "req_key": "req-001",
+        "return_url": true
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/image2VideoTradition"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "image_urls": ["https://example.com/input.jpg"],
+        "prompt": "镜头缓慢推进，人物微笑",
+        "duration": "5",
+        "resolution": "720p",
+        "req_key": "req-001",
+        "return_url": True
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

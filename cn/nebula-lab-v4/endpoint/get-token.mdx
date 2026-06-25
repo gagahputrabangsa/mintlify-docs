@@ -1,0 +1,63 @@
+---
+title: '获取 Token'
+api: 'POST https://ai-nebula.com/prod-api/v3/auth/getToken'
+---
+
+## 简介
+
+通过用户名和密码获取访问令牌（Token），用于后续接口调用的身份验证。
+
+## 请求参数
+
+<ParamField body="username" type="string" required>
+  用户名
+</ParamField>
+
+<ParamField body="password" type="string" required>
+  密码
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/v3/auth/getToken" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "username": "your_username",
+        "password": "your_password"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/v3/auth/getToken"
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = {
+        "username": "your_username",
+        "password": "your_password"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
+```
+</ResponseExample>

@@ -1,0 +1,37 @@
+---
+title: 'Image to Video - Traditional Mode - Query Task'
+api: 'GET https://ai-nebula.com/prod-api/nebula/v4/api/CommonI2VQuery'
+---
+
+## Introduction
+
+Query traditional mode task status and result.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField query="taskId" type="string" required>
+  Task ID, returned by submit task interface
+</ParamField>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "id": "task-1234567890",
+    "status": "succeeded",
+    "url": "https://example.com/video.mp4"
+  }
+}
+```
+</ResponseExample>

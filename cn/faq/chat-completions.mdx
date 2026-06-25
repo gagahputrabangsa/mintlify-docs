@@ -1,0 +1,307 @@
+---
+title: '对话接口常见问题'
+description: '关于 v1/chat/completions 接口的常见问题解答'
+---
+
+## 通用问题
+
+### 与 OpenAI 的兼容程度如何？
+
+Nebula Api 的对话接口完全兼容 OpenAI Chat Completions API 格式，您可以直接使用 OpenAI SDK 或兼容的客户端调用。少数扩展字段可能因模型而异，以具体模型支持为准。
+
+### 如何选择合适的模型？
+
+根据您的使用场景选择：
+
+<Tabs>
+  <Tab title="通用对话">
+    - **Claude Sonnet 4**：综合能力强，适合复杂任务
+    - **GPT-4o Mini**：性价比极高，适合大量调用
+    - **Gemini 2.5 Flash**：速度快，成本低
+  </Tab>
+  <Tab title="编程开发">
+    - **Claude Sonnet 4**：代码质量最佳
+    - **GPT-4.1**：多语言支持全面
+    - **DeepSeek V3**：性价比高，中文编程优秀
+  </Tab>
+  <Tab title="复杂推理">
+    - **Claude Sonnet 4.5**：顶级推理能力
+    - **DeepSeek R1**：推理模型
+    - **Grok-4-fast-reasoning**：快速推理版本
+  </Tab>
+</Tabs>
+
+更多模型选择建议请查看 [模型选择指南](/cn/faq/model-selection)。
+
+### 如何提升响应速度？
+
+1. **使用流式输出**：设置 `stream: true` 可以提升首字响应时间
+2. **选择合适的模型**：Mini 和 Flash 系列通常响应更快
+3. **优化 prompt 长度**：减少不必要的上下文可以加快处理速度
+4. **使用快速版本**：如 `grok-3-fast`、`gpt-4o-mini` 等
+
+### 如何控制生成内容的长度？
+
+使用 `max_tokens` 参数控制最大生成 token 数：
+
+```python
+completion = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "写一首短诗"}],
+    max_tokens=100  # 限制最多生成 100 个 token
+)
+```
+
+### 如何实现多轮对话？
+
+在 `messages` 数组中追加历史对话记录：
+
+```python
+messages = [
+    {"role": "system", "content": "你是一个有用的助手"},
+    {"role": "user", "content": "你好"},
+    {"role": "assistant", "content": "你好！有什么可以帮助你的吗？"},
+    {"role": "user", "content": "介绍一下 Python"}
+]
+```
+
+## 工具调用相关问题
+
+### 工具调用的完整流程是什么？
+
+工具调用分为两个阶段：
+
+1. **第一阶段**：模型返回 `tool_calls`，`finish_reason` 为 `tool_calls`
+2. **第二阶段**：将工具执行结果作为 `role: "tool"` 的消息回传给模型
+
+详细示例请查看 [对话接口文档](/cn/api-reference/endpoint/chat#工具调用)。
+
+### 工具调用支持流式输出吗？
+
+支持。两个阶段都支持流式输出，您可以在第二阶段也设置 `stream: true`。
+
+### 工具执行失败怎么办？
+
+工具执行失败时应返回可读的错误信息或降级结果，避免阻塞后续补全。例如：
+
+```python
+tool_result = {
+    "error": "天气服务暂时不可用，请稍后重试"
+}
+```
+
+### 如何确保工具调用的稳定性？
+
+1. **超时控制**：为工具执行设置合理的超时时间
+2. **重试机制**：对失败的工具调用进行重试
+3. **错误处理**：妥善处理工具执行异常，返回友好的错误信息
+4. **参数验证**：在执行工具前验证参数的有效性
+
+## 结构化输出问题
+
+### 如何提升结构化输出的稳定性？
+
+1. **使用 JSON Schema**：提供严格的 JSON Schema 定义
+2. **降低 temperature**：设置为 0.1-0.3 以提升一致性
+3. **设置 max_tokens**：确保有足够的 token 生成完整结构
+4. **验证输出**：在客户端验证 JSON 格式的有效性
+
+### 哪些模型支持结构化输出？
+
+GPT、Claude、Grok 等主流模型都支持 `response_format: json_schema`。具体支持情况可能因模型版本而异。
+
+### 结构化输出失败怎么办？
+
+如果模型返回的 JSON 格式不正确：
+1. 检查 JSON Schema 是否过于复杂
+2. 降低 `temperature` 值
+3. 增加 `max_tokens` 限制
+4. 在客户端进行 JSON 验证和容错处理
+
+## 思考能力相关问题
+
+### DeepSeek 的思考能力如何使用？
+
+DeepSeek 模型支持通过 `thinking` 字段开启思考能力：
+
+```json
+{
+  "model": "deepseek-v3-1-250821",
+  "thinking": {"type": "enabled"},
+  "messages": [...]
+}
+```
+
+<Note>
+默认情况下思考能力是关闭的（`"type": "disabled"`），需要显式设置为 `"enabled"` 才能开启。
+</Note>
+
+### 通义千问的深度思考为什么没有输出？
+
+请确认以下几点：
+
+1. **必须使用流式输出**：`stream: true` 和 `enable_thinking: true` 必须同时设置
+2. **检查客户端支持**：如果客户端不展示 `reasoning_content`，可以使用 `nebula_thinking_to_content: true` 将推理内容内联到 `content` 中
+3. **参数位置**：通义千问的扩展参数需放在 `parameters` 对象中
+
+### 为什么通义千问的 reasoning_tokens 为 0？
+
+在兼容模式下，上游可能不返回推理 token 明细，这是正常现象。我们不会臆测拆分，显示为 0 属于正常情况。
+
+### Grok 的推理能力如何查看？
+
+Grok 模型（特别是 `grok-4-fast-reasoning`）的响应中，`usage.completion_tokens_details.reasoning_tokens` 字段会显示推理过程消耗的 token 数。实际输出文本的 token 数 = `completion_tokens - reasoning_tokens`。
+
+## 通义千问特殊功能
+
+### 通义千问的参数应该放在哪里？
+
+**所有扩展参数都必须放在 `parameters` 对象中**，包括：
+- `enable_search`、`search_options`
+- `asr_options`
+- `temperature`、`top_p`、`top_k`
+- `incremental_output`
+
+错误示例（参数放在顶层）：
+```json
+{
+  "model": "qwen3-omni-flash",
+  "enable_search": true,  // ❌ 错误
+  "temperature": 0.7      // ❌ 错误
+}
+```
+
+正确示例（参数放在 parameters 中）：
+```json
+{
+  "model": "qwen3-omni-flash",
+  "parameters": {
+    "enable_search": true,  // ✅ 正确
+    "temperature": 0.7      // ✅ 正确
+  }
+}
+```
+
+### 通义千问的搜索功能如何使用？
+
+```json
+{
+  "model": "qwen3-omni-flash",
+  "parameters": {
+    "enable_search": true,
+    "search_options": {
+      "region": "CN",
+      "recency_days": 30
+    }
+  }
+}
+```
+
+### 通义千问深度思考报错怎么办？
+
+如果遇到 "This model does not support non-streaming output" 错误，请：
+1. 将 `stream` 设置为 `true`
+2. 或者移除 `enable_thinking` 参数
+
+深度思考功能必须配合流式输出使用。
+
+## GPT 文件输入问题
+
+### GPT 文件输入使用哪个接口？
+
+GPT-5 等模型的文件输入功能需要使用 `/v1/responses` 接口，而不是 `/v1/chat/completions`。
+
+### 文件大小限制是多少？
+
+- 单个文件不超过 50 MB
+- 单个请求中所有文件总大小不超过 50 MB
+
+### 支持哪些文件格式？
+
+目前主要支持 PDF 文件。支持的模型包括 `gpt-4o`、`gpt-4o-mini`、`gpt-5-chat` 等。
+
+### 推理模型（o1/o3-mini/o4-mini）如何使用？
+
+推理模型应通过 `/v1/responses` 接口调用，而不是 `/v1/chat/completions`。详细示例请查看 [对话接口文档](/cn/api-reference/endpoint/chat#gpt-文件输入-responses-api)。
+
+## 流式输出问题
+
+### 如何解析流式响应？
+
+流式响应使用 SSE（Server-Sent Events）格式，每个分片以 `data: ` 开头：
+
+```python
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "你好"}],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+### 流式响应中的 usage 在哪里？
+
+`usage` 统计信息通常在最后一个分片中返回，或者通过设置 `stream_options.include_usage=true`（如果通道支持）在分片中实时返回。
+
+### 流式输出有什么优势？
+
+1. **首字时间更短**：可以立即开始显示内容
+2. **更好的交互体验**：用户可以看到实时生成过程
+3. **降低感知延迟**：即使总时间相同，用户感觉更快
+
+## 错误处理
+
+### 常见的错误类型有哪些？
+
+| 错误类型 | 原因 | 解决方法 |
+|---------|------|---------|
+| AuthenticationError | API 密钥无效 | 检查 API 密钥是否正确 |
+| NotFoundError | 模型不存在 | 确认模型名称是否正确 |
+| APIConnectionError | 网络问题 | 检查网络连接和 base_url |
+| APIError | 请求格式错误 | 检查请求参数格式 |
+
+### 如何避免 API 调用失败？
+
+1. **验证 API 密钥**：确保密钥有效且未过期
+2. **检查模型名称**：使用正确的模型标识
+3. **参数验证**：确保请求参数格式正确
+4. **错误重试**：实现合理的重试机制
+5. **监控日志**：记录错误信息便于排查
+
+## 最佳实践
+
+### 如何优化 API 调用成本？
+
+1. **分级使用模型**：简单任务用便宜模型，复杂任务用高级模型
+2. **控制 token 数量**：合理设置 `max_tokens`，避免生成过长内容
+3. **缓存结果**：对重复查询进行缓存
+4. **批量处理**：相似任务可以批量处理以提高效率
+
+### 如何提升响应质量？
+
+1. **优化 prompt**：清晰、具体的提示词能获得更好的结果
+2. **使用 system 消息**：通过 system 角色设定模型行为
+3. **调整 temperature**：根据任务需求调整随机性
+4. **多轮对话**：通过多轮交互逐步完善结果
+
+### 开发时需要注意什么？
+
+1. **使用流式输出**：提升用户体验
+2. **错误处理**：妥善处理各种异常情况
+3. **超时控制**：设置合理的超时时间
+4. **日志记录**：记录关键信息便于调试
+5. **测试不同模型**：根据实际效果选择最适合的模型
+
+## 相关资源
+
+<Columns cols={2}>
+  <Card title="对话接口文档" icon="book" href="/cn/api-reference/endpoint/chat">
+    查看完整的接口文档和示例
+  </Card>
+  <Card title="模型选择指南" icon="list" href="/cn/faq/model-selection">
+    了解如何选择合适的模型
+  </Card>
+</Columns>

@@ -1,0 +1,159 @@
+---
+title: 'How do we protect data security?'
+description: 'Nebula Api data security measures including encryption, minimal storage, and access control'
+---
+
+## Data Security Commitment
+
+Nebula Api takes user data security seriously with multiple protection measures. We're committed to providing secure, reliable AI services.
+
+## Core Security Measures
+
+### End-to-End Encryption
+
+<Card title="TLS 1.3 Encryption" icon="lock">
+  All data transmission uses **TLS 1.3 protocol encryption**:
+  - Latest encryption standard for strongest protection
+  - Prevents data interception or tampering
+  - End-to-end encryption from user to server
+</Card>
+
+### Minimal Data Storage
+
+**Relay Platform Advantage**
+
+As a relay platform, Nebula Api:
+- **Doesn't store request content**: No saving of API request inputs/outputs
+- **Can't view user data**: Technical team cannot access conversation content
+- **Immediate deletion**: Content cleared after processing
+- **Privacy first**: Maximum user privacy protection
+
+<Note>
+As a relay platform, our job is to forward requests securely and efficiently, not store user data. This design fundamentally protects your privacy.
+</Note>
+
+### Limited Logging
+
+**Basic Log Scope**
+
+We only log essential information for billing and troubleshooting:
+- **Model name**: For billing and statistics
+- **Token counts**: Input and output token counts
+- **Timestamps**: For log analysis and debugging
+- **Response status**: Success or error states
+
+**What we DON'T log**
+- ❌ Conversation content
+- ❌ User input text
+- ❌ AI output responses
+- ❌ Images or file content
+- ❌ Personal identity information
+
+### Short-term Log Retention
+
+<Card title="Log Retention Period" icon="clock">
+  **Retention: Only 7 days**
+  
+  Reasons:
+  - **Data security**: Reduce data breach risk
+  - **Resource optimization**: Minimize storage costs
+  - **Privacy protection**: Minimal data retention
+  - **Compliance**: Meet data protection regulations
+  
+  After 7 days, all logs are automatically deleted and cannot be recovered.
+</Card>
+
+## Access Control
+
+### Strict Permission Management
+
+**Authorized Access Only**
+- **Least privilege**: Only authorized personnel can access logs
+- **Anonymization**: Log data is anonymized
+- **Necessity review**: Access only when necessary (e.g., troubleshooting)
+- **Audit trail**: Complete audit logs for all access
+
+### Technical Team Management
+
+- **Background checks**: Thorough personnel vetting
+- **NDAs**: Strict data confidentiality agreements
+- **Regular training**: Data security and privacy training
+- **Permission rotation**: Regular access review and rotation
+
+## Security Framework
+
+### Regular Security Audits
+
+**Continuous Improvement**
+
+Nebula Api conducts regular security assessments:
+- **Vulnerability scanning**: Regular system security checks
+- **Code review**: Review potential security risks in code
+- **Infrastructure checks**: Server and network security evaluation
+- **Process optimization**: Continuous security process improvement
+
+### Compliance
+
+**Regulatory Commitment**
+- **Data protection laws**: Strict GDPR, PIPL compliance
+- **Industry standards**: AI service security standards
+- **Regulatory requirements**: Cooperation with authorities
+- **International standards**: ISO 27001 reference
+
+## Security Best Practices
+
+### User Recommendations
+
+<AccordionGroup>
+  <Accordion title="API Key Management">
+    - Rotate API Keys regularly
+    - Don't hardcode Keys in code
+    - Use environment variables for sensitive info
+  </Accordion>
+  <Accordion title="Sensitive Data Handling">
+    - Avoid sensitive personal info in requests
+    - Use anonymized data for testing
+    - Handle confidential content carefully
+  </Accordion>
+  <Accordion title="Network Security">
+    - Use HTTPS for API access
+    - Use service in secure network environments
+    - Keep client software updated
+  </Accordion>
+</AccordionGroup>
+
+### Platform Protections
+
+- **Multi-layer defense**: Multiple security measures deployed
+- **Real-time monitoring**: 24/7 security monitoring and threat detection
+- **Incident response**: Complete security incident response mechanism
+- **Backup & recovery**: Regular backups and disaster recovery drills
+
+## Transparency Commitment
+
+### Security Incident Notification
+
+If a security event may affect user data, we commit to:
+- **Timely notification**: Within 24 hours of discovery
+- **Detailed explanation**: Event details and scope
+- **Remediation**: Steps taken to address the issue
+- **Prevention**: Future prevention measures
+
+## Support
+
+For data security questions, contact us:
+
+<Card title="Technical Support" icon="envelope" href="mailto:mla@nebula-data.com">
+  **Email**: mla@nebula-data.com
+  
+  **Topics**:
+  - Data security policy
+  - Privacy protection measures
+  - Security best practices
+  - Security incident reporting
+</Card>
+
+<Tip>
+We continuously improve security measures to provide safer, more reliable AI services.
+</Tip>
+

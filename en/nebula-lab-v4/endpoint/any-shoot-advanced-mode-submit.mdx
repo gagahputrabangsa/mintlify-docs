@@ -1,0 +1,84 @@
+---
+title: 'Any Shoot - Advanced Mode - Submit Task'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit'
+---
+
+## Introduction
+
+Submit Any Shoot advanced mode task, used to transfer product image to specified template.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="productImageUrl" type="string" required>
+  Product image URL
+</ParamField>
+
+<ParamField body="productMaskUrl" type="string" required>
+  Product mask URL
+</ParamField>
+
+<ParamField body="templateImageUrl" type="string" required>
+  Template image URL
+</ParamField>
+
+<ParamField body="templateMaskUrl" type="string" required>
+  Template mask URL
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "productImageUrl": "https://example.com/product.png",
+        "productMaskUrl": "https://example.com/product-mask.png",
+        "templateImageUrl": "https://example.com/template.png",
+        "templateMaskUrl": "https://example.com/template-mask.png"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootAdvancedModeSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "productImageUrl": "https://example.com/product.png",
+        "productMaskUrl": "https://example.com/product-mask.png",
+        "templateImageUrl": "https://example.com/template.png",
+        "templateMaskUrl": "https://example.com/template-mask.png"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": "task-1234567890"
+}
+```
+</ResponseExample>

@@ -1,0 +1,69 @@
+---
+title: '万物迁移-标准模式-查询任务'
+api: 'GET https://ai-nebula.com/prod-api/nebula/v4/api/anyShootQuery'
+---
+
+## 简介
+
+查询万物迁移任务的状态和结果。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField query="taskId" type="string" required>
+  任务ID
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X GET "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootQuery?taskId=task-1234567890" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx"
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootQuery"
+    headers = {
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    params = {
+        "taskId": "task-1234567890"
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "status": "SUCCESS",
+    "result": {
+      "taskId": "task-1234567890",
+      "images": [
+        "https://example.com/image1.jpg",
+        "https://example.com/image2.jpg"
+      ]
+    }
+  }
+}
+```
+</ResponseExample>

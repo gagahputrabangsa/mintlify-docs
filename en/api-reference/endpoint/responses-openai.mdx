@@ -1,0 +1,535 @@
+---
+title: 'Create Responses Request (openai)'
+api: 'POST https://llm.ai-nebula.com/v1/responses'
+---
+
+## Introduction
+
+The Responses API is OpenAI's next-generation conversation interface, designed specifically for reasoning models (o-series, GPT-5 series) and advanced features. Compared to the traditional Chat Completions API, the Responses API offers more granular reasoning control, built-in tool support, and multimodal input capabilities.
+
+## Use Cases
+
+- **Reasoning-intensive tasks**: Use o1, o3-mini, o4-mini, GPT-5 and other reasoning models
+- **Web search requirements**: Built-in Web Search Preview tool
+- **Advanced tool calling**: Supports Function Call and Custom Tool Call
+- **Multi-turn conversation continuation**: Conversation history management via `previous_response_id`
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Model identifier, supported models include:
+  - GPT-5 series: `gpt-5.2`, `gpt-5`, `gpt-5-mini`, etc.
+  - o series: `o1`, `o3-mini`, `o4-mini`, etc.
+  - GPT-4 series: `gpt-4o`, `gpt-4.1`, `gpt-4o-mini`, etc.
+</ParamField>
+
+<ParamField body="input" type="array" required>
+  Input message list, supports multiple formats:
+  - **Simplified format**: `[{"role": "user", "content": "text"}]` (similar to Chat Completions)
+  - **Standard format**: `[{"type": "input_text", "text": "text"}]`
+  - **Multimodal**: Supports `input_image`, `input_file` types
+</ParamField>
+
+<ParamField body="instructions" type="string">
+  System instructions, equivalent to system message in Chat Completions
+</ParamField>
+
+<ParamField body="max_output_tokens" type="number">
+  Maximum output token count, controls response length
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Whether to enable streaming output, returns SSE format chunk data
+</ParamField>
+
+<ParamField body="temperature" type="number" default="1.0">
+  Randomness control, 0-2, higher values make responses more random
+</ParamField>
+
+<ParamField body="top_p" type="number" default="0.98">
+  Nucleus sampling parameter, 0-1, controls generation diversity
+</ParamField>
+
+<ParamField body="reasoning" type="object">
+  Reasoning configuration for controlling reasoning model behavior:
+  - `effort`: Reasoning effort, options: `"none"`, `"low"`, `"medium"`, `"high"`
+  - `summary`: Reasoning summary, options: `"auto"`, `"none"`, `"detailed"`
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Tool list, supports three types:
+  - **Built-in Web Search**: `{"type": "web_search_preview", "search_context_size": "medium"}`
+  - **Built-in File Search**: `{"type": "file_search"}`
+  - **Custom Functions**: Standard OpenAI Function Call format
+</ParamField>
+
+<ParamField body="tool_choice" type="string|object" default="auto">
+  Tool selection strategy:
+  - `"auto"`: Model automatically decides whether to call tools
+  - `"none"`: Disable tool calling
+  - `{"type": "function", "function": {"name": "function_name"}}`: Force call specific function
+</ParamField>
+
+<ParamField body="parallel_tool_calls" type="boolean" default="true">
+  Whether to allow parallel multiple tool calls
+</ParamField>
+
+<ParamField body="max_tool_calls" type="number">
+  Maximum tool call limit
+</ParamField>
+
+<ParamField body="previous_response_id" type="string">
+  Previous response ID for conversation continuation
+</ParamField>
+
+<ParamField body="truncation" type="string" default="disabled">
+  Truncation strategy: `"auto"` or `"disabled"`
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Request metadata for tracking and debugging
+</ParamField>
+
+<ParamField body="user" type="string">
+  User identifier
+</ParamField>
+
+## Basic Examples
+
+<Tabs>
+  <Tab title="Simple Conversation (Non-streaming)">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "max_output_tokens": 2048,
+        "input": [
+          {"role": "system", "content": "You are a helpful assistant"},
+          {"role": "user", "content": "Explain artificial intelligence briefly"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Simple Conversation (Streaming)">
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "stream": true,
+        "max_output_tokens": 2048,
+        "input": [
+          {"role": "user", "content": "Explain artificial intelligence briefly"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python SDK">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    # Using Responses API
+    response = client.responses.create(
+        model="gpt-5.2",
+        max_output_tokens=2048,
+        input=[
+            {"role": "user", "content": "Explain artificial intelligence briefly"}
+        ]
+    )
+
+    print(response.output[0].content[0].text)
+    ```
+  </Tab>
+</Tabs>
+
+## Response Format
+
+### Non-streaming Response
+
+```json
+{
+  "id": "resp_xxx",
+  "object": "response",
+  "created_at": 1768271369,
+  "model": "gpt-5.2",
+  "status": "completed",
+  "output": [
+    {
+      "id": "msg_xxx",
+      "type": "message",
+      "status": "completed",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Artificial Intelligence (AI) is a branch of computer science...",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 25,
+    "output_tokens": 150,
+    "total_tokens": 175,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 50
+    }
+  }
+}
+```
+
+### Streaming Response (SSE Events)
+
+Streaming responses use Server-Sent Events format with the following event types:
+
+| Event Type | Description |
+|-----------|-------------|
+| `response.created` | Response created |
+| `response.in_progress` | Response in progress |
+| `response.output_item.added` | Output item added (tool call started) |
+| `response.output_text.delta` | Text delta |
+| `response.output_text.done` | Text completed |
+| `response.output_item.done` | Output item completed |
+| `response.completed` | Response completed |
+
+**Example SSE Output**:
+
+```
+event: response.created
+data: {"type":"response.created","response":{"id":"resp_xxx","status":"in_progress"}}
+
+event: response.output_text.delta
+data: {"type":"response.output_text.delta","delta":"Artificial","sequence_number":1}
+
+event: response.output_text.delta
+data: {"type":"response.output_text.delta","delta":" Intelligence","sequence_number":2}
+
+event: response.completed
+data: {"type":"response.completed","response":{"id":"resp_xxx","status":"completed","usage":{...}}}
+```
+
+## Advanced Features
+
+### 1. Web Search
+
+Enable built-in Web Search tool for real-time internet information retrieval.
+
+<Tabs>
+  <Tab title="Basic Example">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "stream": true,
+        "max_output_tokens": 2048,
+        "input": [
+          {"role": "user", "content": "What are today'\''s news headlines?"}
+        ],
+        "tools": [
+          {
+            "type": "web_search_preview",
+            "search_context_size": "medium"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Advanced Configuration">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "stream": true,
+        "input": [
+          {"role": "user", "content": "What'\''s the weather in New York today?"}
+        ],
+        "tools": [
+          {
+            "type": "web_search_preview",
+            "search_context_size": "high",
+            "user_location": {
+              "type": "approximate",
+              "country": "US",
+              "region": "NY",
+              "city": "New York",
+              "timezone": "America/New_York"
+            }
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+**Web Search Parameters**:
+
+- **`search_context_size`**: Search context size
+  - `"low"`: Low context, faster but fewer results
+  - `"medium"`: Medium context (default)
+  - `"high"`: High context, more search results but slower
+
+- **`user_location`** (optional): User location information
+  - `country`: Country code (e.g., "US", "CN")
+  - `region`: State/Province
+  - `city`: City
+  - `timezone`: Timezone
+
+
+### 2. Reasoning Control
+
+Control reasoning depth and output format for reasoning models.
+
+<Tabs>
+  <Tab title="Auto Reasoning Summary">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "o4-mini",
+        "stream": true,
+        "reasoning": {
+          "summary": "auto"
+        },
+        "max_output_tokens": 8192,
+        "input": [
+          {"role": "user", "content": "What is the formula for Tower of Hanoi?"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Detailed Reasoning">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "o4-mini",
+        "stream": true,
+        "reasoning": {
+          "effort": "high",
+          "summary": "detailed"
+        },
+        "max_output_tokens": 16384,
+        "input": [
+          {"role": "user", "content": "Prove Fermat'\''s Last Theorem"}
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+**Reasoning Parameters**:
+
+- **`effort`**: Reasoning effort level
+  - `"none"`: No reasoning
+  - `"low"`: Light reasoning
+  - `"medium"`: Medium reasoning (default)
+  - `"high"`: Deep reasoning
+
+- **`summary`**: Reasoning summary
+  - `"none"`: No reasoning summary
+  - `"auto"`: Automatically decide whether to output summary
+  - `"detailed"`: Output detailed reasoning process
+
+
+### 3. Custom Function Calling
+
+Supports standard OpenAI Function Calling format.
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "gpt-5.2",
+    "stream": true,
+    "input": [
+      {"role": "user", "content": "What'\''s the weather in Shanghai?"}
+    ],
+    "tools": [
+      {
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "description": "Get weather information for a city",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "city": {
+                "type": "string",
+                "description": "City name"
+              }
+            },
+            "required": ["city"]
+          }
+        }
+      }
+    ],
+    "tool_choice": "auto"
+  }'
+```
+
+**Function Call Response Format**:
+
+```json
+{
+  "output": [
+    {
+      "id": "call_xxx",
+      "type": "function_call",
+      "status": "completed",
+      "name": "get_weather",
+      "call_id": "call_xxx",
+      "arguments": "{\"city\":\"Shanghai\"}"
+    }
+  ]
+}
+```
+
+### 4. Multimodal Input
+
+Supports text, image, file and other input types.
+
+<Tabs>
+  <Tab title="Image Input">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "input": [
+          {
+            "type": "input_text",
+            "text": "What'\''s in this image?"
+          },
+          {
+            "type": "input_image",
+            "image_url": "https://example.com/image.jpg",
+            "detail": "high"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="File Input">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gpt-5.2",
+        "input": [
+          {
+            "type": "input_text",
+            "text": "Please analyze the content of this PDF document"
+          },
+          {
+            "type": "input_file",
+            "file_url": "https://example.com/document.pdf"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### 5. Conversation Continuation
+
+Use `previous_response_id` to continue previous conversations.
+
+```bash
+# First conversation
+curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "gpt-5.2",
+    "input": [
+      {"role": "user", "content": "What is quantum computing?"}
+    ]
+  }'
+
+# Response contains id: "resp_abc123"
+
+# Second conversation (continuation)
+curl -X POST "https://llm.ai-nebula.com/v1/responses" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "gpt-5.2",
+    "previous_response_id": "resp_abc123",
+    "input": [
+      {"role": "user", "content": "What are its application scenarios?"}
+    ]
+  }'
+```
+
+## Important Notes
+
+<Warning>
+- **Model Compatibility**: Not all models support all Responses API features
+- **Web Search**: Only GPT-4o, GPT-4.1, GPT-5 and o-series models support it
+- **Reasoning**: Only o-series and some GPT-5 models support `reasoning` parameter
+- **Content Obfuscation**: Streaming response deltas may contain `obfuscation` field (content protection), full plaintext available in `response.output_text.done` event
+</Warning>
+
+<Tip>
+- If you need standard Chat Completions format, use `/v1/chat/completions` endpoint with `openai/` model prefix
+- The system will automatically convert formats for better client compatibility
+</Tip>
+
+## Comparison: Responses API vs Chat Completions API
+
+| Feature | Responses API | Chat Completions API |
+|---------|---------------|----------------------|
+| Reasoning Model Support | ✅ Full support | ⚠️ Limited support |
+| Built-in Web Search | ✅ Native support | ❌ Not supported |
+| Reasoning Control | ✅ Fine-grained control | ❌ Not supported |
+| Conversation Continuation | ✅ `previous_response_id` | ✅ Via messages |
+| Streaming Output | ✅ SSE format | ✅ SSE format |
+| Client Compatibility | ⚠️ Needs adaptation | ✅ Standard format |
+| Use Cases | Reasoning, search, advanced features | General conversation |
+
+## Related Resources
+
+<CardGroup cols={2}>
+  <Card title="Chat Completions API" icon="comments" href="/en/api-reference/endpoint/chat-openai">
+    Standard conversation interface documentation
+  </Card>
+  <Card title="Model List" icon="list" href="/en/api-reference/models">
+    View all supported models
+  </Card>
+  <Card title="FAQ" icon="question-circle" href="/en/faq/chat-completions">
+    Responses API FAQs
+  </Card>
+</CardGroup>
+

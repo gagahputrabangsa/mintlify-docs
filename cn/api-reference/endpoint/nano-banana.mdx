@@ -1,0 +1,81 @@
+---
+title: 'Gemini原生（图像）'
+description: 'Gemini 图像生成模型，文生图与图生图'
+api: 'POST https://llm.ai-nebula.com/v1/images/generations'
+---
+
+## 简介
+
+Nano Banana 对应 Google Gemini 图像生成模型，包括 **Nano Banana**（`gemini-2.5-flash-image`）与 **Nano Banana Pro**（`gemini-3-pro-image-preview`）。通过统一的图片生成接口 `POST /v1/images/generations` 调用，支持文生图、图生图及多图融合等能力。
+
+完整参数与多模型说明请参见 [图片生成](/cn/api-reference/endpoint/image-generation)。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 支持的模型
+
+| 模型 ID | 说明 |
+|---------|------|
+| `gemini-2.5-flash-image` | Nano Banana，高性价比文生图/图生图 |
+| `gemini-3-pro-image-preview` | Nano Banana Pro，更高画质与可控性 |
+
+## 请求示例
+
+<Tabs>
+  <Tab title="文生图">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gemini-2.5-flash-image",
+        "prompt": "一只可爱的橙色小猫坐在花园里，阳光明媚，高质量摄影",
+        "size": "16:9",
+        "quality": "high",
+        "n": 1,
+        "response_format": "b64_json",
+        "image_size": "2K",
+        "mime_type": "image/png",
+        "response_modalities": "image"
+      }'
+    ```
+  </Tab>
+  <Tab title="图生图">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "model": "gemini-2.5-flash-image",
+        "size": "16:9",
+        "quality": "high",
+        "image_size": "3K",
+        "response_format": "b64_json",
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {"text": "根据这张图生成一张俯瞰广州塔的图片"},
+              {"image": "data:image/png;base64,iVBORw0KGgo..."}
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+## 常用参数
+
+- **prompt**：文生图提示词  
+- **size**：宽高比，如 `16:9`、`1:1`  
+- **quality**：质量档位，如 `high`  
+- **image_size**：输出尺寸档位，如 `1K`、`2K`、`3K`  
+- **response_format**：Gemini 系列仅支持 `b64_json`，返回 base64 图片  
+- **contents**：图生图或多轮对话时使用，格式见 [图片生成](/cn/api-reference/endpoint/image-generation)
+
+更多参数与各模型差异请参见 [图片生成](/cn/api-reference/endpoint/image-generation)。

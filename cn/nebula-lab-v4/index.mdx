@@ -1,0 +1,66 @@
+---
+title: 'Nebula Lab V4 API'
+api: 'https://ai-nebula.com/prod-api/nebula/v4/api'
+---
+
+## 简介
+
+Nebula Lab V4 API 提供了视频生成和图片生成的多种功能接口，包括文生视频、图生视频、文生图、图生图等多种AI创作能力。所有接口支持统一的认证方式和一致的响应格式，方便开发者快速集成和使用。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 响应格式
+
+所有接口返回统一的JSON格式：
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    // 接口特定返回数据
+  }
+}
+```
+</ResponseExample>
+
+### 错误响应
+
+<ResponseExample>
+```json
+{
+  "code": 400,
+  "msg": "参数错误",
+  "data": null
+}
+```
+</ResponseExample>
+
+## 接口列表
+
+### 视频生成
+
+- [文生视频-提交任务](./endpoint/video-text-to-video-submit.mdx)
+- [文生视频-查询任务](./endpoint/video-text-to-video-query.mdx)
+- [图生视频-传统模式-提交任务](./endpoint/video-image-to-video-tradition-submit.mdx)
+- [图生视频-传统模式-查询任务](./endpoint/video-image-to-video-tradition-query.mdx)
+- [图生视频-首尾图模式-提交任务](./endpoint/video-image-to-video-first-last-submit.mdx)
+- [图生视频-首尾图模式-查询任务](./endpoint/video-image-to-video-first-last-query.mdx)
+- [图生视频-视频换人-提交任务](./endpoint/video-face-merge-submit.mdx)
+- [图生视频-视频换人-查询任务](./endpoint/video-face-merge-query.mdx)
+
+### 图片生成
+
+- [AI生图-文生图](./endpoint/image-text-to-image.mdx)
+- [AI生图-图生图](./endpoint/image-image-to-image.mdx)
+- [AI生图-批量生图](./endpoint/image-batch-generation.mdx)
+- [AI生图-裂变生图](./endpoint/image-variation.mdx)
+- [AI生图-服装种草](./endpoint/image-fashion-grass.mdx)
+- [AI生图-智能去印](./endpoint/image-smart-watermark-removal.mdx)
+- [AI生图-商品提取](./endpoint/image-product-extraction.mdx)
+- [AI生图-服装细节](./endpoint/image-clothing-details.mdx)

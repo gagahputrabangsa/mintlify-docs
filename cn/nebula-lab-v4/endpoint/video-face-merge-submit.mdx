@@ -1,0 +1,94 @@
+---
+title: '图生视频-视频换人-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/videoFaceMergeSubmit'
+---
+
+## 简介
+
+提交视频换人任务，用于生成替换人脸的视频。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.imageUrl" type="string" required>
+  人脸图片URL
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.videoUrl" type="string" required>
+  视频URL
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.reqKey" type="string" required>
+  请求key
+</ParamField>
+
+<ParamField body="visualFaceFusionMovieSubmitTaskRequest.sourceSimilarity" type="string">
+  源相似度
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/videoFaceMergeSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "visualFaceFusionMovieSubmitTaskRequest": {
+          "imageUrl": "https://example.com/face.jpg",
+          "videoUrl": "https://example.com/source-video.mp4",
+          "reqKey": "req-001",
+          "sourceSimilarity": "0.8"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/videoFaceMergeSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "visualFaceFusionMovieSubmitTaskRequest": {
+            "imageUrl": "https://example.com/face.jpg",
+            "videoUrl": "https://example.com/source-video.mp4",
+            "reqKey": "req-001",
+            "sourceSimilarity": "0.8"
+        }
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "output": {
+      "task_id": "task-1234567890",
+      "task_status": "PENDING"
+    },
+    "request_id": "request-1234567890"
+  }
+}
+```
+</ResponseExample>

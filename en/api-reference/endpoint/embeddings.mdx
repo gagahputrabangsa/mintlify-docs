@@ -1,0 +1,99 @@
+---
+title: 'Embeddings'
+api: 'POST https://llm.ai-nebula.com/v1/embeddings'
+---
+
+## Introduction
+
+Convert text to vector embeddings for semantic search, similarity calculation, and clustering.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Model name, e.g. `text-embedding-3-small`, `text-embedding-3-large`
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  Text to embed, string or array of strings
+</ParamField>
+
+<ParamField body="encoding_format" type="string" default="float">
+  Return format: `float` or `base64`
+</ParamField>
+
+<ParamField body="dimensions" type="integer">
+  Output dimensions (supported by some models)
+</ParamField>
+
+## cURL Example
+
+```bash
+curl https://llm.ai-nebula.com/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "model": "text-embedding-3-small",
+    "input": "Hello, world"
+  }'
+```
+
+## Python Example
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-XyLy**************************mIqSt",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+response = client.embeddings.create(
+    model="text-embedding-3-small",
+    input="Hello, world"
+)
+
+print(response.data[0].embedding)
+print(f"Dimensions: {len(response.data[0].embedding)}")
+```
+
+<ResponseExample>
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023064255, -0.009327292, 0.015797347, ...]
+    }
+  ],
+  "model": "text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 5,
+    "total_tokens": 5
+  }
+}
+```
+</ResponseExample>
+
+## Supported Models
+
+| Model | Dimensions | Description |
+|-------|------------|-------------|
+| text-embedding-3-small | 1536 | Cost-effective for most use cases |
+| text-embedding-3-large | 3072 | High precision for demanding applications |
+| text-embedding-ada-002 | 1536 | Legacy model |
+
+## Notes
+
+<Note>
+- For batch embedding, pass an array of strings to `input`
+- Some models support custom dimensions via `dimensions` parameter
+- Requires `openai` library: `pip install openai`
+</Note>

@@ -1,0 +1,876 @@
+---
+title: 'Image Generation'
+api: 'POST https://llm.ai-nebula.com/v1/images/generations'
+---
+
+## Introduction
+
+The image generation API supports text-to-image, image-to-image, image editing, and more. Through a unified API interface, you can call multiple mainstream image generation models including Gemini, Doubao Seedream, GPT Image, and Tongyi Qianwen.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Model identifier, supported models include:
+  - Gemini series: `gemini-2.5-flash-image` (Nano Banana), `gemini-3-pro-image-preview` (Nano Banana Pro), etc.
+  - Doubao Seedream series: `doubao-seedream-3-0-t2i-250415`, `doubao-seedream-4-0-250828`, `doubao-seedream-4-5-251128`, `doubao-seededit-3-0-i2i-250628`, etc.
+  - GPT Image series: `gpt-image-1`, etc.
+  - Tongyi Qianwen series: `qwen-image-plus`, `qwen-image-edit-plus`, etc.
+</ParamField>
+
+<ParamField body="prompt" type="string">
+  Text prompt for text-to-image generation
+</ParamField>
+
+<ParamField body="response_format" type="string" default="url">
+  Response format: `b64_json` or `url`
+
+  **Note**: Different models have different support for `response_format`:
+  - **Gemini series**: Only supports `b64_json` format, always returns base64-encoded image data regardless of the value passed
+  - **Doubao Seedream series**: Usually returns URL links, `response_format` parameter may not take effect
+  - **GPT Image series**: Only supports `b64_json` format, forces base64-encoded image data
+  - **Tongyi Qianwen series**: Supports both `b64_json` and `url`, returns the corresponding format based on the parameter value (`b64_json` will download from URL and convert to base64)
+</ParamField>
+
+<ParamField body="contents" type="array">
+  Multi-turn content for image-to-image or contextual conversation
+</ParamField>
+
+## Basic Examples
+
+<Tabs>
+  <Tab title="Gemini">
+    <Tabs>
+      <Tab title="Text-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gemini-2.5-flash-image",
+        "prompt": "A cute orange kitten sitting in a garden, sunny day, high quality photography",
+        "size": "16:9",
+        "quality": "high",
+        "n": 1,
+        "temperature":1.1,
+        "top_p":0.95,
+        "response_format": "b64_json",
+        "image_size": "2K",
+        "mime_type": "image/png",
+        "response_modalities": "image"
+      }'
+        ```
+      </Tab>
+      <Tab title="Image-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gemini-2.5-flash-image",
+        "size": "16:9",
+        "quality": "high",
+        "image_size": "3K",
+        "temperature":1.1,
+        "top_p":0.95,
+        "response_format": "b64_json",
+        "contents": [
+      {
+        "role": "user",
+        "parts": [
+      {"text": "Generate an aerial view of Canton Tower based on this image"},
+      {"image": "data:image/png;base64,iVBORw0KGgoAAxxxx..."}
+        ]
+      }
+        ]
+      }'
+        ```
+      </Tab>
+      <Tab title="Multi-Image Fusion">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gemini-2.5-flash-image",
+        "size": "16:9",
+        "image_size": "3K",
+        "temperature":1.1,
+        "top_p":0.95,
+        "response_format": "b64_json",
+        "contents": [
+      {
+        "role": "user",
+        "parts": [
+      {"text": "Apply the oil painting style from the first image to the content of the second image"},
+      {"image": "https://example.com/style.jpg"},
+      {"image": "https://example.com/content.jpg"}
+        ]
+      }
+        ]
+      }'
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+
+  <Tab title="Doubao Seedream">
+    <Tabs>
+      <Tab title="Text-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "A cute orange kitten sitting in a garden, sunny day, high quality photography",
+        "size": "2048x2048",
+        "watermark": false,
+        "seed": 12345,
+        "optimize_prompt_options": {
+        "mode": "standard"
+      }
+      }'
+        ```
+      </Tab>
+      <Tab title="Image-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "Change this image to oil painting style",
+        "size": "2048x2048",
+        "watermark": false,
+        "seed": 12345,
+        "contents": [
+      {
+        "role": "user",
+        "parts": [
+      {"image": "data:image/png;base64,iVBORw0KGgoAAxxxx..."},
+      {"text": "Change this image to oil painting style"}
+        ]
+      }
+        ]
+      }'
+        ```
+      </Tab>
+      <Tab title="Sequential Image Generation">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "A cute orange kitten sitting in a garden, sunny day, high quality photography",
+        "size": "2048x2048",
+        "watermark": false,
+        "sequential_image_generation": "auto",
+        "sequential_image_generation_options": {
+        "max_images": 4
+      },
+        "optimize_prompt_options": {
+        "mode": "standard"
+      }
+      }'
+        ```
+      </Tab>
+      <Tab title="Image Editing">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seededit-3-0-i2i-250628",
+        "prompt": "Change this image to oil painting style",
+        "watermark": false,
+        "guidance_scale": 2.5,
+        "seed": 12345,
+        "contents": [
+      {
+        "role": "user",
+        "parts": [
+      {"image": "data:image/png;base64,iVBORw0KGgoAAxxxx..."},
+      {"text": "Change this image to oil painting style"}
+        ]
+      }
+        ]
+      }'
+        ```
+      </Tab>
+      <Tab title="3.0 Model (Guidance Scale)">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-3-0-t2i-250415",
+        "prompt": "A cute orange kitten sitting in a garden, sunny day, high quality photography",
+        "size": "1024x1024",
+        "watermark": false,
+        "guidance_scale": 7.5,
+        "seed": 12345
+      }'
+        ```
+      </Tab>
+      <Tab title="4.5 Model (Standard/Fast Mode)">
+        ```bash
+        # Standard mode
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-4-5-251128",
+        "prompt": "A cute kitten",
+        "size": "2048x2048",
+        "watermark": false,
+        "optimize_prompt_options": {
+        "mode": "standard"
+      }
+      }'
+
+        # fast mode
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "doubao-seedream-4-0-250828",
+        "prompt": "A cute kitten",
+        "size": "2048x2048",
+        "watermark": false,
+        "optimize_prompt_options": {
+        "mode": "fast"
+      }
+      }'
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+
+  <Tab title="GPT Image">
+    <Tabs>
+      <Tab title="Text-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gpt-image-1",
+        "prompt": "A cute orange kitten sitting in a garden, sunny day, high quality photography",
+        "size": "1024x1024",
+        "quality": "high",
+        "n": 1
+      }'
+        ```
+      </Tab>
+      <Tab title="Image-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gpt-image-1",
+        "prompt": "Change this image to oil painting style",
+        "size": "1024x1024",
+        "quality": "high",
+        "input_fidelity": "medium",
+        "n": 1,
+        "image": "data:image/png;base64,iVBORw0KGgoAAxxxx..."
+      }'
+        ```
+      </Tab>
+      <Tab title="Multi-Image Fusion">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "gpt-image-1",
+        "prompt": "Apply the style from the first image to the content of the second image",
+        "size": "1024x1024",
+        "quality": "high",
+        "input_fidelity": "high",
+        "n": 2,
+        "images": [
+        "data:image/png;base64,iVBORw0KGgoAAxxxx...",
+        "data:image/png;base64,iVBORw0KGgoAAyyyy..."
+        ]
+      }'
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+
+  <Tab title="Tongyi Qianwen">
+    <Tabs>
+      <Tab title="Text-to-Image">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "qwen-image-plus",
+        "input": {
+        "messages": [
+      {
+        "role": "user",
+        "content": [
+      {
+        "text": "一副典雅庄重的对联悬挂于厅堂之中，房间是个安静古典的中式布置，桌子上放着一些青花瓷，对联上左书“义本生知人机同道善思新”，右书“通云赋智乾坤启数高志远”， 横批“智启通义”，字体飘逸，在中间挂着一幅中国风的画作，内容是岳阳楼。"
+      }
+        ]
+      }
+        ]
+      },
+        "parameters": {
+        "negative_prompt": "1",
+        "prompt_extend": true,
+        "seed": "4",
+        "watermark": true
+      }
+      }'
+        ```
+      </Tab>
+      <Tab title="Image Editing">
+        ```bash
+        curl -X POST "https://llm.ai-nebula.com/v1/images/generations" \
+        -H "Authorization: Bearer sk-xxxxxxxxxx" \
+        -H "Content-Type: application/json" \
+        -d '{
+        "model": "qwen-image-edit-plus",
+        "input": {
+        "messages": [
+      {
+        "role": "user",
+        "content": [
+      {
+        "image": "https://help-static-aliyun-doc.aliyuncs.com/file-manage-files/zh-CN/20250925/fpakfo/image36.webp"
+      },
+      {
+        "text": "Generate an image that matches the depth map. Description: a red, worn-out bicycle parked on a muddy path, with a dense primeval forest in the background."
+      }
+        ]
+      }
+        ]
+      },
+        "parameters": {
+        "n": 2,
+        "negative_prompt": "low quality",
+        "watermark": true,
+        "size": "2048*2048",
+        "seed": 1
+      }
+      }'
+        ```
+      </Tab>
+    </Tabs>
+  </Tab>
+</Tabs>
+
+## Model-Specific Parameters
+
+Different models support different parameters. Below are detailed parameter descriptions for each model:
+
+<Tabs>
+  <Tab title="Doubao Seedream">
+    <ParamField body="image " type="string">
+      doubao-seedream-3-0-t2i-250415 does not support this parameter for input images.
+      Supports URL or Base64 encoding. Among them, doubao-seedream-4.5 and doubao-seedream-4.0 support single-image or multi-image input (see the Multi-Image Fusion example), while doubao-seededit-3.0-i2i only supports single-image input.
+    </ParamField>
+    <ParamField body="size" type="string">
+      Image size, supported sizes depend on model version:
+      - **doubao-seedream-3.0**: `1024x1024`, `1152x864`, `864x1152`, `1280x720`, `720x1280`, `1248x832`, `832x1248`, `1512x648`
+      - **doubao-seedream-4.0/4.5**: `2048x2048`, `2304x1728`, `1728x2304`, `2560x1440`, `1440x2560`, `2496x1664`, `1664x2496`, `3024x1296` (2K) or `4096x4096`, `4704x3520`, `3520x4704`, `5504x3040`, `3040x5504`, `4992x3328`, `3328x4992`, `6240x2656` (4K)
+    </ParamField>
+    <ParamField body="watermark" type="boolean" default="false">
+      Whether to add watermark
+    </ParamField>
+    <ParamField body="seed" type="integer">
+      Random seed for controlling the randomness of generation results. Same seed produces similar results. Range: `0` to `2147483647`
+    </ParamField>
+    <ParamField body="guidance_scale" type="number">
+      Guidance scale, controls how closely the generated image matches the prompt. Higher values are stricter, lower values are more free. Recommended range: `1.0-10.0`, default: `2.5`. Only supported by `doubao-seedream-3.0-t2i-250415` and `doubao-seededit-3.0-i2i-250628`
+    </ParamField>
+    <ParamField body="sequential_image_generation" type="string">
+      Sequential image generation toggle, only supported by `doubao-seedream-4.0` and `doubao-seedream-4.5`:
+      - `"auto"`: Enable sequential image generation
+      - `"disabled"`: Disable sequential image generation (default)
+    </ParamField>
+    <ParamField body="sequential_image_generation_options" type="object">
+      Sequential image generation configuration options, only effective when `sequential_image_generation` is `"auto"`:
+      - `max_images` (integer): Maximum number of images, range `1-4`, default `4`
+    </ParamField>
+    <ParamField body="optimize_prompt_options" type="object">
+      Only doubao-seedream-4.5 (currently only supports standard mode) and doubao-seedream-4.0 support this parameter.
+      - `mode` (string): Optimization mode
+        - `"standard"`: Standard mode, higher quality but longer time (default, supported by both 4.0 and 4.5)
+        - `"fast"`: Fast mode, shorter time but average quality (only 4.0)
+    </ParamField>
+  </Tab>
+
+  <Tab title="GPT Image">
+    <ParamField body="size" type="string">
+      Image size, supports: `1024x1024`, `1024x1536`, `1536x1024`. Default: `1024x1024`
+    </ParamField>
+    <ParamField body="quality" type="string" default="high">
+      Image quality:
+      - `"low"`: Fastest generation speed, lowest cost
+      - `"medium"`: Balance between quality and speed (gpt-image-1-mini default)
+      - `"high"`: Highest quality, most detailed (gpt-image-1 default)
+    </ParamField>
+    <ParamField body="n" type="integer" default="1">
+      Number of images to generate, range: `1-10`. Each generation consumes corresponding quota
+    </ParamField>
+    <ParamField body="input_fidelity" type="string">
+      Input fidelity, only effective in image-to-image mode:
+      - `"low"`: More creative freedom, larger differences from original image
+      - `"medium"`: Balance between fidelity and creativity
+      - `"high"`: Preserve original image features, smaller changes
+      - `"auto"`: Automatically select appropriate fidelity
+    </ParamField>
+    <ParamField body="image" type="string">
+      Single input image, supports URL or Base64 format (`data:image/...;base64,...`)
+    </ParamField>
+    <ParamField body="images" type="array">
+      Array of multiple input images, supports up to 10 images. Each image supports URL or Base64 format
+    </ParamField>
+  </Tab>
+
+  <Tab title="Gemini">
+    <ParamField body="size" type="string">
+      Image aspect ratio, supports: `1:1`, `3:2`, `2:3`, `3:4`, `4:3`, `4:5`, `5:4`, `9:16`, `16:9`, `21:9`. Can also use pixel dimensions (e.g., `1024x1024`), and the system will automatically convert them to the corresponding ratio.
+    </ParamField>
+    <ParamField body="quality" type="string">
+      Image quality, maps to `imageSize` parameter:
+      - `"hd"`, `"high"`, `"2K"`: Maps to `2K` resolution
+      - `"standard"`, `"medium"`, `"low"`, `"auto"`, `"1K"`: Maps to `1K` resolution (default)
+    </ParamField>
+    <ParamField body="n" type="integer" default="1">
+      Number of images to generate (corresponds to `sample_count` parameter)
+    </ParamField>
+    <ParamField body="aspect_ratio" type="string">
+      Aspect ratio, same function as `size` parameter
+    </ParamField>
+    <ParamField body="person_generation" type="string" default="allow_adult">
+      Person generation control, default: `"allow_adult"`
+    </ParamField>
+    <ParamField body="max_output_tokens" type="integer" default="32768">
+      Output token limit, default: `32768`
+    </ParamField>
+    <ParamField body="top_p" type="number" default="0.95">
+      Top-P sampling value, range: `0.0-1.0`, default: `0.95`
+    </ParamField>
+    <ParamField body="image_size" type="string">
+      Image size, supports: `1K` (default), `2K`, `4K`
+    </ParamField>
+    <ParamField body="mime_type" type="string" default="image/png">
+      Output format, supports: `image/png` (default), `image/jpeg`
+    </ParamField>
+    <ParamField body="response_modalities" type="string" default="image">
+      Response modality, supports: `image` (default), `image-text`
+    </ParamField>
+  </Tab>
+
+  <Tab title="Tongyi Qianwen">
+    <ParamField body="parameters" type="object" required>
+      Generation parameters object, contains the following fields:
+      - `role` (string, required): Message sender role, must be set to `user`.
+      - `image` (string): Only for qwen-image-edit-plus models. URL or Base64-encoded image data. Supports 1-3 input images. When multiple images are provided, image order is defined by array order, and the output aspect ratio is based on the last image.
+      - `n` (integer, required): Number of output images, default is 1. For qwen-image-edit-plus series models, you can choose to output 1-6 images. For qwen-image-edit, only 1 image is supported.
+      - `negative_prompt` (string): Negative prompt, used to exclude unwanted elements
+      - `prompt_extend` (boolean, default: true): Whether to enable prompt extension. Recommended for short prompts, and recommended to disable for detailed prompts. Only supported by qwen-image-edit-plus series models.
+      - `watermark` (boolean, default: true): Whether to add watermark
+      - `seed` (integer): Random seed, range `0-2147483647`
+    </ParamField>
+  </Tab>
+</Tabs>
+
+## Response Format
+
+```json
+{
+  "code": 200,
+  "msg": "Success",
+  "data": {
+    "data": [
+      {
+        "url": "",
+        "b64_json": "iVBORw0KGgoAAAANSUhEUgAABAAAAAQA...",
+        "revised_prompt": ""
+      }
+    ],
+    "created": 1757320007
+  }
+}
+```
+
+## Supported Models
+
+### Gemini Series
+
+**Model Name**: `gemini-2.5-flash-image` (Nano Banana)
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (single image + text generates new image)
+- ✅ Multi-image-to-one (2-5 images fusion generation)
+- ✅ Multi-turn conversational image generation (contextual continuous modification)
+
+**Supported Aspect Ratios**: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
+**Image Input**: Supports URL and Base64 format, max 7MB
+
+**Model Name**: `gemini-3-pro-image-preview` (Nano Banana Pro)
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (single image + text generates new image)
+- ✅ Multi-image-to-one (2-5 images fusion generation)
+- ✅ Multi-turn conversational image generation (contextual continuous modification)
+- ✅ Higher quality output
+
+**Supported Aspect Ratios**: 1:1, 3:2, 2:3, 3:4, 4:3, 4:5, 5:4, 9:16, 16:9, 21:9
+
+**Image Input**: Supports URL and Base64 format, max 7MB
+
+### Doubao Seedream Series
+
+**Model Name**: `doubao-seedream-3-0-t2i-250415`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Supports guidance scale adjustment
+- ✅ Supports random seed control
+- ❌ Does not support image-to-image
+
+**Supported Sizes**: 1024×1024, 1152×864, 864×1152, 1280×720, 720×1280, 1248×832, 832×1248, 1512×648
+
+**Model Name**: `doubao-seedream-4-0-250828`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (single image + text generates new image)
+- ✅ Multi-image fusion (2-5 images fusion generation)
+- ✅ Sequential image generation
+- ✅ Supports 2K/4K resolution
+- ✅ Supports multiple image formats
+
+**Supported Sizes**:
+- 2K: 2048×2048, 2304×1728, 1728×2304, 2560×1440, 1440×2560, 2496×1664, 1664×2496, 3024×1296
+- 4K: 4096×4096, 4704×3520, 3520×4704, 5504×3040, 3040×5504, 4992×3328, 3328×4992, 6240×2656
+
+**Image Input**: Supports JPEG, PNG, WEBP, BMP, TIFF, GIF formats, max 10MB
+
+**Limitation**: Maximum input plus output 15 images, but not recommended to output too many (e.g., 15 text-to-image or 1 input image output 14 images), as more output images take longer time.
+
+**Model Name**: `doubao-seedream-4-5-251128`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (single image + text generates new image)
+- ✅ Multi-image fusion (2-5 images fusion generation)
+- ✅ Sequential image generation
+- ✅ Supports 2K/4K resolution
+- ✅ Supports prompt optimization options
+- ✅ Supports multiple image formats
+
+**Supported Sizes**: Same as doubao-seedream-4-0
+
+**Image Input**: Supports JPEG, PNG, WEBP, BMP, TIFF, GIF formats, max 10MB
+
+**Limitation**: Maximum input plus output 15 images, but not recommended to output too many (e.g., 15 text-to-image or 1 input image output 14 images), as more output images take longer time.
+
+**Model Name**: `doubao-seededit-3-0-i2i-250628`
+
+**Core Capabilities**:
+- ✅ Image editing (single image + text editing)
+- ✅ Supports guidance scale adjustment
+- ✅ Supports random seed control
+- ✅ Image editing (content modification, style transfer, etc.)
+- ❌ Does not support pure text-to-image
+
+**Supported Sizes**: Adaptive (automatically adjusts based on input image size)
+
+**Image Input**: Supports JPEG, PNG formats, max 10MB, single image
+
+### GPT Image Generation Series
+
+**Model Name**: `gpt-image-1`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (up to 10 images + text)
+- ✅ Supports image quality selection
+- ✅ Supports input fidelity adjustment
+- ✅ Multi-image fusion generation
+
+**Supported Sizes**: 1024×1024, 1024×1536, 1536×1024
+
+**Image Quality**: `low`, `medium`, `high`
+
+**Generation Count**: Can generate 1-10 images per request
+
+**Image Input**: Supports JPEG, PNG, GIF, WEBP formats, max 10MB, up to 10 images
+
+**Model Name**: `gpt-image-1-mini`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Image-to-image (up to 10 images + text)
+- ✅ Supports image quality selection
+- ✅ Faster generation speed
+- ✅ Lower cost
+
+**Supported Sizes**: Same as gpt-image-1
+
+**Image Quality**: `low`, `medium`, `high`
+
+**Generation Count**: Can generate 1-10 images per request
+
+### Tongyi Qianwen Series
+
+**Model Name**: `qwen-image-plus`
+
+**Core Capabilities**:
+- ✅ Text-to-image (pure text description generates images)
+- ✅ Chinese and English text rendering (excels at generating complex text in images)
+- ✅ Multiple artistic styles
+- ✅ Intelligent prompt extension
+- ❌ Does not support image-to-image
+
+**Supported Sizes**: 1328×1328, 1664×928, 928×1664, 1472×1140, 1140×1472
+
+**Billing Method**: Per image (¥0.18/image)
+
+**Model Name**: `qwen-image-edit-plus`
+
+**Core Capabilities**:
+- ✅ Image editing (input one image, output up to 6 images)
+- ✅ Modify text in images
+- ✅ Add/remove/move objects
+- ✅ Transfer image styles
+- ✅ Enhance image details
+
+**Image Input**: Supports JPEG, JPG, PNG, BMP, TIFF, WEBP formats, max 10MB
+
+**Output Description**: Actual output count is affected by image content and editing complexity, can generate up to 6 images
+
+## Best Practices
+
+### Prompt Optimization Tips
+
+<Tabs>
+  <Tab title="Gemini (Nano Banana)">
+    1. **Specify aspect ratio needs**: Describe composition direction in the prompt
+       - Landscape: Use "horizontal composition", "widescreen view"
+       - Portrait: Use "vertical composition", "vertical view"
+
+    2. **High-quality keywords**:
+       - "high quality", "HD", "professional photography"
+       - "8k resolution", "rich details"
+
+    3. **Multi-image fusion techniques**:
+       - Clearly describe the role of each image
+       - Specify fusion method (style transfer, element combination, etc.)
+  </Tab>
+
+  <Tab title="Doubao Seedream">
+    1. **Specify style needs**:
+       - Realistic style: Add "photorealistic", "ultra-realistic"
+       - Artistic style: Add "oil painting style", "watercolor", "sketch"
+       - Anime style: Add "anime style", "2D", "cartoon"
+
+    2. **High-quality keywords**:
+       - "4K resolution", "8K quality", "ultra-high details"
+       - "professional photography", "cinematic lighting"
+
+    3. **Sequential image generation techniques** (doubao-seedream-4.x):
+       - Maintain prompt style consistency
+       - Use `sequential_image_generation` parameter to enable sequential mode
+       - Control `max_images` parameter to set number of images (1-4 images)
+
+    4. **Prompt optimization** (doubao-seedream-4.5):
+       - Use `optimize_prompt_options` parameter to optimize prompts
+       - Optional modes: `standard` (standard), `creative` (creative), `precise` (precise)
+  </Tab>
+
+  <Tab title="GPT Image">
+    1. **Specify image quality**:
+       - Use `quality` parameter to control quality: `low`, `medium`, `high`
+       - For high-quality images, add descriptive words: "professional photography", "high detail", "8K"
+
+    2. **Multi-image input techniques**:
+       - Supports up to 10 images input
+       - Use `input_fidelity` parameter to control input image fidelity: `low`, `medium`, `high`, `auto`
+       - Clearly describe the role of each reference image
+
+    3. **Prompt optimization**:
+       - Describe desired image content in detail
+       - Specify artistic style, lighting conditions, composition method
+       - Add negative descriptions to exclude unwanted content
+
+    4. **Image count control**:
+       - Use `n` parameter to control generation count (1-10 images)
+       - For complex scenes, recommend generating multiple images to select the best result
+  </Tab>
+
+  <Tab title="Tongyi Qianwen">
+    1. **Text rendering techniques**:
+       - Clearly mark text content in quotes in the prompt
+       - Example: "A poster with title \"Summer Sale\""
+
+    2. **Prompt extension**:
+       - Short prompts: Enable `prompt_extend: true`
+       - Detailed prompts: Disable `prompt_extend: false`
+
+    3. **Negative prompts**:
+       - Exclude unwanted elements: "blurry, low quality, watermark"
+       - Text rendering: "blurry text, typos"
+  </Tab>
+</Tabs>
+
+### Size Selection Tips
+
+<Tabs>
+  <Tab title="Social Media">
+    - **WeChat Moments**: 1328×1328 (1:1) or 1140×1472 (3:4)
+    - **Weibo Header**: 1664×928 (16:9)
+    - **TikTok Cover**: 928×1664 (9:16)
+    - **Xiaohongshu**: 1140×1472 (3:4)
+  </Tab>
+
+  <Tab title="Design Purposes">
+    - **Website Banner**: 1664×928 (16:9) or 21:9
+    - **Poster**: 1140×1472 (3:4) or 928×1664 (9:16)
+    - **Product Image**: 1328×1328 (1:1)
+    - **Mobile Wallpaper**: 928×1664 (9:16)
+  </Tab>
+</Tabs>
+
+## FAQ
+
+<Tabs>
+  <Tab title="General Questions">
+    <AccordionGroup>
+      <Accordion title="What image formats are supported?">
+        Different models support different formats:
+        - Gemini: PNG, JPEG, JPG, WEBP, max 7MB
+        - Doubao Seedream 3.0/4.0: JPEG, PNG, max 10MB
+        - Doubao Seedream 4.5: JPEG, PNG, WEBP, BMP, TIFF, GIF, max 10MB
+        - GPT Image: JPEG, PNG, GIF, WEBP, max 10MB
+        - Tongyi Qianwen: JPEG, JPG, PNG, BMP, TIFF, WEBP, max 10MB
+      </Accordion>
+
+      <Accordion title="How long are generated images valid?">
+        Image URLs are valid for approximately 24 hours. It is recommended to download and save immediately after receiving the response, or upload to your own storage service.
+      </Accordion>
+
+      <Accordion title="Can I generate multiple images at once?">
+        Tongyi Qianwen series generates 1 image per request. For multiple images, please make multiple concurrent requests.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+
+  <Tab title="Gemini (Nano Banana)">
+    <AccordionGroup>
+      <Accordion title="How to maintain the same aspect ratio in conversation?">
+        In the `contents` conversation array, each request must include the `size` parameter, and the system will apply the specified aspect ratio to the current request.
+      </Accordion>
+
+      <Accordion title="What are the requirements for using URL images?">
+        URLs must be publicly accessible HTTP/HTTPS addresses, supporting formats include PNG, JPEG, JPG, WEBP, max 7MB.
+      </Accordion>
+
+      <Accordion title="How many images does multi-image fusion support?">
+        Supports 2-5 images input simultaneously, 2-3 images recommended for best results.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+
+  <Tab title="Doubao Seedream">
+    <AccordionGroup>
+      <Accordion title="Does doubao-seedream-3.0 support image-to-image?">
+        No. doubao-seedream-3-0-t2i-250415 is a pure text-to-image model, only supports generating images through text description.
+      </Accordion>
+
+      <Accordion title="What image formats does doubao-seedream-4.x support?">
+        doubao-seedream-4.0 and 4.5 support JPEG, PNG, WEBP, BMP, TIFF, GIF formats, max 10MB.
+      </Accordion>
+
+      <Accordion title="How to use sequential image generation?">
+        Use the `sequential_image_generation` parameter to enable sequential mode, set to `auto`. You can control the number of images (1-4 images) through `max_images`.
+      </Accordion>
+
+      <Accordion title="What does prompt optimization option do?">
+        doubao-seedream-4.5 supports the `optimize_prompt_options` parameter, with optional modes: `standard` (standard), `creative` (creative), `precise` (precise), used to optimize prompt effects.
+      </Accordion>
+
+      <Accordion title="What editing features does doubao-seededit support?">
+        doubao-seededit-3-0-i2i-250628 supports image editing, including content modification, style transfer, detail enhancement, etc., requires input of one image and editing instruction.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+
+  <Tab title="GPT Image">
+    <AccordionGroup>
+      <Accordion title="What image formats does GPT Image support?">
+        Supports JPEG, PNG, GIF, WEBP formats, max 10MB.
+      </Accordion>
+
+      <Accordion title="How many images can be input at most?">
+        gpt-image-1 and gpt-image-1-mini support up to 10 images input.
+      </Accordion>
+
+      <Accordion title="How to choose image quality parameter?">
+        `quality` parameter options: `low`, `medium`, `high`:
+        - `low`: Fastest generation speed, lowest cost
+        - `medium`: Balance between quality and speed
+        - `high`: Highest quality, most detailed
+      </Accordion>
+
+      <Accordion title="What does input fidelity do?">
+        `input_fidelity` parameter controls the fidelity of input images, options: `low`, `medium`, `high`, `auto`:
+        - `low`: More creative freedom, larger differences from original image
+        - `high`: Preserve original image features, smaller changes
+        - `auto`: Automatically select appropriate fidelity
+      </Accordion>
+
+      <Accordion title="Can I generate multiple images at once?">
+        Yes, use the `n` parameter to control generation count (1-10 images), each image consumes corresponding quota.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+
+  <Tab title="Tongyi Qianwen">
+    <AccordionGroup>
+      <Accordion title="Does qwen-image-plus support image-to-image?">
+        No. qwen-image-plus is a pure text-to-image model, only supports generating images through text description.
+      </Accordion>
+
+      <Accordion title="How to generate images with Chinese text?">
+        Clearly specify text content in the prompt, for example: "A poster with title \"Double Eleven Sale\", subtitle \"All Items 50% Off\""
+      </Accordion>
+
+      <Accordion title="Can prompt extension and negative prompt be used together?">
+        Yes! They don't conflict. Recommendation: short prompt + enable extension + add negative prompt for best results.
+      </Accordion>
+    </AccordionGroup>
+  </Tab>
+</Tabs>
+
+## Related Resources
+
+<Columns cols={2}>
+  <Card title="Video Generation" icon="video" href="/en/api-reference/endpoint/video-generation">
+    View video generation API documentation
+  </Card>
+  <Card title="Model List" icon="list" href="/en/api-reference/models">
+    View all supported model information
+  </Card>
+</Columns>

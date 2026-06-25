@@ -1,0 +1,126 @@
+---
+title: 'Rerank'
+api: 'POST https://llm.ai-nebula.com/v1/rerank'
+---
+
+## Introduction
+
+Rerank documents by relevance to a query, commonly used in RAG to optimize retrieval results.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Model name, e.g. `rerank-v1`
+</ParamField>
+
+<ParamField body="query" type="string" required>
+  Query text
+</ParamField>
+
+<ParamField body="documents" type="array" required>
+  List of documents to rank
+</ParamField>
+
+<ParamField body="top_n" type="integer">
+  Return top N results (default: all)
+</ParamField>
+
+<ParamField body="return_documents" type="boolean" default="false">
+  Return document content
+</ParamField>
+
+## cURL Example
+
+```bash
+curl https://llm.ai-nebula.com/v1/rerank \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "model": "rerank-v1",
+    "query": "What is artificial intelligence?",
+    "documents": [
+      "AI is a branch of computer science dedicated to creating intelligent systems.",
+      "Machine learning is a subfield of AI focused on learning from data.",
+      "Deep learning uses neural networks for pattern recognition."
+    ],
+    "top_n": 3,
+    "return_documents": true
+  }'
+```
+
+## Python Example
+
+```python
+import requests
+
+url = "https://llm.ai-nebula.com/v1/rerank"
+headers = {
+    "Authorization": "Bearer sk-XyLy**************************mIqSt",
+    "Content-Type": "application/json"
+}
+
+data = {
+    "model": "rerank-v1",
+    "query": "What is artificial intelligence?",
+    "documents": [
+        "AI is a branch of computer science dedicated to creating intelligent systems.",
+        "Machine learning is a subfield of AI focused on learning from data.",
+        "Deep learning uses neural networks for pattern recognition."
+    ],
+    "top_n": 3,
+    "return_documents": True
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.json())
+```
+
+<ResponseExample>
+```json
+{
+  "model": "rerank-v1",
+  "results": [
+    {
+      "index": 0,
+      "relevance_score": 0.95,
+      "document": "AI is a branch of computer science dedicated to creating intelligent systems."
+    },
+    {
+      "index": 1,
+      "relevance_score": 0.82,
+      "document": "Machine learning is a subfield of AI focused on learning from data."
+    },
+    {
+      "index": 2,
+      "relevance_score": 0.65,
+      "document": "Deep learning uses neural networks for pattern recognition."
+    }
+  ],
+  "usage": {
+    "total_tokens": 128
+  }
+}
+```
+</ResponseExample>
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| results[].index | integer | Original document index |
+| results[].relevance_score | float | Relevance score (0-1) |
+| results[].document | string | Document content (when return_documents=true) |
+
+## Notes
+
+<Note>
+- Common in RAG: first vector search for candidates, then rerank to optimize
+- Higher `relevance_score` means more relevant to query
+- Requires `requests` library: `pip install requests`
+</Note>

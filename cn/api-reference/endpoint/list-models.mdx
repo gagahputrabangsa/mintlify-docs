@@ -1,0 +1,149 @@
+---
+title: '列出模型'
+api: 'GET https://llm.ai-nebula.com/v1/models'
+---
+
+## 简介
+
+获取当前可用的模型列表。本接口支持自动识别返回格式，无需手动指定。
+
+<Card title="自动格式识别" icon="info">
+  根据请求头自动返回对应格式：Anthropic、Gemini 或 OpenAI 格式
+</Card>
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 请求头说明
+
+根据请求头自动识别返回格式：
+
+<ParamField header="x-api-key + anthropic-version" type="string">
+  返回 Anthropic 格式响应
+</ParamField>
+
+<ParamField header="x-goog-api-key 或 key 查询参数" type="string">
+  返回 Gemini 格式响应
+</ParamField>
+
+<ParamField header="其他情况" type="string">
+  返回 OpenAI 格式响应（默认）
+</ParamField>
+
+## 代码示例
+
+### cURL 示例
+
+```bash
+curl https://llm.ai-nebula.com/v1/models \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt"
+```
+
+### Python 示例
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-XyLy**************************mIqSt",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+models = client.models.list()
+
+for model in models.data:
+    print(f"Model ID: {model.id}, Provider: {model.owned_by}")
+```
+
+### Node.js 示例
+
+```javascript
+const axios = require('axios');
+
+const response = await axios.get('https://llm.ai-nebula.com/v1/models', {
+  headers: {
+    'Authorization': 'Bearer sk-XyLy**************************mIqSt'
+  }
+});
+
+console.log(response.data.data);
+```
+
+## 响应字段说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| object | string | 固定为 `list` |
+| data | array | 模型列表 |
+| data[].id | string | 模型唯一标识 |
+| data[].object | string | 固定为 `model` |
+| data[].created | integer | 模型创建时间戳（Unix 时间戳） |
+| data[].owned_by | string | 模型提供商（如：openai、anthropic、google） |
+
+## 响应示例
+
+<ResponseExample>
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "gpt-4o",
+      "object": "model",
+      "created": 1715232000,
+      "owned_by": "openai"
+    },
+    {
+      "id": "claude-sonnet-4-20250514",
+      "object": "model",
+      "created": 1743465600,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "gemini-2.5-pro",
+      "object": "model",
+      "created": 1746057600,
+      "owned_by": "google"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## HTTP 状态码
+
+| 状态码 | 说明 |
+|--------|------|
+| 200 | 请求成功 |
+| 401 | API Key 无效或已过期 |
+| 429 | 请求频率过高 |
+| 500 | 服务器内部错误 |
+
+## 错误响应示例
+
+<ResponseExample>
+```json
+{
+  "error": {
+    "message": "Invalid API key",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key"
+  }
+}
+```
+</ResponseExample>
+
+## 注意事项
+
+<Note>
+- 返回的模型列表会根据您的 API Key 权限动态变化
+- 建议缓存模型列表，避免频繁请求（推荐缓存 1 小时）
+- 可在应用启动时调用此接口进行可用性检查
+- 不同模型的 `created` 时间戳可能差异较大，仅代表模型发布时间
+- Python 示例依赖 `openai` 库：`pip install openai`
+- Node.js 示例依赖 `axios` 库：`npm install axios`
+</Note>
+

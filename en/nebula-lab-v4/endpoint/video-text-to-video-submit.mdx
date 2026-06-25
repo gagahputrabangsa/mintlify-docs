@@ -1,0 +1,98 @@
+---
+title: 'Text to Video - Submit Task'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions'
+---
+
+## Introduction
+
+Submit text-to-video task, used to generate video based on text description.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Model name
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  Text prompt for video generation
+</ParamField>
+
+<ParamField body="duration" type="string" required>
+  Video duration, supports: 3，5, 8, 10, 12
+</ParamField>
+
+<ParamField body="aspect_ratio" type="string" required>
+  Aspect ratio
+</ParamField>
+
+<ParamField body="resolution" type="string">
+  Video resolution
+</ParamField>
+
+<ParamField body="return_url" type="boolean">
+  Whether to return video URL
+</ParamField>
+
+<ParamField body="req_key" type="string">
+  Request key
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "video-model-v1",
+        "prompt": "A cute little cat playing on the grass",
+        "duration": 5,
+        "aspect_ratio": "16:9"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoCompletions"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "model": "video-model-v1",
+        "prompt": "A cute little cat playing on the grass",
+        "duration": 5,
+        "aspect_ratio": "16:9"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "task_id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

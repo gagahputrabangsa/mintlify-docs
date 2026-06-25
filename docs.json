@@ -1,5 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
+<<<<<<< HEAD
   "theme": "luma",
   "name": "Mintlify",
   "colors": {
@@ -9,16 +10,304 @@
   "logo": {
     "light": "https://media.brand.dev/99d23bb0-7527-48e5-b2c1-71011df3a4d8.svg",
     "dark": "https://media.brand.dev/99d23bb0-7527-48e5-b2c1-71011df3a4d8.svg"
+=======
+  "theme": "mint",
+  "name": "Nebula API Documentation",
+  "colors": {
+    "primary": "#4F46E5",
+    "light": "#6366F1",
+    "dark": "#4338CA"
+  },
+  "favicon": "/logo/lab.png",
+  "announcement": {
+    "title": "🔥 最新发布：Claude Opus 4.5 编程能力登顶，价格降至 1/3！ | 🌟 Gemini 3 Pro Preview LMArena 全球第一！",
+    "href": "https://openai-nebula.com"
+  },
+  "navigation": {
+    "languages": [
+      {
+        "language": "cn",
+        "tabs": [
+          {
+            "tab": "首页",
+            "groups": [
+              {
+                "group": "快速开始",
+                "pages": ["cn/index", "cn/quickstart", "cn/changelog", "cn/contact"]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "groups": [
+{
+              "group": "API 文档",
+              "pages": ["cn/api-reference/models", "cn/api-reference/openai-sdk", "cn/api-reference/endpoint/list-models"]
+            },
+{
+              "group": "文本系列",
+              "pages": ["cn/api-reference/endpoint/gemini-native", "cn/api-reference/endpoint/chat-openai", "cn/api-reference/endpoint/responses-openai", "cn/api-reference/endpoint/messages", "cn/api-reference/endpoint/count-tokens", "cn/api-reference/endpoint/rerank"]
+            },
+            {
+              "group": "文本向量系列",
+              "pages": ["cn/api-reference/endpoint/embeddings", "cn/api-reference/endpoint/gemini-embed-content"]
+            },
+            {
+              "group": "图像系列",
+              "pages": ["cn/api-reference/endpoint/nano-banana", "cn/api-reference/endpoint/image-generation"]
+            },
+            {
+              "group": "视频系列",
+              "pages": [
+                "cn/api-reference/endpoint/veo",
+                "cn/api-reference/endpoint/submit-video-task",
+                "cn/api-reference/endpoint/query-video-task",
+                "cn/api-reference/endpoint/download-video"
+              ]
+            },
+            {
+              "group": "实时语音",
+              "pages": ["cn/api-reference/realtime", "cn/api-reference/endpoint/gemini-live"]
+            }
+            ]
+          },
+          {
+            "tab": "开发工具&平台",
+            "groups": [
+              {
+                "group": "对话型 AI",
+                "pages": ["cn/integrations/cherry-studio"]
+              },
+              {
+                "group": "编程开发",
+              "pages": ["cn/integrations/cursor", "cn/integrations/codex", "cn/integrations/open-code", "cn/integrations/claude-code", "cn/integrations/claude-code-vscode", "cn/integrations/kilo-code-vscode", "cn/integrations/cline-vscode"]
+              },
+              {
+                "group": "技术工程",
+                "pages": ["cn/integrations/langchain", "cn/integrations/dify", "cn/integrations/postman"]
+              },
+              {
+                "group": "翻译场景",
+                "pages": ["cn/integrations/immersive-translate"]
+              }
+            ]
+          },
+          {
+            "tab": "常见问题",
+            "groups": [
+              {
+                "group": "使用指南",
+                "pages": ["cn/faq/invalid-api-key", "cn/faq/network-proxy", "cn/faq/model-selection", "cn/faq/data-security", "cn/faq/content-safety"]
+              }
+            ]
+          },
+          {
+            "tab": "Nebula Lab API",
+            "groups": [
+              {
+                "group": "认证",
+                "pages": [
+                  "cn/nebula-lab-v4/endpoint/get-token"
+                ]
+              },
+              {
+                "group": "积分收费规则",
+                "pages": [
+                  "cn/nebula-lab-v4/chargingRules"
+                ]
+              },
+              {
+                "group": "AI 视频",
+                "pages": [
+                  "cn/nebula-lab-v4/endpoint/video-face-merge-submit",
+                  "cn/nebula-lab-v4/endpoint/video-face-merge-query",
+                  "cn/nebula-lab-v4/endpoint/video-image-to-video-first-last-submit",
+                  "cn/nebula-lab-v4/endpoint/video-image-to-video-first-last-query",
+                  "cn/nebula-lab-v4/endpoint/video-image-to-video-tradition-submit",
+                  "cn/nebula-lab-v4/endpoint/video-image-to-video-tradition-query",
+                  "cn/nebula-lab-v4/endpoint/video-text-to-video-submit",
+                  "cn/nebula-lab-v4/endpoint/video-text-to-video-query"
+                ]
+              },
+              {
+                "group": "AI 生图",
+                "pages": [
+                  "cn/nebula-lab-v4/endpoint/image-batch-generation",
+                  "cn/nebula-lab-v4/endpoint/image-clothing-details",
+                  "cn/nebula-lab-v4/endpoint/image-fashion-grass",
+                  "cn/nebula-lab-v4/endpoint/image-image-to-image",
+                  "cn/nebula-lab-v4/endpoint/image-product-extraction",
+                  "cn/nebula-lab-v4/endpoint/image-smart-watermark-removal",
+                  "cn/nebula-lab-v4/endpoint/image-text-to-image",
+                  "cn/nebula-lab-v4/endpoint/image-variation"
+                ]
+              },
+              {
+                "group": "万物迁移",
+                "pages": [
+                  "cn/nebula-lab-v4/endpoint/any-shoot-advanced-mode-submit",
+                  "cn/nebula-lab-v4/endpoint/any-shoot-query",
+                  "cn/nebula-lab-v4/endpoint/any-shoot-easy-mode-submit",
+                  "cn/nebula-lab-v4/endpoint/dressing2-submit-v4",
+                  "cn/nebula-lab-v4/endpoint/dressingv4-query"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "language": "en",
+        "tabs": [
+          {
+            "tab": "Home",
+            "groups": [
+              {
+                "group": "Getting started",
+                "pages": ["en/index", "en/quickstart", "en/changelog", "en/contact"]
+              }
+            ]
+          },
+          {
+            "tab": "API reference",
+            "groups": [
+{
+              "group": "API documentation",
+              "pages": ["en/api-reference/models", "en/api-reference/openai-sdk", "en/api-reference/endpoint/list-models"]
+            },
+{
+              "group": "Text Series",
+              "pages": ["en/api-reference/endpoint/gemini-native", "en/api-reference/endpoint/chat-openai", "en/api-reference/endpoint/responses-openai", "en/api-reference/endpoint/messages", "en/api-reference/endpoint/count-tokens", "en/api-reference/endpoint/rerank"]
+            },
+            {
+              "group": "Text Embedding Series",
+              "pages": ["en/api-reference/endpoint/embeddings", "en/api-reference/endpoint/gemini-embed-content"]
+            },
+            {
+              "group": "Image Series",
+              "pages": ["en/api-reference/endpoint/nano-banana", "en/api-reference/endpoint/image-generation"]
+            },
+            {
+              "group": "Video Series",
+              "pages": [
+                "en/api-reference/endpoint/veo",
+                "en/api-reference/endpoint/submit-video-task",
+                "en/api-reference/endpoint/query-video-task",
+                "en/api-reference/endpoint/download-video"
+              ]
+            },
+{
+              "group": "Realtime Voice",
+              "pages": ["en/api-reference/realtime", "en/api-reference/endpoint/gemini-live"]
+            }
+            ]
+          },
+          {
+            "tab": "Dev Tools & Platforms",
+            "groups": [
+              {
+                "group": "Chat AI",
+                "pages": ["en/integrations/cherry-studio"]
+              },
+              {
+                "group": "Coding",
+              "pages": ["en/integrations/cursor", "en/integrations/codex", "en/integrations/open-code", "en/integrations/claude-code", "en/integrations/claude-code-vscode", "en/integrations/kilo-code-vscode", "en/integrations/cline-vscode"]
+              },
+              {
+                "group": "Tech Engineering",
+                "pages": ["en/integrations/langchain", "en/integrations/dify", "en/integrations/postman"]
+              },
+              {
+                "group": "Translation",
+                "pages": ["en/integrations/immersive-translate"]
+              }
+            ]
+          },
+          {
+            "tab": "FAQ",
+            "groups": [
+              {
+                "group": "Usage Guide",
+                "pages": ["en/faq/invalid-api-key", "en/faq/network-proxy", "en/faq/model-selection", "en/faq/data-security", "en/faq/content-safety"]
+              }
+            ]
+          },
+          {
+            "tab": "Nebula Lab API",
+            "groups": [
+              {
+                "group": "Authentication",
+                "pages": [
+                  "en/nebula-lab-v4/endpoint/get-token"
+                ]
+              },
+              {
+                "group": "Points Charging Rules",
+                "pages": [
+                  "en/nebula-lab-v4/chargingRules"
+                ]
+              },
+              {
+                "group": "AI Video",
+                "pages": [
+                  "en/nebula-lab-v4/endpoint/video-face-merge-submit",
+                  "en/nebula-lab-v4/endpoint/video-face-merge-query",
+                  "en/nebula-lab-v4/endpoint/video-image-to-video-first-last-submit",
+                  "en/nebula-lab-v4/endpoint/video-image-to-video-first-last-query",
+                  "en/nebula-lab-v4/endpoint/video-image-to-video-tradition-submit",
+                  "en/nebula-lab-v4/endpoint/video-image-to-video-tradition-query",
+                  "en/nebula-lab-v4/endpoint/video-text-to-video-submit",
+                  "en/nebula-lab-v4/endpoint/video-text-to-video-query"
+                ]
+              },
+              {
+                "group": "AI Image",
+                "pages": [
+                  "en/nebula-lab-v4/endpoint/image-batch-generation",
+                  "en/nebula-lab-v4/endpoint/image-clothing-details",
+                  "en/nebula-lab-v4/endpoint/image-fashion-grass",
+                  "en/nebula-lab-v4/endpoint/image-image-to-image",
+                  "en/nebula-lab-v4/endpoint/image-product-extraction",
+                  "en/nebula-lab-v4/endpoint/image-smart-watermark-removal",
+                  "en/nebula-lab-v4/endpoint/image-text-to-image",
+                  "en/nebula-lab-v4/endpoint/image-variation"
+                ]
+              },
+              {
+                "group": "Any Shoot",
+                "pages": [
+                  "en/nebula-lab-v4/endpoint/any-shoot-advanced-mode-submit",
+                  "en/nebula-lab-v4/endpoint/any-shoot-query",
+                  "en/nebula-lab-v4/endpoint/any-shoot-easy-mode-submit",
+                  "en/nebula-lab-v4/endpoint/dressing2-submit-v4",
+                  "en/nebula-lab-v4/endpoint/dressingv4-query"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/lab.png",
+    "dark": "/logo/lab.png"
+>>>>>>> b3b385f (adddddd)
   },
   "navbar": {
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:mla@nebula-data.com"
       }
     ],
     "primary": {
       "type": "button",
+<<<<<<< HEAD
       "label": "Dashboard",
       "href": "https://dashboard.mintlify.com"
     }
@@ -97,12 +386,23 @@
         }
       ]
     }
+=======
+      "label": "NebulaAPI",
+      "href": "https://openai-nebula.com"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "perplexity", "mcp", "cursor", "vscode"]
+>>>>>>> b3b385f (adddddd)
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://openai-nebula.com"
     }
   }
 }
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> b3b385f (adddddd)

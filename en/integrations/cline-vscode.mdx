@@ -1,0 +1,57 @@
+---
+title: 'Cline Extension (VS Code)'
+description: 'Installation and configuration guide for the Cline extension for VS Code'
+---
+
+## Step 1: Install Cline Extension
+
+1. Open VS Code editor, go to the "Extensions" panel on the left (Shortcut: Ctrl+Shift+X).
+2. Type "Cline" in the search box in the Marketplace to find the official extension.
+3. Click the "Install" button to complete the installation.
+<Frame>
+  <img src="/images/cline-start.png" alt="Cline Extension Installation" />
+</Frame>
+
+## Step 2: Open Cline Settings
+
+1. After installation, click the Cline icon in the left activity bar to open the extension panel.
+2. Click the "Settings" gear icon in the top toolbar to enter the configuration page.
+
+<Frame>
+  <img src="/images/cline-1.png" alt="Cline Extension Installation" />
+</Frame>
+
+## Step 3: Configure API Provider
+
+Configure the following in the settings panel:
+
+1. **API Provider**: Select "OpenAI Compatible" from the dropdown.
+<Frame>
+  <img src="/images/cline-2.png" alt="Cline Settings Location Guide" />
+</Frame>
+2. **Base URL**: Enter `https://llm.ai-nebula.com/v1`.
+<Frame>
+  <img src="/images/cline-3.png" alt="Cline API Provider Configuration" />
+</Frame>
+3. **API Key**: Enter your API key (sk-xxxxx).
+<Frame>
+  <img src="/images/cline-4.png" alt="Cline Save Configuration" />
+</Frame>
+4. **Model**: Enter the model name you want to use (e.g., `claude-sonnet-4-6`). You can choose any model that Nebula provides — view the full list <a href="https://nebula-data.ai/#/models" target="_blank">here</a>.
+<Frame>
+  <img src="/images/cline-5.png" alt="Cline Configuration Success" />
+</Frame>
+
+
+## Step 4: Save Configuration
+
+1. After filling in all the fields, click the **"Save"** button to apply the settings.
+2. Cline will automatically connect to the Nebula API using your configuration.
+
+
+## Step 5: Verify Connection
+
+1. After configuration, open any code file or start a new Cline chat.
+2. Type a test message (e.g., "Hello" or "Explain this code").
+3. If you receive a response, the configuration is successful.
+

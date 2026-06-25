@@ -1,0 +1,134 @@
+---
+title: '万物迁移-服装模式-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/dressing2Submitv4'
+---
+
+## 简介
+
+提交万物迁移-服装模式任务，用于实现虚拟试装功能。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="cVDressingV4DTO.model.url" type="string" required>
+  模特图片 URL
+</ParamField>
+<ParamField body="cVDressingV4DTO.garment.data" type="object[]" required>
+  服装素材列表
+</ParamField>
+<ParamField body="cVDressingV4DTO.garment.data[].type" type="string" required>
+  素材类型（如：image）
+</ParamField>
+<ParamField body="cVDressingV4DTO.garment.data[].url" type="string" required>
+  素材 URL
+</ParamField>
+
+<ParamField body="cVDressingV4DTO.req_key" type="string">
+  请求标识，用于业务侧关联或去重
+</ParamField>
+<ParamField body="cVDressingV4DTO.return_url" type="boolean">
+  是否直接返回结果 URL
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.do_sr" type="boolean">
+  是否开启超分
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.seed" type="integer">
+  随机种子
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.keep_head" type="boolean">
+  保留头部
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.keep_hand" type="boolean">
+  保留手部
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.keep_foot" type="boolean">
+  保留脚部
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.num_steps" type="integer">
+  生成步数
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.keep_upper" type="boolean">
+  保留上半身
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.keep_lower" type="boolean">
+  保留下半身
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.tight_mask" type="string">
+  紧致蒙版
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.p_bbox_iou_ratio" type="number">
+  人体框 IOU 比例
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.p_bbox_expand_ratio" type="number">
+  人体框扩展比例
+</ParamField>
+<ParamField body="cVDressingV4DTO.inference_config.max_process_side_length" type="integer">
+  最大处理边长
+</ParamField>
+<ParamField body="cVDressingV4DTO.logoInfo.add_logo" type="boolean">
+  是否添加 Logo
+</ParamField>
+<ParamField body="cVDressingV4DTO.logoInfo.position" type="integer">
+  Logo 位置
+</ParamField>
+<ParamField body="cVDressingV4DTO.logoInfo.language" type="integer">
+  Logo 语言
+</ParamField>
+<ParamField body="cVDressingV4DTO.logoInfo.opacity" type="number">
+  Logo 透明度
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/dressing2Submitv4" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "imageUrl": "https://example.com/model.jpg",
+        "clothingUrl": "https://example.com/clothing.jpg"
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/dressing2Submitv4"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "imageUrl": "https://example.com/model.jpg",
+        "clothingUrl": "https://example.com/clothing.jpg"
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "task_id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

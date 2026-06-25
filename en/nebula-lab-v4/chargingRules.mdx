@@ -1,0 +1,99 @@
+---
+title: 'Nebula Lab V4 Points Charging Rules'
+---
+
+## Introduction
+
+Nebula Lab V4 API uses a **points-based** billing model.
+
+## Billing Notes
+
+- Points are deducted when a **task is submitted successfully** (some video APIs use pre-deduction; points are finalized only after the task succeeds).
+- Duration-based APIs support formats such as `3s`、`5s`、`8s`、`10s`、`12s`; points are calculated from the **duration converted to seconds**.
+- Points are rounded to 1 decimal place.
+
+---
+
+## Video Generation
+
+### Text to Video
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| Text to Video - Submit Task | **0.6 points per second**, calculated from request parameter `duration` converted to seconds |
+| Text to Video - Query Task | No charge |
+
+### Image to Video - Traditional Mode
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| Image to Video (Traditional) - Submit Task | **0.1 points per second**, calculated from `duration` converted to seconds |
+| Image to Video (Traditional) - Query Task | No charge |
+
+### Image to Video - First/Last Frame Mode
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| Image to Video (First/Last Frame) - Submit Task | **0.4 points per second** (equivalent to 2 points per 5 seconds), calculated from `duration` in seconds |
+| Image to Video (First/Last Frame) - Query Task | No charge |
+
+### Image to Video - Face Swap
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| Image to Video (Face Swap) - Submit Task | **0.4 points per second**, calculated from video duration (seconds) parsed from the input video URL |
+| Image to Video (Face Swap) - Query Task | No charge |
+
+---
+
+## Image Generation (AI Image)
+
+All listed interfaces are charged **per image** at **0.2 points per image**. If the interface supports a count parameter `n`, total points = **0.2 × n**.
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| AI Image - Text to Image | **0.2 points per image** (1 image per call) |
+| AI Image - Image to Image | **0.2 points per image** (1 image per call) |
+| AI Image - Batch Generation | **0.2 points per image**, total = 0.2 × parameter `n` |
+| AI Image - Variation | **0.2 points per image**, total = 0.2 × parameter `n` |
+| AI Image - Fashion Try-on | **0.2 points per image**, default 1, optional `n` |
+| AI Image - Smart Watermark Removal | **0.2 points per image**, default 1, optional `n` |
+| AI Image - Product Extraction | **0.2 points per image**, default 1, optional `n` |
+| AI Image - Clothing Details | **0.2 points per image**, default 1, optional `n` |
+| AI Image - HD Retouching | **0.2 points per image**, default 1, optional `n` |
+
+---
+
+## Object Transfer (Any Shoot)
+
+| Interface | Charging Rule |
+|-----------|---------------|
+| Object Transfer - Standard Mode - Submit Task | **1 point per call** (fixed) |
+| Object Transfer - Creative Mode | **0.2 points per call** (fixed) |
+| Object Transfer - Dressing Mode - Submit Task | **0.9 points per call** (fixed) |
+| Object Transfer - Dressing Mode - Query Task | No charge |
+| Object Transfer - Query Task | No charge |
+
+---
+
+## Billing Summary
+
+| Capability | Billing Basis | Rate |
+|------------|---------------|------|
+| Text to Video | By video duration | 0.6 points/sec |
+| Image to Video - Traditional | By video duration | 0.1 points/sec |
+| Image to Video - First/Last Frame | By video duration | 0.4 points/sec |
+| Image to Video - Face Swap | By video duration | 0.4 points/sec |
+| AI Image (text-to-image, image-to-image, batch, variation, fashion try-on, watermark removal, product extraction, clothing details, HD retouching) | Per image | 0.2 points/image |
+| Object Transfer - Standard Mode | Per call | 1 point/call |
+| Object Transfer - Creative Mode | Per call | 0.2 points/call |
+| Object Transfer - Dressing Mode | Per call | 0.9 points/call |
+
+---
+
+## Deduction and Pre-deduction
+
+- **Immediate deduction**: Most image generation, image-to-video (traditional / first-last frame), and object transfer creative/dressing mode—points are deducted from the account when the submit request succeeds.
+- **Pre-deduction**: Text to video, image-to-video face swap, object transfer standard mode, and object transfer dressing mode—a “unpaid” points record is created on submit; it is marked as paid only after the task succeeds (e.g., query shows success or callback succeeds). If the task fails, points may not be charged or may be refunded per business logic.
+
+Ensure your account has sufficient points before calling; otherwise you will receive an insufficient balance error.

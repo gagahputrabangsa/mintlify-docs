@@ -1,0 +1,882 @@
+---
+title: 'Create Message Request (Claude)'
+api: 'POST https://llm.ai-nebula.com/v1/messages'
+---
+
+## Introduction
+
+Claude's native message API, suitable for native Anthropic clients like Claude Code. This API follows Anthropic's specification and provides full Claude model capabilities, including Extended Thinking, tool calling, and other advanced features.
+
+<Note>
+If you're using an OpenAI-compatible client (like OpenAI SDK), we recommend using the [`/v1/chat/completions`](/en/api-reference/endpoint/chat-openai) endpoint instead.
+</Note>
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Claude model identifier, supported models include:
+  - `claude-opus-4-5-20251101` - Claude Opus 4.5 (Latest, strongest reasoning)
+  - `claude-haiku-4-5-20251001` - Claude Haiku 4.5 (Latest, fastest)
+  - `claude-sonnet-4-5-20250929` - Claude Sonnet 4.5 (Latest, balanced)
+  - `claude-opus-4-1-20250805` - Claude Opus 4.1
+  - `claude-sonnet-4-20250514` - Claude Sonnet 4
+  - Other Claude series models
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  List of conversation messages, each containing `role` (user/assistant) and `content`. `content` can be a string or an array of media content.
+</ParamField>
+
+<ParamField body="max_tokens" type="number" required>
+  Maximum number of tokens to generate. Must be greater than 0.
+</ParamField>
+
+<ParamField body="system" type="string|array">
+  System prompt, can be a string or an array of media content. Used to set the model's behavior and role.
+</ParamField>
+
+<ParamField body="temperature" type="number" default="1.0">
+  Randomness control, 0-1. Higher values make responses more random. Recommended to set to 1.0 when using extended thinking.
+</ParamField>
+
+<ParamField body="top_p" type="number" default="1.0">
+  Nucleus sampling parameter, 0-1, controls generation diversity. Recommended to set to 0 when using extended thinking.
+</ParamField>
+
+<ParamField body="top_k" type="number">
+  Top-K sampling parameter, only supported by some models.
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  Whether to enable streaming output, returns SSE format data chunks. Recommended to enable when using extended thinking.
+</ParamField>
+
+<ParamField body="stop_sequences" type="array">
+  List of stop sequences. Generation stops when the model produces these sequences.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Tool definitions list, supports function tools and web search tools.
+</ParamField>
+
+<ParamField body="tool_choice" type="object">
+  Tool selection strategy, controls how the model uses tools.
+</ParamField>
+
+<ParamField body="thinking" type="object">
+  Extended thinking configuration, enables Claude's deep reasoning capability.
+</ParamField>
+
+<ParamField body="metadata" type="object">
+  Request metadata for tracking and debugging.
+</ParamField>
+
+<ParamField body="mcp_servers" type="array">
+  MCP (Model Context Protocol) server configuration.
+</ParamField>
+
+<ParamField body="context_management" type="object">
+  Context management configuration, controls how conversation context is handled.
+</ParamField>
+
+## Prompt Caching
+
+Prompt Caching allows you to cache frequently used context content, significantly reducing costs and improving response speed. Supports using the `cache_control` parameter in `system` and `messages`.
+
+### Cache Control Parameters
+
+<ParamField body="cache_control" type="object">
+  Cache control configuration, can be used in `system` array elements and `content` array elements in `messages`.
+
+  - `type`: Cache type
+    - `"ephemeral"`: 5-minute cache (default, most cost-effective)
+    - `"persistent"`: 1-hour cache (suitable for long-term stable context)
+</ParamField>
+
+### Caching Mechanism
+
+- **Cache Position**: The last content block marked with `cache_control` will be cached
+- **Cache Threshold**: Content needs at least **1024 tokens** (Claude Sonnet 4.5) or **2048 tokens** (Claude 3 Haiku)
+- **Cache Duration**:
+  - `ephemeral`: Valid for 5 minutes
+  - `persistent`: Valid for 1 hour
+- **Cost Savings**: Cache reads are **90% cheaper** than regular inputs
+
+### Use Cases
+
+1. **Long Document Analysis**: Cache large documents in `system`, ask multiple questions
+2. **Codebase Understanding**: Cache code context for multi-turn code analysis
+3. **Knowledge Base Q&A**: Cache knowledge base content for fast queries
+4. **Multi-turn Conversations**: Cache conversation history to maintain context coherence
+
+## Basic Examples
+
+<Tabs>
+  <Tab title="Non-streaming Request">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "messages": [
+          {"role": "user", "content": "Please briefly introduce artificial intelligence"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Streaming Request (SSE)">
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "stream": true,
+        "messages": [
+          {"role": "user", "content": "Please briefly introduce artificial intelligence"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python Example (Anthropic SDK)">
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    # Non-streaming
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": "Please briefly introduce artificial intelligence"}
+        ]
+    )
+    print(message.content[0].text)
+
+    # Streaming
+    with client.messages.stream(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": "Please briefly introduce artificial intelligence"}
+        ]
+    ) as stream:
+        for text_block in stream.text_stream:
+            print(text_block, end="")
+    ```
+  </Tab>
+</Tabs>
+
+<ResponseExample>
+```json
+{
+  "id": "msg_xxx",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {
+      "type": "text",
+      "text": "Artificial intelligence is a branch of computer science that focuses on creating intelligent machines capable of performing tasks that typically require human intelligence..."
+    }
+  ],
+  "model": "claude-sonnet-4-5-20250929",
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 25,
+    "output_tokens": 100
+  }
+}
+```
+</ResponseExample>
+
+## Advanced Features
+
+### System Prompt
+
+System prompts can be set as a string or an array of media content:
+
+<Tabs>
+  <Tab title="String Format">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "system": "You are a helpful assistant that excels at answering questions.",
+        "messages": [
+          {"role": "user", "content": "What is machine learning?"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Array Format">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "system": [
+          {"type": "text", "text": "You are a helpful assistant that excels at answering questions."}
+        ],
+        "messages": [
+          {"role": "user", "content": "What is machine learning?"}
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### Extended Thinking
+
+Claude supports extended thinking, allowing the model to perform deep reasoning. When enabled, the model will think internally before generating the final answer.
+
+<Tabs>
+  <Tab title="Basic Usage">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 4096,
+        "temperature": 1.0,
+        "top_p": 0,
+        "stream": true,
+        "messages": [
+          {"role": "user", "content": "Give a medium difficulty geometry problem and solve it step by step"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python Example">
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    with client.messages.stream(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=4096,
+        thinking={
+            "type": "enabled",
+            "budget_tokens": 4096
+        },
+        temperature=1.0,
+        top_p=0,
+        messages=[
+            {"role": "user", "content": "Give a medium difficulty geometry problem and solve it step by step"}
+        ]
+    ) as stream:
+        for event in stream:
+            if event.type == "content_block_delta":
+                if hasattr(event.delta, "thinking"):
+                    # Thinking process
+                    print(f"[Thinking] {event.delta.thinking}", end="")
+                elif hasattr(event.delta, "text"):
+                    # Final answer
+                    print(event.delta.text, end="")
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+- `budget_tokens` must be greater than 1024
+- When using extended thinking, it's recommended to set `temperature: 1.0` and `top_p: 0`
+- Streaming output (`stream: true`) must be enabled to see the thinking process
+</Note>
+
+### Tool Calling
+
+Supports function tools and web search tools:
+
+<Tabs>
+  <Tab title="Function Tools">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "tools": [
+          {
+            "name": "get_weather",
+            "description": "Get weather information for a city",
+            "input_schema": {
+              "type": "object",
+              "properties": {
+                "city": {
+                  "type": "string",
+                  "description": "City name"
+                }
+              },
+              "required": ["city"]
+            }
+          }
+        ],
+        "tool_choice": {
+          "type": "auto"
+        },
+        "messages": [
+          {"role": "user", "content": "What is the weather in Shanghai?"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Claude Official Web Search Tool">
+    Claude supports the official web search tool `web_search_20250305`, which can search the web in real-time and include citation sources in responses.
+
+    **Basic Usage**:
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "tools": [
+          {
+            "type": "web_search_20250305",
+            "name": "web_search"
+          }
+        ],
+        "messages": [
+          {"role": "user", "content": "What are the latest news about artificial intelligence?"}
+        ]
+      }'
+    ```
+
+    **With Search Limit**:
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "tools": [
+          {
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": 5
+          }
+        ],
+        "messages": [
+          {"role": "user", "content": "Search for today'\''s weather in Beijing"}
+        ]
+      }'
+    ```
+
+    **With Location Information (Improves Search Accuracy)**:
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "tools": [
+          {
+            "type": "web_search_20250305",
+            "name": "web_search",
+            "max_uses": 5,
+            "user_location": {
+              "type": "approximate",
+              "timezone": "Asia/Shanghai",
+              "country": "CN",
+              "region": "Beijing",
+              "city": "Beijing"
+            }
+          }
+        ],
+        "messages": [
+          {"role": "user", "content": "What'\''s the weather in Shanghai today?"}
+        ]
+      }'
+    ```
+
+    **Python Example**:
+
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    message = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1024,
+        tools=[
+            {
+                "type": "web_search_20250305",
+                "name": "web_search",
+                "max_uses": 5
+            }
+        ],
+        messages=[
+            {"role": "user", "content": "What are the latest news about artificial intelligence?"}
+        ]
+    )
+    print(message.content[0].text)
+    ```
+
+    <Note>
+    - `type` must be `"web_search_20250305"`
+    - `name` must be `"web_search"`
+    - `max_uses` (optional): Maximum number of search uses in a single conversation, recommended value: 2-10
+    - `user_location` (optional): User location information to improve localization accuracy of search results
+    - Search results will automatically include citation sources in the response
+    - Supported models include Claude Sonnet 4.5, Claude Opus 4.5, Claude Haiku 4.5, etc.
+    </Note>
+  </Tab>
+
+  <Tab title="Complete Tool Calling Flow">
+    Phase 1: Model returns tool call request
+
+    ```json
+    {
+      "id": "msg_xxx",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_xxx",
+          "name": "get_weather",
+          "input": {"city": "Shanghai"}
+        }
+      ],
+      "stop_reason": "tool_use"
+    }
+    ```
+
+    Phase 2: Return tool execution result
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "tools": [...],
+        "messages": [
+          {"role": "user", "content": "What is the weather in Shanghai?"},
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "tool_use",
+                "id": "toolu_xxx",
+                "name": "get_weather",
+                "input": {"city": "Shanghai"}
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "tool_result",
+                "tool_use_id": "toolu_xxx",
+                "content": "{\"temp\":\"22°C\",\"condition\":\"Cloudy\",\"aqi\":53}"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### tool_choice Parameter Details
+
+`tool_choice` controls how the model uses tools:
+
+| Value | Description |
+|-----|------|
+| `{"type": "auto"}` | Automatically decide whether to use tools (default) |
+| `{"type": "any"}` | Must use at least one tool |
+| `{"type": "none"}` | Don't use any tools |
+| `{"type": "tool", "name": "tool_name"}` | Must use the specified tool |
+
+Example:
+
+```json
+{
+  "tool_choice": {
+    "type": "auto",
+    "disable_parallel_tool_use": false
+  }
+}
+```
+
+### Multimodal Input (Images)
+
+Supports including images in messages:
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "claude-sonnet-4-5-20250929",
+    "max_tokens": 1024,
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "image",
+            "source": {
+              "type": "base64",
+              "media_type": "image/png",
+              "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+            }
+          },
+          {
+            "type": "text",
+            "text": "What is in this image?"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+### Prompt Caching
+
+Caching frequently used context content can significantly reduce costs and improve response speed.
+
+<Tabs>
+  <Tab title="System Cache (5 minutes)">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "system": [
+          {
+            "type": "text",
+            "text": "You are a professional technical documentation analyst. Here is the complete AWS Lambda technical documentation:\n\nAWS Lambda is a serverless computing service...[large documentation content, at least 1024 tokens]",
+            "cache_control": {"type": "ephemeral"}
+          }
+        ],
+        "messages": [
+          {"role": "user", "content": "What is Lambda's pricing model?"}
+        ]
+      }'
+    ```
+
+    **First Request Response**:
+    ```json
+    {
+      "usage": {
+        "input_tokens": 50,
+        "cache_creation_input_tokens": 1200,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 150
+      }
+    }
+    ```
+
+    **Second Request within 5 minutes (different question, same system)**:
+    ```json
+    {
+      "usage": {
+        "input_tokens": 45,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 1200,
+        "output_tokens": 100
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="Messages Cache (1 hour)">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "max_tokens": 1024,
+        "system": "You are a Python programming assistant",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "Analyze this code:\n```python\n[large code snippet, at least 1024 tokens]\n```",
+                "cache_control": {"type": "persistent"}
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "The main functionality of this code is...[detailed analysis]",
+                "cache_control": {"type": "persistent"}
+              }
+            ]
+          },
+          {
+            "role": "user",
+            "content": "How can I optimize the performance of this code?"
+          }
+        ]
+      }'
+    ```
+
+    **Advantages of persistent cache**:
+    - 1-hour cache duration, suitable for long sessions
+    - Ideal for code reviews, document analysis, etc.
+    - Faster subsequent requests after cache hit
+  </Tab>
+
+  <Tab title="Python SDK Example">
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    # First request: Create cache
+    message1 = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1024,
+        system=[
+            {
+                "type": "text",
+                "text": "You are a professional document analyst...[long text content]",
+                "cache_control": {"type": "ephemeral"}
+            }
+        ],
+        messages=[
+            {"role": "user", "content": "First question"}
+        ]
+    )
+
+    print(f"Cache created: {message1.usage.cache_creation_input_tokens} tokens")
+    print(f"Cache read: {message1.usage.cache_read_input_tokens} tokens")
+
+    # Second request within 5 minutes: Use cache
+    message2 = client.messages.create(
+        model="claude-sonnet-4-5-20250929",
+        max_tokens=1024,
+        system=[
+            {
+                "type": "text",
+                "text": "You are a professional document analyst...[same long text]",
+                "cache_control": {"type": "ephemeral"}
+            }
+        ],
+        messages=[
+            {"role": "user", "content": "Second question"}
+        ]
+    )
+
+    print(f"Cache created: {message2.usage.cache_creation_input_tokens} tokens")
+    print(f"Cache read: {message2.usage.cache_read_input_tokens} tokens")
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+**Cache Key Points**:
+- Content must be **≥ 1024 tokens** (Claude Sonnet 4.5) to trigger caching
+- `ephemeral` cache is valid for **5 minutes**
+- `persistent` cache is valid for **1 hour**
+- Cache reads cost **90% less** than regular inputs
+- The last block with `cache_control` will be cached
+- Cache is based on exact content match; any changes invalidate the cache
+</Note>
+
+<Tip>
+**Best Practices**:
+- Place unchanging long context (documents, codebases, etc.) in `system` with caching enabled
+- Use `persistent` cache (1 hour) for long-term stable content
+- Use `ephemeral` cache (5 minutes) for frequently changing content
+- Cache conversation history in multi-turn dialogues
+- Monitor `cache_creation_input_tokens` and `cache_read_input_tokens` to optimize costs
+</Tip>
+
+## Response Format
+
+<Tabs>
+  <Tab title="Non-streaming Response">
+    ```json
+    {
+      "id": "msg_xxx",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Response content..."
+        }
+      ],
+      "model": "claude-sonnet-4-5-20250929",
+      "stop_reason": "end_turn",
+      "stop_sequence": null,
+      "usage": {
+        "input_tokens": 25,
+        "cache_creation_input_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 100
+      }
+    }
+    ```
+
+    **Usage fields when using cache**:
+    - `input_tokens`: Non-cached input tokens for the current request
+    - `cache_creation_input_tokens`: Tokens cached for the first time (only present in first request)
+    - `cache_read_input_tokens`: Tokens read from cache (present when cache hits)
+    - `output_tokens`: Generated output tokens
+  </Tab>
+
+  <Tab title="Streaming Response">
+    Streaming responses are returned in SSE (Server-Sent Events) format, containing the following event types:
+
+    - `message_start`: Message start
+    - `content_block_start`: Content block start
+    - `content_block_delta`: Content delta (contains `text` or `thinking`)
+    - `content_block_stop`: Content block end
+    - `message_delta`: Message delta (contains usage info)
+    - `message_stop`: Message end
+
+    ```json
+    event: message_start
+    data: {"type":"message_start","message":{"id":"msg_xxx","type":"message","role":"assistant","content":[],"model":"claude-sonnet-4-5-20250929","stop_reason":null,"stop_sequence":null,"usage":{"input_tokens":25,"output_tokens":0}}}
+
+    event: content_block_start
+    data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+
+    event: content_block_delta
+    data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Response"}}
+
+    event: content_block_delta
+    data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":" content"}}
+
+    event: content_block_stop
+    data: {"type":"content_block_stop","index":0}
+
+    event: message_delta
+    data: {"type":"message_delta","delta":{"stop_reason":"end_turn","stop_sequence":null},"usage":{"output_tokens":100}}
+
+    event: message_stop
+    data: {"type":"message_stop"}
+    ```
+
+    When using extended thinking, `content_block_delta` may contain a `thinking` field:
+
+    ```json
+    event: content_block_delta
+    data: {"type":"content_block_delta","index":0,"delta":{"type":"thinking_delta","thinking":"Let me think about this problem..."}}
+    ```
+  </Tab>
+</Tabs>
+
+## Error Handling
+
+The system processes upstream Claude API errors and returns standardized error response formats.
+
+| Error Type | HTTP Status Code | Description |
+|---------|------------|------|
+| `invalid_request` | 400 | Request parameter error (e.g., missing required fields) |
+| `authentication_error` | 401 | Invalid or unauthorized API key |
+| `rate_limit_error` | 429 | Request rate limit exceeded |
+| `upstream_error` | 500 | Upstream service error |
+| `nebula_api_error` | 500 | System internal error |
+
+Error response example:
+
+```json
+{
+  "error": {
+    "type": "invalid_request",
+    "message": "field messages is required"
+  }
+}
+```
+
+## Comparison with /v1/chat/completions
+
+| Feature | /v1/messages | /v1/chat/completions |
+|-----|-------------|---------------------|
+| Authentication | `Authorization: Bearer` | `Authorization: Bearer` |
+| Response Format | Anthropic native format | OpenAI compatible format |
+| Extended Thinking | Native `thinking` parameter | Via `reasoning_effort` or `reasoning` parameter |
+| Tool Calling | Native `tools` and `tool_choice` | OpenAI compatible format |
+| Suitable Clients | Anthropic SDK, Claude Code | OpenAI SDK, compatible clients |
+
+<Tip>
+- If you're using Claude Code or other Anthropic native clients, we recommend using the `/v1/messages` endpoint
+- If you're using OpenAI SDK or need OpenAI format compatibility, we recommend using the `/v1/chat/completions` endpoint
+- Both endpoints have essentially the same functionality, the main difference is in request/response format
+</Tip>
+
+## Notes
+
+<Note>
+- `max_tokens` is a required parameter and must be greater than 0
+- `messages` array cannot be empty
+- When using extended thinking, `budget_tokens` must be greater than 1024
+- Extended thinking requires streaming output to see the thinking process
+- Tool calling requires multiple rounds of interaction: first round returns tool call request, second round returns tool execution result
+- Image input requires base64 encoding
+</Note>
+
+<Tip>
+- Using streaming output can improve first token response time and interaction experience
+- Tool calling should have proper timeout and retry mechanisms to avoid blocking model responses
+- Extended thinking can significantly improve reasoning quality for complex problems
+</Tip>
+
+## Related Resources
+
+<Columns cols={2}>
+  <Card title="Chat Completions (OpenAI Compatible)" icon="message" href="/en/api-reference/endpoint/chat-openai">
+    View OpenAI compatible chat endpoint documentation
+  </Card>
+  <Card title="Model List" icon="list" href="/en/api-reference/models">
+    View all supported model information
+  </Card>
+</Columns>
+

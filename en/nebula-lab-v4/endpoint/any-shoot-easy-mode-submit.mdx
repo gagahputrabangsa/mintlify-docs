@@ -1,0 +1,105 @@
+---
+title: 'Any Shoot - Creative Mode'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit'
+---
+
+## Introduction
+
+Submit Any Shoot creative mode task, used to generate creative style transfer images.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="size" type="string" required>
+  Image size
+</ParamField>
+
+<ParamField body="contents" type="object[]" required>
+  Content list
+</ParamField>
+<ParamField body="contents[].parts" type="object[]" required>
+  Part list
+</ParamField>
+<ParamField body="contents[].parts[].text" type="string">
+  Text content
+</ParamField>
+<ParamField body="contents[].parts[].image" type="string">
+  Image content (supports base64 or URL)
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "size": "1024x1024",
+        "contents": [
+          {
+            "parts": [
+              {
+                "text": "A cute little cat playing on the grass"
+              },
+              {
+                "image": "https://example.com/cat.jpg"
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/anyShootEasyModeSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "size": "1024x1024",
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": "A cute little cat playing on the grass"
+                    },
+                    {
+                        "image": "https://example.com/cat.jpg"
+                    }
+                ]
+            }
+        ]
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "url": "https://example.com/generated-image.jpg"
+  }
+}
+```
+</ResponseExample>

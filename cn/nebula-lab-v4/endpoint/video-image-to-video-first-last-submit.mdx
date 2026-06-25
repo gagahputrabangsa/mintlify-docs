@@ -1,0 +1,98 @@
+---
+title: '图生视频-首尾图模式-提交任务'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/volcImageFirstLast'
+---
+
+## 简介
+
+提交首尾图模式图生视频任务，用于根据首尾图片生成视频。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="image_urls" type="string[]" required>
+  图片链接列表，包含首图和尾图，数量必须为2
+</ParamField>
+
+<ParamField body="prompt" type="string" required>
+  提示词
+</ParamField>
+
+<ParamField body="duration" type="long" required>
+  视频时长（秒）
+</ParamField>
+
+<ParamField body="req_key" type="string">
+  请求标识
+</ParamField>
+
+<ParamField body="resolution" type="string">
+  分辨率
+</ParamField>
+
+<ParamField body="return_url" type="boolean">
+  是否返回视频URL
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/volcImageFirstLast" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "image_urls": ["https://example.com/first.jpg", "https://example.com/last.jpg"],
+        "prompt": "从首图自然过渡到尾图",
+        "duration": 5,
+        "req_key": "req-001",
+        "resolution": "720p",
+        "return_url": true
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/volcImageFirstLast"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "image_urls": ["https://example.com/first.jpg", "https://example.com/last.jpg"],
+        "prompt": "从首图自然过渡到尾图",
+        "duration": 5,
+        "req_key": "req-001",
+        "resolution": "720p",
+        "return_url": True
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

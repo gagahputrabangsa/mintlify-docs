@@ -1,0 +1,308 @@
+---
+title: 'Count Tokens (Claude)'
+api: 'POST https://llm.ai-nebula.com/v1/messages/count_tokens'
+---
+
+## Introduction
+
+Calculate the token count of Claude messages to estimate costs before sending requests. This endpoint **does not consume quota** and only performs local calculations.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="model" type="string" required>
+  Claude model identifier. Supported models include:
+  - `claude-opus-4-5-20251101` (Recommended replacement for claude-3-opus)
+  - `claude-haiku-4-5-20251001`
+  - `claude-sonnet-4-5-20250929`
+  - `claude-sonnet-4-20250514`
+  - Other Claude series models
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  List of conversation messages, each containing `role` (user/assistant) and `content`. `content` can be a string or an array of media content.
+  
+  Supported content types:
+  - Plain text messages
+  - Multimodal messages (including images)
+  - Tool call results
+</ParamField>
+
+<ParamField body="system" type="string|array">
+  System prompt (optional), can be a string or an array of media content. Used to set the model's behavior and role.
+</ParamField>
+
+<ParamField body="tools" type="array">
+  Tool definitions list (optional), used to calculate tokens related to tool calls.
+</ParamField>
+
+## Response Parameters
+
+<ResponseField name="input_tokens" type="number">
+  Total token count of input messages, including:
+  - System prompt tokens
+  - All messages tokens
+  - Tools definition tokens (if any)
+</ResponseField>
+
+## Basic Examples
+
+<Tabs>
+  <Tab title="Simple Text Message">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Hello, how are you?"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="With System Prompt">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "system": "You are a helpful AI assistant.",
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is artificial intelligence?"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Multi-turn Conversation">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Hello"
+          },
+          {
+            "role": "assistant",
+            "content": "Hi! How can I help you today?"
+          },
+          {
+            "role": "user",
+            "content": "Tell me about the history of AI"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python Example">
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    # Count tokens
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        system="You are a helpful assistant.",
+        messages=[
+            {"role": "user", "content": "Hello, Claude!"}
+        ]
+    )
+
+    print(f"Input tokens: {response.input_tokens}")
+    ```
+  </Tab>
+</Tabs>
+
+<ResponseExample>
+```json
+{
+  "input_tokens": 14
+}
+```
+</ResponseExample>
+
+## Advanced Use Cases
+
+### With Tool Definitions
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "claude-sonnet-4-5-20250929",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the weather in San Francisco?"
+      }
+    ],
+    "tools": [
+      {
+        "name": "get_weather",
+        "description": "Get the current weather in a given location",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The city and state, e.g. San Francisco, CA"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    ]
+  }'
+```
+
+### Multimodal Content
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "claude-sonnet-4-5-20250929",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image?"
+          },
+          {
+            "type": "image",
+            "source": {
+              "type": "url",
+              "url": "https://example.com/image.jpg"
+            }
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+## Use Cases
+
+### 1. Cost Estimation
+
+Calculate token counts before sending bulk requests to estimate costs:
+
+```python
+# Batch cost calculation
+messages_batch = [...]  # Batch messages
+total_tokens = 0
+
+for messages in messages_batch:
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        messages=messages
+    )
+    total_tokens += response.input_tokens
+
+# Calculate total cost based on pricing
+cost = total_tokens * price_per_token
+print(f"Estimated cost: ${cost:.4f}")
+```
+
+### 2. Context Window Management
+
+Check if messages exceed the model's context window limit:
+
+```python
+MAX_CONTEXT_WINDOW = 200000  # Claude Sonnet 4.5's context window
+
+response = client.messages.count_tokens(
+    model="claude-sonnet-4-5-20250929",
+    messages=long_conversation
+)
+
+if response.input_tokens > MAX_CONTEXT_WINDOW:
+    print(f"Warning: Message tokens ({response.input_tokens}) exceed context window limit")
+    # Perform message truncation or summarization
+```
+
+### 3. Prompt Optimization
+
+Compare token consumption of different prompts:
+
+```python
+prompts = [
+    "Concise prompt...",
+    "Detailed prompt...",
+    "Very detailed prompt..."
+]
+
+for prompt in prompts:
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        system=prompt,
+        messages=[{"role": "user", "content": "test"}]
+    )
+    print(f"{len(prompt)} chars -> {response.input_tokens} tokens")
+```
+
+## Important Notes
+
+<Warning>
+- Image tokens use a fixed estimate (~1000 tokens), actual count may vary based on resolution
+- Does not include output-related parameters like `max_tokens`, only counts input tokens
+- This endpoint does not make actual AI requests and does not consume quota
+</Warning>
+
+## Error Handling
+
+### Missing Required Parameters
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Key: 'ClaudeCountTokensRequest.Model' Error:Field validation for 'Model' failed on the 'required' tag"
+  }
+}
+```
+
+### Invalid API Key
+
+```json
+{
+  "error": {
+    "message": "Invalid token",
+    "type": "invalid_request_error"
+  }
+}
+```
+
+## Related Resources
+
+- [Create Message Request (Claude)](/en/api-reference/endpoint/messages) - Send actual Claude requests
+- [Model List](/en/api-reference/models) - View supported Claude models
+- [Pricing](https://openai-nebula.com) - Learn about token billing standards

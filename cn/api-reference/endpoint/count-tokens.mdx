@@ -1,0 +1,308 @@
+---
+title: '计算 Token 数量（Claude）'
+api: 'POST https://llm.ai-nebula.com/v1/messages/count_tokens'
+---
+
+## 简介
+
+计算 Claude 消息的 token 数量，用于在发送请求前预估成本。此端点**不消耗配额**，仅进行本地计算。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="model" type="string" required>
+  Claude 模型标识，支持的模型包括：
+  - `claude-opus-4-5-20251101`（推荐替代 claude-3-opus）
+  - `claude-haiku-4-5-20251001`
+  - `claude-sonnet-4-5-20250929`
+  - `claude-sonnet-4-20250514`
+  - 其他 Claude 系列模型
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  对话消息列表，每个元素包含 `role`（user/assistant）和 `content`。`content` 可以是字符串或媒体内容数组。
+  
+  支持的内容类型：
+  - 纯文本消息
+  - 多模态消息（包含图片）
+  - 工具调用结果
+</ParamField>
+
+<ParamField body="system" type="string|array">
+  系统提示词（可选），可以是字符串或媒体内容数组。用于设定模型的行为和角色。
+</ParamField>
+
+<ParamField body="tools" type="array">
+  工具定义列表（可选），用于计算工具调用相关的 token 数量。
+</ParamField>
+
+## 响应参数
+
+<ResponseField name="input_tokens" type="number">
+  输入消息的总 token 数量，包括：
+  - system prompt 的 token 数
+  - 所有 messages 的 token 数
+  - tools 定义的 token 数（如果有）
+</ResponseField>
+
+## 基础示例
+
+<Tabs>
+  <Tab title="简单文本消息">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Hello, how are you?"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="带 system prompt">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "system": "You are a helpful AI assistant.",
+        "messages": [
+          {
+            "role": "user",
+            "content": "What is artificial intelligence?"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="多轮对话">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "claude-sonnet-4-5-20250929",
+        "messages": [
+          {
+            "role": "user",
+            "content": "你好"
+          },
+          {
+            "role": "assistant",
+            "content": "你好！有什么我可以帮助你的吗？"
+          },
+          {
+            "role": "user",
+            "content": "给我讲讲人工智能的历史"
+          }
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python 示例">
+    ```python
+    from anthropic import Anthropic
+
+    client = Anthropic(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com"
+    )
+
+    # 计算 token 数量
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        system="You are a helpful assistant.",
+        messages=[
+            {"role": "user", "content": "Hello, Claude!"}
+        ]
+    )
+
+    print(f"Input tokens: {response.input_tokens}")
+    ```
+  </Tab>
+</Tabs>
+
+<ResponseExample>
+```json
+{
+  "input_tokens": 14
+}
+```
+</ResponseExample>
+
+## 高级用例
+
+### 带工具定义的计算
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "claude-sonnet-4-5-20250929",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What is the weather in San Francisco?"
+      }
+    ],
+    "tools": [
+      {
+        "name": "get_weather",
+        "description": "Get the current weather in a given location",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The city and state, e.g. San Francisco, CA"
+            }
+          },
+          "required": ["location"]
+        }
+      }
+    ]
+  }'
+```
+
+### 多模态内容计算
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/messages/count_tokens" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "claude-sonnet-4-5-20250929",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What is in this image?"
+          },
+          {
+            "type": "image",
+            "source": {
+              "type": "url",
+              "url": "https://example.com/image.jpg"
+            }
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+## 使用场景
+
+### 1. 成本预估
+
+在发送大量请求前，先计算 token 数量以预估成本：
+
+```python
+# 批量计算成本
+messages_batch = [...]  # 批量消息
+total_tokens = 0
+
+for messages in messages_batch:
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        messages=messages
+    )
+    total_tokens += response.input_tokens
+
+# 根据定价计算总成本
+cost = total_tokens * price_per_token
+print(f"预估成本: ${cost:.4f}")
+```
+
+### 2. 上下文窗口管理
+
+检查消息是否超过模型的上下文窗口限制：
+
+```python
+MAX_CONTEXT_WINDOW = 200000  # Claude Sonnet 4.5 的上下文窗口
+
+response = client.messages.count_tokens(
+    model="claude-sonnet-4-5-20250929",
+    messages=long_conversation
+)
+
+if response.input_tokens > MAX_CONTEXT_WINDOW:
+    print(f"警告：消息 token 数 ({response.input_tokens}) 超过上下文窗口限制")
+    # 执行消息截断或摘要
+```
+
+### 3. 优化提示词
+
+比较不同提示词的 token 消耗：
+
+```python
+prompts = [
+    "简洁版提示词...",
+    "详细版提示词...",
+    "超详细版提示词..."
+]
+
+for prompt in prompts:
+    response = client.messages.count_tokens(
+        model="claude-sonnet-4-5-20250929",
+        system=prompt,
+        messages=[{"role": "user", "content": "测试"}]
+    )
+    print(f"{len(prompt)} 字符 -> {response.input_tokens} tokens")
+```
+
+## 注意事项
+
+<Warning>
+- 图片 token 使用固定估算值（约 1000 tokens），实际可能因分辨率不同而变化
+- 不包括 `max_tokens` 等输出相关参数，仅计算输入 token 数
+- 此端点不会发起实际的 AI 请求，不消耗配额
+</Warning>
+
+## 错误处理
+
+### 缺少必需参数
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Key: 'ClaudeCountTokensRequest.Model' Error:Field validation for 'Model' failed on the 'required' tag"
+  }
+}
+```
+
+### 无效的 API Key
+
+```json
+{
+  "error": {
+    "message": "无效的 token",
+    "type": "invalid_request_error"
+  }
+}
+```
+
+## 相关资源
+
+- [创建消息请求（Claude）](/cn/api-reference/endpoint/messages) - 发送实际的 Claude 请求
+- [模型列表](/cn/api-reference/models) - 查看支持的 Claude 模型
+- [定价说明](https://openai-nebula.com) - 了解 token 计费标准

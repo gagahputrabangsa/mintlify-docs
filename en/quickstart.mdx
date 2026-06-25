@@ -1,0 +1,168 @@
+---
+title: 'Quick Start'
+description: 'Get started with Nebula Api in just three simple steps'
+---
+
+## Step 1: Account Setup
+
+### 1.1 Register
+
+Visit [Nebula Api](https://ai-nebula.com) to register:
+- Sign up with your mobile number and verify
+- Log in to the console
+
+### 1.2 Add Credits
+
+Top up in the console:
+1. Click "Personal Center"
+2. Click "Billing Recharge" to pay (Alipay, WeChat supported)
+
+<Note>
+New users receive a $1 bonus upon registration
+</Note>
+
+## Step 2: Create API Key
+
+### 2.1 Generate Key
+
+1. Click "Model Center" in the navigation
+2. Click "API Keys"
+3. Click "Create New" to generate a key
+
+
+## Step 3: Start Calling
+
+### 3.1 Connection Info
+
+| Config | Value |
+|--------|-------|
+| **API URL (Base URL)** | `https://llm.ai-nebula.com/v1` |
+| **API Key** | Your created key |
+| **Request Format** | Fully OpenAI API compatible |
+
+### 3.2 Test Call
+
+Quick test with curl:
+
+```bash
+curl https://llm.ai-nebula.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+### 3.3 Code Examples
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    response = client.chat.completions.create(
+        model="gpt-5.4",
+        messages=[
+            {"role": "user", "content": "Hello!"}
+        ]
+    )
+
+    print(response.choices[0].message.content)
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    import OpenAI from 'openai';
+
+    const openai = new OpenAI({
+      apiKey: 'YOUR_API_KEY',
+      baseURL: 'https://llm.ai-nebula.com/v1'
+    });
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-5.4',
+      messages: [{ role: 'user', content: 'Hello!' }]
+    });
+
+    console.log(response.choices[0].message.content);
+    ```
+  </Tab>
+  <Tab title="Java">
+    ```java
+    OpenAiService service = new OpenAiService(
+        "YOUR_API_KEY", 
+        Duration.ofSeconds(60), 
+        "https://llm.ai-nebula.com/v1"
+    );
+
+    ChatCompletionRequest request = ChatCompletionRequest.builder()
+        .model("gpt-5.4")
+        .messages(List.of(
+            new ChatMessage(ChatMessageRole.USER, "Hello!")
+        ))
+        .build();
+
+    ChatCompletionResult result = service.createChatCompletion(request);
+    System.out.println(result.getChoices().get(0).getMessage().getContent());
+    ```
+  </Tab>
+</Tabs>
+
+## Next Steps
+
+Congratulations! You've successfully set up Nebula Api. Next you can:
+
+<Columns cols={2}>
+  <Card title="View API Docs" icon="book" href="/en/api-reference/introduction">
+    Learn about complete API specifications
+  </Card>
+  <Card title="Integrate with Apps" icon="puzzle-piece" href="/en/integrations/cursor">
+    Integrate Nebula Api with various tools
+  </Card>
+</Columns>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="How to switch models?">
+    Just change the `model` parameter in your request:
+    ```json
+    {
+      "model": "gpt-5.4",
+      "model": "claude-sonnet-4-6",
+      "model": "gemini-3.1-pro-preview"
+    }
+    ```
+  </Accordion>
+  <Accordion title="Which programming languages are supported?">
+    Nebula Api is OpenAI API compatible, supporting all OpenAI SDK languages:
+    - Python
+    - JavaScript/TypeScript
+    - Java
+    - C#/.NET
+    - Go
+    - Ruby
+    - PHP
+  </Accordion>
+  <Accordion title="How to check balance?">
+    Log in to the console to view:
+    - Account balance
+    - Usage history
+    - Consumption statistics
+</Accordion>
+  <Accordion title="Having issues?">
+    1. Check API documentation
+    2. Review common errors
+    3. Contact support: mla@nebula-data.com
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+Save your API key safely and regularly check usage logs in the console to optimize costs. Happy coding~
+</Tip>

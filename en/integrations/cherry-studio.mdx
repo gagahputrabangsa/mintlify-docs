@@ -1,0 +1,96 @@
+---
+title: 'Cherry Studio'
+description: 'Cherry Studio Client Integration Guide'
+---
+
+## Introduction
+
+Cherry Studio is a powerful AI chat client that supports multiple large language models. With **Nebula Api**, you can easily use various mainstream AI models in Cherry Studio.
+
+## Quick Integration
+
+### 1. Get API Key
+
+Visit [Nebula Api](https://ai-nebula.com) to get your API key.
+
+### 2. Configuration
+
+1. Open Cherry Studio
+2. Click the settings icon on the left
+3. Select "Model Service"
+4. Fill in:
+   - API URL: `https://llm.ai-nebula.com`
+   - API Key: Your key from Nebula Api console
+5. Click "➕ Add" to save
+
+<Warning>
+API URL must be `https://llm.ai-nebula.com`
+</Warning>
+
+### 3. Add Models
+
+1. Search for target model (e.g. `gemini-3.1-pro-preview`)
+2. Click the icon next to model name to configure
+3. Enable/disable model variants as needed
+4. Use right-side buttons for detailed configuration
+
+## Supported Models
+
+### Latest Recommended
+
+| Series | Model ID | Features |
+|--------|----------|----------|
+| Gemini 3.1 Pro | `gemini-3.1-pro-preview` | Google's upgraded core intelligence model for complex multimodal tasks |
+| GPT-5.4 | `gpt-5.4` | OpenAI's latest mainline model with strong overall performance |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Anthropic's latest Sonnet model for long-text and coding tasks |
+| DeepSeek V3.2 | `deepseek-v3-2-251201` | High-value hybrid-reasoning model for general workloads |
+
+### Classic Stable
+
+| Series | Model ID | Use Case |
+|--------|----------|----------|
+| Claude Opus 4.6 | `claude-opus-4-6` | Complex reasoning, code review, high-difficulty tasks |
+| Gemini 3.1 Flash Lite | `gemini-3.1-flash-lite-preview` | Fast response, low-cost high-concurrency chat |
+
+### Selection Guide
+
+- **Multimodal**: `gemini-3.1-pro-preview`
+- **Daily Chat**: `gpt-5.4` or `gemini-3.1-flash-lite-preview`
+- **Long Text**: `claude-sonnet-4-6` or `claude-opus-4-6`
+- **Complex Reasoning**: `gpt-5.4-pro`, `claude-opus-4-6`, `deepseek-r1-250528`
+
+## Advanced Features
+
+### Image Support
+
+For vision-enabled models (e.g. `GPT-4V`):
+
+1. Enable "Images" in settings
+2. Select a vision-capable model
+3. Upload images directly in chat
+
+### Streaming Output
+
+Cherry Studio supports streaming output by default for smoother conversations.
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Connection Failed">
+    - Verify API key is correct
+    - Confirm API URL is `https://llm.ai-nebula.com`
+    - Check network connection
+  </Accordion>
+  <Accordion title="Model Unavailable">
+    - Confirm sufficient account balance
+    - Check if model is in subscription plan
+    - Try switching to another model
+  </Accordion>
+</AccordionGroup>
+
+## Tips
+
+1. **Choose wisely**: Match models to task requirements
+2. **Stay updated**: Follow new model releases
+3. **Monitor usage**: Check usage via Nebula Api console
+

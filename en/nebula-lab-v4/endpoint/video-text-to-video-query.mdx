@@ -1,0 +1,64 @@
+---
+title: 'Text to Video - Query Task'
+api: 'GET https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoQuery'
+---
+
+## Introduction
+
+Query text-to-video task status and result.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField query="taskId" type="string" required>
+  Task ID, returned by submit task interface
+</ParamField>
+
+### Example Code
+
+<Tabs>
+  <Tab title="cURL Example">
+    ```bash
+    curl -X GET "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoQuery?taskId=task-1234567890" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx"
+    ```
+  </Tab>
+  <Tab title="Python Example">
+    ```python
+    import requests
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/nebulaVideoQuery"
+    headers = {
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    params = {
+        "taskId": "task-1234567890"
+    }
+
+    response = requests.get(url, headers=headers, params=params)
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "task_id": "task-1234567890",
+    "status": "succeeded",
+    "url": "https://example.com/video.mp4"
+  }
+}
+```
+</ResponseExample>

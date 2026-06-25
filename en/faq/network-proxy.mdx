@@ -1,0 +1,102 @@
+---
+title: 'Do I need a proxy to use the API?'
+description: 'Learn about Nebula Api network access and whether you need a proxy or VPN'
+---
+
+## Short Answer
+
+**No proxy needed, direct connection works.** Nebula Api supports direct access from China without any proxy or VPN.
+
+## Network Access
+
+### Users in China
+
+**Direct Connection**
+- ✅ No proxy or VPN required
+- ✅ Direct access to `llm.ai-nebula.com`
+- ✅ Enterprise dedicated line with excellent quality
+- ✅ Low latency, high stability
+
+### International Users
+
+If you're using Nebula Api from overseas:
+- 🚀 Faster access speeds
+- 🌐 Direct international routing
+- ⚡ No additional configuration needed
+
+## Troubleshooting
+
+In rare cases, you may encounter these issues:
+
+<AccordionGroup>
+  <Accordion title="HTTPS Certificate Issues">
+    SSL/TLS certificate verification failed
+    
+    **Possible causes**: Incorrect system time, incomplete certificate chain
+    
+    **Solutions**:
+    1. Check and sync system time
+    2. Update system root certificates
+    3. Try a different network
+  </Accordion>
+  <Accordion title="Connection Issues">
+    Connection timeout or unable to connect
+    
+    **Possible causes**: Local network restrictions, DNS resolution problems
+    
+    **Solutions**:
+    1. Change DNS server (e.g., 8.8.8.8 or 1.1.1.1)
+    2. Check firewall settings
+    3. Try mobile network
+  </Accordion>
+</AccordionGroup>
+
+### Alternative: HTTP Address
+
+If you can't resolve the above issues, we provide HTTP access as a fallback.
+
+<Warning>
+HTTP is unencrypted and should only be used as a temporary solution. Contact support for the HTTP address.
+</Warning>
+
+## FAQ
+
+<AccordionGroup>
+  <Accordion title="Why can China users connect directly?">
+    We use compliant enterprise dedicated lines to ensure stable, fast service access for users in China.
+  </Accordion>
+  <Accordion title="What's the difference between HTTPS and HTTP?">
+    - **HTTPS** (recommended): Encrypted transmission, high security
+    - **HTTP** (fallback): Plain text, only use temporarily when HTTPS fails
+  </Accordion>
+  <Accordion title="How to check if network connection is working?">
+    Test with these commands:
+    
+    ```bash
+    # Test API connection
+    curl -I https://llm.ai-nebula.com
+
+    # Test DNS resolution
+    ping llm.ai-nebula.com
+    ```
+    
+    If you get a normal response, the network is working.
+  </Accordion>
+</AccordionGroup>
+
+## Network Optimization Tips
+
+**Improve access speed**
+- 🕐 Ensure accurate system time (avoid certificate errors)
+- 🌐 Use stable DNS (e.g., 8.8.8.8 or 1.1.1.1)
+- 📡 Prefer wired over Wi-Fi
+- 🔄 Regularly update root certificates
+
+## Support
+
+For network issues, contact support:
+
+<Card title="Email Support" icon="envelope" href="mailto:mla@nebula-data.com">
+  mla@nebula-data.com - Technical support, fast response
+</Card>
+

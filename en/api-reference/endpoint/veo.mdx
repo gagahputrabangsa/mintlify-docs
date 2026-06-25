@@ -1,0 +1,93 @@
+---
+title: 'Gemini Native (Video)'
+description: 'Google Veo video generation models'
+api: 'POST https://llm.ai-nebula.com/v1/video/generations'
+---
+
+## Introduction
+
+Veo is Google Vertex AI's multimodal video generation model. It supports **text-to-video (T2V)**, **first-frame constraint**, and **first-and-last-frame constraint** (3.1 series only) for coherent video generation. Use Nebula's unified video API: [submit a task](/en/api-reference/endpoint/submit-video-task) to get a `task_id`, then [query the task](/en/api-reference/endpoint/query-video-task) to poll status and get the result.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Supported models
+
+| Model ID | Description |
+|----------|-------------|
+| `veo-3.0-fast-generate-001` | Text-to-video, first-frame; fast (audio included by default) |
+| `veo-3.1-fast-generate-preview` | Text-to-video, first/first+last frame; fast |
+| `veo-3.0-generate-preview` | Text-to-video, first-frame |
+| `veo-3.1-generate-preview` | Text-to-video, first/first+last frame |
+
+## Call flow
+
+1. **Submit task**: `POST /v1/video/generations` with `model`, `prompt`, and Veo-specific parameters.  
+2. **Poll status**: `GET /v1/video/generations/{task_id}` until `status` is `succeeded` or `failed`.  
+3. **Get result**: On success, `url` in the response contains the video (Veo may return `data:video/mp4;base64,...` or an OSS link).
+
+## Veo-specific parameters
+
+<ParamField body="prompt" type="string" required>
+  Video generation prompt describing the scene and motion.
+</ParamField>
+
+<ParamField body="durationSeconds" type="integer" default="4">
+  Video duration in seconds; supported: `4`, `6`, `8`.
+</ParamField>
+
+<ParamField body="aspectRatio" type="string" default="16:9">
+  Aspect ratio; only `16:9` and `9:16` supported.
+</ParamField>
+
+<ParamField body="resolution" type="string" default="1080p">
+  Resolution: `720p`, `1080p`.
+</ParamField>
+
+<ParamField body="image" type="string">
+  First-frame reference image (URL or Base64) for image-to-video / first-frame constraint.
+</ParamField>
+
+<ParamField body="lastFrame" type="string">
+  Last-frame reference image (veo-3.1 series only); use with first frame for start-and-end constraint.
+</ParamField>
+
+<ParamField body="generateAudio" type="boolean" default="false">
+  Whether to generate synchronized audio. Fast models ignore this and always include audio.
+</ParamField>
+
+<ParamField body="sampleCount" type="integer" default="1">
+  Number of videos to generate per request, range `1-4`.
+</ParamField>
+
+For more parameters (e.g. `personGeneration`, `addWatermark`, `seed`), see [Submit Video Task](/en/api-reference/endpoint/submit-video-task).
+
+## Request examples
+
+**Submit Veo task (text-to-video):**
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/video/generations" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "veo-3.1-fast-generate-preview",
+    "prompt": "Morning light over a cyberpunk city skyline, camera slowly pushing in",
+    "durationSeconds": 6,
+    "aspectRatio": "16:9",
+    "resolution": "1080p",
+    "generateAudio": false
+  }'
+```
+
+**Query task status:**
+
+```bash
+curl -X GET "https://llm.ai-nebula.com/v1/video/generations/{task_id}" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx"
+```
+
+For full request/response details and multi-model comparison, see [Submit Video Task](/en/api-reference/endpoint/submit-video-task) and [Query Video Task](/en/api-reference/endpoint/query-video-task).

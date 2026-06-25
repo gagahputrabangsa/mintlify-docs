@@ -1,0 +1,66 @@
+---
+title: 'Nebula Lab V4 API'
+api: 'https://ai-nebula.com/prod-api/nebula/v4/api'
+---
+
+## Introduction
+
+Nebula Lab V4 API provides various functional interfaces for video and image generation, including text-to-video, image-to-video, text-to-image, image-to-image, and other AI creative capabilities. All interfaces support unified authentication and consistent response formats, facilitating quick integration for developers.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Response Format
+
+All interfaces return a unified JSON format:
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    // Interface specific return data
+  }
+}
+```
+</ResponseExample>
+
+### Error Response
+
+<ResponseExample>
+```json
+{
+  "code": 400,
+  "msg": "Parameter error",
+  "data": null
+}
+```
+</ResponseExample>
+
+## Interface List
+
+### Video Generation
+
+- [Text to Video - Submit Task](./endpoint/video-text-to-video-submit.mdx)
+- [Text to Video - Query Task](./endpoint/video-text-to-video-query.mdx)
+- [Image to Video - Traditional Mode - Submit Task](./endpoint/video-image-to-video-tradition-submit.mdx)
+- [Image to Video - Traditional Mode - Query Task](./endpoint/video-image-to-video-tradition-query.mdx)
+- [Image to Video - First/Last Frame Mode - Submit Task](./endpoint/video-image-to-video-first-last-submit.mdx)
+- [Image to Video - First/Last Frame Mode - Query Task](./endpoint/video-image-to-video-first-last-query.mdx)
+- [Image to Video - Face Swap - Submit Task](./endpoint/video-face-merge-submit.mdx)
+- [Image to Video - Face Swap - Query Task](./endpoint/video-face-merge-query.mdx)
+
+### Image Generation
+
+- [AI Image - Text to Image](./endpoint/image-text-to-image.mdx)
+- [AI Image - Image to Image](./endpoint/image-image-to-image.mdx)
+- [AI Image - Batch Generation](./endpoint/image-batch-generation.mdx)
+- [AI Image - Variation](./endpoint/image-variation.mdx)
+- [AI Image - Fashion Try-on](./endpoint/image-fashion-grass.mdx)
+- [AI Image - Smart Watermark Removal](./endpoint/image-smart-watermark-removal.mdx)
+- [AI Image - Product Extraction](./endpoint/image-product-extraction.mdx)
+- [AI Image - Clothing Details](./endpoint/image-clothing-details.mdx)

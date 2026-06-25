@@ -1,0 +1,102 @@
+---
+title: '使用 API 接口需要代理网络吗？'
+description: '了解 Nebula Api 的网络访问方式，是否需要使用代理或 VPN'
+---
+
+## 简短回答
+
+**不需要代理，可以直连。** Nebula Api 支持国内直接访问，无需任何代理或 VPN。
+
+## 网络访问说明
+
+### 国内用户
+
+**免代理直连**
+- ✅ 无需配置代理或 VPN
+- ✅ 直接访问 `llm.ai-nebula.com`
+- ✅ 采用企业专线回国线路，网络质量优良
+- ✅ 低延迟、高稳定性
+
+### 海外用户
+
+如果您在海外使用 Nebula Api：
+- 🚀 访问速度更快
+- 🌐 直连国际线路
+- ⚡ 无需额外配置
+
+## 网络问题解决方案
+
+极少数情况下，部分用户可能遇到以下问题：
+
+<AccordionGroup>
+  <Accordion title="HTTPS 证书问题">
+    SSL/TLS 证书验证失败
+    
+    **可能原因**：本地时间不准确、证书链不完整
+    
+    **解决方案**：
+    1. 检查并校准系统时间
+    2. 更新系统根证书
+    3. 尝试使用其他网络环境
+  </Accordion>
+  <Accordion title="网络连接异常">
+    连接超时或无法建立连接
+    
+    **可能原因**：本地网络限制、DNS 解析问题
+    
+    **解决方案**：
+    1. 更换 DNS 服务器（如 114.114.114.114 或 8.8.8.8）
+    2. 检查防火墙设置
+    3. 尝试使用移动网络
+  </Accordion>
+</AccordionGroup>
+
+### 备选方案：HTTP 地址
+
+如遇到上述问题无法解决，我们提供 HTTP 访问地址作为备选方案。
+
+<Warning>
+HTTP 协议不加密传输，仅作为临时解决方案使用。如需获取 HTTP 访问地址，请联系技术客服。
+</Warning>
+
+## 常见问题
+
+<AccordionGroup>
+  <Accordion title="为什么国内可以直连？">
+    我们使用了合规的企业专线回国线路，确保国内用户可以稳定、快速地访问服务。
+  </Accordion>
+  <Accordion title="HTTPS 和 HTTP 有什么区别？">
+    - **HTTPS**（推荐）：加密传输，数据安全性高
+    - **HTTP**（备选）：明文传输，仅在遇到 HTTPS 问题时临时使用
+  </Accordion>
+  <Accordion title="如何判断网络连接是否正常？">
+    可以使用以下命令测试：
+    
+    ```bash
+    # 测试 API 连接
+    curl -I https://llm.ai-nebula.com
+
+    # 测试 DNS 解析
+    ping llm.ai-nebula.com
+    ```
+    
+    如果返回正常响应，说明网络连接无问题。
+  </Accordion>
+</AccordionGroup>
+
+## 网络优化建议
+
+**提升访问速度的建议**
+- 🕐 确保本地系统时间准确（避免证书验证失败）
+- 🌐 使用稳定的 DNS 服务（如 114.114.114.114 或 8.8.8.8）
+- 📡 优先使用有线网络而非 Wi-Fi
+- 🔄 定期更新系统根证书
+
+## 技术支持
+
+如遇到网络访问问题，请联系技术客服：
+
+<Card title="邮件客服" icon="envelope" href="mailto:mla@nebula-data.com">
+  mla@nebula-data.com - 技术支持，快速响应
+</Card>
+

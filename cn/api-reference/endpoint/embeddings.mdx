@@ -1,0 +1,99 @@
+---
+title: '文本向量化（Embedding）'
+api: 'POST https://llm.ai-nebula.com/v1/embeddings'
+---
+
+## 简介
+
+将文本转换为向量嵌入，适用于语义搜索、文本相似度计算、聚类分析等场景。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="model" type="string" required>
+  模型名称，如 `text-embedding-3-small`、`text-embedding-3-large`
+</ParamField>
+
+<ParamField body="input" type="string | array" required>
+  要嵌入的文本，可以是字符串或字符串数组
+</ParamField>
+
+<ParamField body="encoding_format" type="string" default="float">
+  返回格式：`float` 或 `base64`
+</ParamField>
+
+<ParamField body="dimensions" type="integer">
+  输出向量维度（仅部分模型支持）
+</ParamField>
+
+## cURL 示例
+
+```bash
+curl https://llm.ai-nebula.com/v1/embeddings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "model": "text-embedding-3-small",
+    "input": "你好，世界"
+  }'
+```
+
+## Python 示例
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-XyLy**************************mIqSt",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+response = client.embeddings.create(
+    model="text-embedding-3-small",
+    input="你好，世界"
+)
+
+print(response.data[0].embedding)
+print(f"向量维度：{len(response.data[0].embedding)}")
+```
+
+<ResponseExample>
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "object": "embedding",
+      "index": 0,
+      "embedding": [0.0023064255, -0.009327292, 0.015797347, ...]
+    }
+  ],
+  "model": "text-embedding-3-small",
+  "usage": {
+    "prompt_tokens": 5,
+    "total_tokens": 5
+  }
+}
+```
+</ResponseExample>
+
+## 支持的模型
+
+| 模型 | 维度 | 说明 |
+|------|------|------|
+| text-embedding-3-small | 1536 | 高性价比，适合大多数场景 |
+| text-embedding-3-large | 3072 | 高精度，适合对精度要求高的场景 |
+| text-embedding-ada-002 | 1536 | 旧版模型 |
+
+## 注意事项
+
+<Note>
+- 批量嵌入时，`input` 可传入字符串数组
+- 部分模型支持通过 `dimensions` 参数自定义输出维度
+- 依赖 `openai` 库：`pip install openai`
+</Note>

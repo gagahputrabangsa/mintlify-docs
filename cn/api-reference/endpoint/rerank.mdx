@@ -1,0 +1,126 @@
+---
+title: '文档重排序（Rerank）'
+api: 'POST https://llm.ai-nebula.com/v1/rerank'
+---
+
+## 简介
+
+根据查询对文档列表进行相关性重排序，常用于 RAG（检索增强生成）场景中优化检索结果。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="model" type="string" required>
+  模型名称，如 `rerank-v1`
+</ParamField>
+
+<ParamField body="query" type="string" required>
+  查询文本
+</ParamField>
+
+<ParamField body="documents" type="array" required>
+  待排序的文档列表
+</ParamField>
+
+<ParamField body="top_n" type="integer">
+  返回前 N 个结果（默认返回全部）
+</ParamField>
+
+<ParamField body="return_documents" type="boolean" default="false">
+  是否返回原文档内容
+</ParamField>
+
+## cURL 示例
+
+```bash
+curl https://llm.ai-nebula.com/v1/rerank \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt" \
+  -d '{
+    "model": "rerank-v1",
+    "query": "什么是人工智能？",
+    "documents": [
+      "人工智能是计算机科学的一个分支，致力于创建能够模拟人类智能的系统。",
+      "机器学习是人工智能的一个子领域，专注于让计算机从数据中学习。",
+      "深度学习使用神经网络来处理复杂的模式识别任务。"
+    ],
+    "top_n": 3,
+    "return_documents": true
+  }'
+```
+
+## Python 示例
+
+```python
+import requests
+
+url = "https://llm.ai-nebula.com/v1/rerank"
+headers = {
+    "Authorization": "Bearer sk-XyLy**************************mIqSt",
+    "Content-Type": "application/json"
+}
+
+data = {
+    "model": "rerank-v1",
+    "query": "什么是人工智能？",
+    "documents": [
+        "人工智能是计算机科学的一个分支，致力于创建能够模拟人类智能的系统。",
+        "机器学习是人工智能的一个子领域，专注于让计算机从数据中学习。",
+        "深度学习使用神经网络来处理复杂的模式识别任务。"
+    ],
+    "top_n": 3,
+    "return_documents": True
+}
+
+response = requests.post(url, headers=headers, json=data)
+print(response.json())
+```
+
+<ResponseExample>
+```json
+{
+  "model": "rerank-v1",
+  "results": [
+    {
+      "index": 0,
+      "relevance_score": 0.95,
+      "document": "人工智能是计算机科学的一个分支，致力于创建能够模拟人类智能的系统。"
+    },
+    {
+      "index": 1,
+      "relevance_score": 0.82,
+      "document": "机器学习是人工智能的一个子领域，专注于让计算机从数据中学习。"
+    },
+    {
+      "index": 2,
+      "relevance_score": 0.65,
+      "document": "深度学习使用神经网络来处理复杂的模式识别任务。"
+    }
+  ],
+  "usage": {
+    "total_tokens": 128
+  }
+}
+```
+</ResponseExample>
+
+## 响应字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| results[].index | integer | 原始文档在输入列表中的索引 |
+| results[].relevance_score | float | 相关性分数（0-1） |
+| results[].document | string | 原文档内容（当 return_documents=true） |
+
+## 注意事项
+
+<Note>
+- 常用于 RAG 场景，先用向量检索获取候选文档，再用 rerank 优化排序
+- `relevance_score` 越高表示与查询越相关
+- 依赖 `requests` 库：`pip install requests`
+</Note>

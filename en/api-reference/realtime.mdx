@@ -1,0 +1,499 @@
+---
+title: 'Realtime API'
+description: 'WebSocket real-time conversation interface'
+---
+
+## Introduction
+
+The Realtime API provides low-latency text/audio real-time conversation capabilities through WebSocket long connections with event stream interactions. It supports both text and audio input/output modes, enabling real-time voice conversations, text conversations, and more.
+
+**Endpoint**:
+```
+WSS wss://llm.ai-nebula.com/v1/realtime?model={model}
+```
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## Connection Parameters
+
+<ParamField query="model" type="string" required>
+  Model name, supported models:
+  - `gpt-realtime` - GPT Realtime Standard
+  - `gpt-realtime-mini` - GPT Realtime Mini
+</ParamField>
+
+## Basic Information
+
+| Item | Content |
+|------|---------|
+| **Base URL** | `wss://llm.ai-nebula.com` |
+| **Endpoint** | `/v1/realtime?model={model}` |
+| **Protocol** | WebSocket (JSON event stream) |
+| **Audio Format** | PCM16 mono, 24000Hz sample rate |
+
+## Event Types
+
+### Client-Sent Events
+
+| Event Type | Description | Required Fields |
+|-----------|-------------|----------------|
+| `session.update` | Set/update session configuration (send first after connection) | `session` |
+| `conversation.item.create` | Send conversation message (text or audio) | `item` |
+| `input_audio_buffer.append` | Stream audio data (Base64 encoded) | `audio` |
+| `input_audio_buffer.commit` | Commit audio buffer, trigger processing | None |
+| `response.create` | Request response generation (call after sending message) | None |
+
+### Server-Returned Events
+
+| Event Type | Description | Included Fields |
+|-----------|-------------|----------------|
+| `session.created` | Session created | `session.id` |
+| `session.updated` | Session configuration updated | `session` |
+| `conversation.item.created` | Conversation item created | `item` |
+| `response.created` | Response created | `response.id` |
+| `response.text.delta` | Text incremental output | `delta` |
+| `response.text.done` | Text output completed | None |
+| `response.audio.delta` | Audio incremental output | `delta` |
+| `response.audio.done` | Audio output completed | None |
+| `response.audio_transcript.delta` | Audio transcription incremental | `delta` |
+| `response.function_call_arguments.delta` | Function call arguments incremental | `delta` |
+| `response.function_call_arguments.done` | Function call arguments completed | None |
+| `response.done` | Response round completed, includes usage statistics | `response.usage` |
+| `error` | Error event | `error` |
+
+## Session Configuration
+
+After establishing a WebSocket connection, you must first send a `session.update` event to configure session parameters.
+
+### Session Configuration Example
+
+```json
+{
+  "event_id": "evt_001",
+  "type": "session.update",
+  "session": {
+    "modalities": ["text", "audio"],
+    "instructions": "You are a friendly assistant",
+    "voice": "alloy",
+    "temperature": 0.8,
+    "input_audio_format": "pcm16",
+    "output_audio_format": "pcm16"
+  }
+}
+```
+
+### Session Parameters
+
+<ParamField body="session.modalities" type="array" default='["text"]'>
+  Supported interaction modes, optional values:
+  - `"text"` - Text mode
+  - `"audio"` - Audio mode
+  Can include multiple modes, e.g. `["text", "audio"]`
+</ParamField>
+
+<ParamField body="session.instructions" type="string">
+  System prompt, used to set assistant behavior and role
+</ParamField>
+
+<ParamField body="session.voice" type="string" default="alloy">
+  Voice type, optional values: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer`
+</ParamField>
+
+<ParamField body="session.temperature" type="number" default="1.0">
+  Temperature parameter, controls output randomness, range: 0.0 - 2.0
+</ParamField>
+
+<ParamField body="session.input_audio_format" type="string" default="pcm16">
+  Input audio format, currently only supports `pcm16`
+</ParamField>
+
+<ParamField body="session.output_audio_format" type="string" default="pcm16">
+  Output audio format, currently only supports `pcm16`
+</ParamField>
+
+<ParamField body="session.tools" type="array">
+  Tool function list, supports function calling
+</ParamField>
+
+<ParamField body="session.tool_choice" type="string">
+  Tool selection strategy: `auto`, `required`, `none`
+</ParamField>
+
+## Sending Messages
+
+### Text Message Example
+
+```json
+{
+  "event_id": "evt_002",
+  "type": "conversation.item.create",
+  "item": {
+    "type": "message",
+    "role": "user",
+    "content": [
+      { "type": "input_text", "text": "Hello, please briefly introduce yourself." }
+    ]
+  }
+}
+```
+
+### Audio Message Example
+
+Audio messages require first pushing audio data via `input_audio_buffer.append`, then calling `input_audio_buffer.commit` to submit:
+
+```json
+// 1. Push audio data (can be called multiple times)
+{
+  "event_id": "evt_003",
+  "type": "input_audio_buffer.append",
+  "audio": "base64_encoded_audio_data..."
+}
+
+// 2. Commit audio buffer
+{
+  "event_id": "evt_004",
+  "type": "input_audio_buffer.commit"
+}
+
+// 3. Create conversation item
+{
+  "event_id": "evt_005",
+  "type": "conversation.item.create",
+  "item": {
+    "type": "message",
+    "role": "user",
+    "content": [
+      { "type": "input_audio", "audio": "" }
+    ]
+  }
+}
+```
+
+### Request Response Generation
+
+After sending a message, you need to call `response.create` to trigger generation:
+
+```json
+{
+  "event_id": "evt_006",
+  "type": "response.create"
+}
+```
+
+## Complete Examples
+
+### Python Example
+
+```python
+import json
+import websocket
+import threading
+
+API_BASE = "wss://llm.ai-nebula.com"
+API_KEY = "sk-xxxxxxxxxx"
+MODEL = "gpt-realtime"
+
+def on_message(ws, message):
+    """Handle server-returned messages"""
+    event = json.loads(message)
+    event_type = event.get("type")
+    
+    if event_type == "session.created":
+        print(f"✅ Session created: {event.get('session', {}).get('id')}")
+    elif event_type == "response.text.delta":
+        # Stream text output
+        delta = event.get("delta", "")
+        print(delta, end="", flush=True)
+    elif event_type == "response.done":
+        # Response completed, show usage statistics
+        usage = event.get("response", {}).get("usage", {})
+        print(f"\n\n📊 Token usage: {usage.get('total_tokens', 0)}")
+    elif event_type == "error":
+        error = event.get("error", {})
+        print(f"\n❌ Error: {error.get('message', 'Unknown error')}")
+
+def on_error(ws, error):
+    print(f"❌ WebSocket error: {error}")
+
+def on_close(ws, close_status_code, close_msg):
+    print("🔌 Connection closed")
+
+def on_open(ws):
+    """Send initial messages after connection is established"""
+    # 1. Configure session
+    session_config = {
+        "event_id": "evt_001",
+        "type": "session.update",
+        "session": {
+            "modalities": ["text"],
+            "instructions": "You are a concise assistant",
+            "temperature": 0.8
+        }
+    }
+    ws.send(json.dumps(session_config, ensure_ascii=False))
+    
+    # 2. Send user message
+    user_message = {
+        "event_id": "evt_002",
+        "type": "conversation.item.create",
+        "item": {
+            "type": "message",
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "Introduce Nebula in one sentence."}
+            ]
+        }
+    }
+    ws.send(json.dumps(user_message, ensure_ascii=False))
+    
+    # 3. Request response generation
+    response_create = {
+        "event_id": "evt_003",
+        "type": "response.create"
+    }
+    ws.send(json.dumps(response_create, ensure_ascii=False))
+
+# Establish WebSocket connection
+ws = websocket.WebSocketApp(
+    f"{API_BASE}/v1/realtime?model={MODEL}",
+    header={"Authorization": f"Bearer {API_KEY}"},
+    on_message=on_message,
+    on_error=on_error,
+    on_close=on_close,
+    on_open=on_open
+)
+
+# Run WebSocket (blocking)
+ws.run_forever()
+```
+
+### JavaScript Example
+
+```javascript
+const API_BASE = 'wss://llm.ai-nebula.com';
+const API_KEY = 'sk-xxxxxxxxxx';
+const MODEL = 'gpt-realtime';
+
+const ws = new WebSocket(`${API_BASE}/v1/realtime?model=${MODEL}`, [], {
+  headers: {
+    'Authorization': `Bearer ${API_KEY}`
+  }
+});
+
+ws.onopen = () => {
+  console.log('✅ WebSocket connection established');
+  
+  // 1. Configure session
+  ws.send(JSON.stringify({
+    event_id: 'evt_001',
+    type: 'session.update',
+    session: {
+      modalities: ['text'],
+      instructions: 'You are a concise assistant',
+      temperature: 0.8
+    }
+  }));
+  
+  // 2. Send user message
+  ws.send(JSON.stringify({
+    event_id: 'evt_002',
+    type: 'conversation.item.create',
+    item: {
+      type: 'message',
+      role: 'user',
+      content: [
+        { type: 'input_text', text: 'Introduce Nebula in one sentence.' }
+      ]
+    }
+  }));
+  
+  // 3. Request response generation
+  ws.send(JSON.stringify({
+    event_id: 'evt_003',
+    type: 'response.create'
+  }));
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+  const eventType = message.type;
+  
+  switch (eventType) {
+    case 'session.created':
+      console.log('✅ Session created:', message.session?.id);
+      break;
+    case 'response.text.delta':
+      // Stream text output
+      process.stdout.write(message.delta || '');
+      break;
+    case 'response.done':
+      // Response completed
+      const usage = message.response?.usage;
+      console.log('\n\n📊 Token usage:', usage?.total_tokens || 0);
+      break;
+    case 'error':
+      console.error('❌ Error:', message.error?.message);
+      break;
+  }
+};
+
+ws.onerror = (error) => {
+  console.error('❌ WebSocket error:', error);
+};
+
+ws.onclose = () => {
+  console.log('🔌 Connection closed');
+};
+```
+
+<ResponseExample>
+```json
+{ "type": "session.created", "session": { "id": "sess_xxx" } }
+{ "type": "response.created", "response": { "id": "resp_xxx" } }
+{ "type": "response.text.delta", "delta": "Hello! I am" }
+{ "type": "response.text.delta", "delta": " Nebula's real-time assistant." }
+{
+  "type": "response.done",
+  "response": {
+    "usage": {
+      "total_tokens": 123,
+      "input_tokens": 45,
+      "output_tokens": 78
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Response Examples
+
+<ResponseExample>
+```json
+// Session created successfully
+{ 
+  "type": "session.created", 
+  "session": { "id": "sess_xxx" } 
+}
+
+// Response created
+{ 
+  "type": "response.created", 
+  "response": { "id": "resp_xxx" } 
+}
+
+// Text incremental output
+{ 
+  "type": "response.text.delta", 
+  "delta": "Hello! I am" 
+}
+
+{ 
+  "type": "response.text.delta", 
+  "delta": " Nebula's real-time assistant." 
+}
+
+// Text output completed
+{ 
+  "type": "response.text.done" 
+}
+
+// Response round completed, includes usage statistics
+{
+  "type": "response.done",
+  "response": {
+    "usage": {
+      "total_tokens": 123,
+      "input_tokens": 45,
+      "output_tokens": 78,
+      "input_token_details": {
+        "text_tokens": 45,
+        "audio_tokens": 0
+      },
+      "output_token_details": {
+        "text_tokens": 78,
+        "audio_tokens": 0
+      }
+    }
+  }
+}
+```
+</ResponseExample>
+
+## Error Handling
+
+### Error Event Format
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "invalid_request_error",
+    "message": "Error description",
+    "code": "error_code"
+  }
+}
+```
+
+### Common Errors
+
+| Error Type | Trigger Scenario | Solution |
+|-----------|------------------|----------|
+| `authentication_error` | Invalid or unauthorized API Key | Verify API Key in Authorization header is valid |
+| `invalid_request_error` | Request format error | Check event format and required fields |
+| `model_not_found` | Incorrect model name | Only supports `gpt-realtime` or `gpt-realtime-mini` |
+| `audio_decode_error` | Incorrect audio format | Ensure PCM16 mono, 24000Hz sample rate |
+| `rate_limit_error` | Request rate too high | Reduce request frequency or retry after waiting |
+| `server_error` | Internal server error | Retry later or contact technical support |
+
+## Audio Format Requirements
+
+### Input Audio
+
+- **Format**: PCM16 (16-bit PCM)
+- **Channels**: Mono
+- **Sample Rate**: 24000 Hz
+- **Encoding**: Base64 encoded, sent via `input_audio_buffer.append`
+
+### Output Audio
+
+- **Format**: PCM16 (16-bit PCM)
+- **Channels**: Mono
+- **Sample Rate**: 24000 Hz
+- **Encoding**: Base64 encoded, returned via `response.audio.delta` event
+
+## Usage Flow
+
+1. **Establish Connection**: Connect via WebSocket to `wss://llm.ai-nebula.com/v1/realtime?model={model}`
+2. **Configure Session**: Send `session.update` event to configure session parameters
+3. **Send Message**:
+   - Text mode: Send `conversation.item.create` event
+   - Audio mode: First send `input_audio_buffer.append` to push audio, then `input_audio_buffer.commit` to submit, finally send `conversation.item.create`
+4. **Request Response**: Send `response.create` event to trigger generation
+5. **Receive Response**: Listen to `response.text.delta` or `response.audio.delta` events to receive incremental output
+6. **Handle Completion**: After receiving `response.done` event, check `usage` statistics
+
+## Notes
+
+<Note>
+- **Required Step**: After establishing connection, must first send `session.update` to configure session
+- **Trigger Response**: After sending message, must call `response.create` to trigger generation
+- **Audio Format**: Audio must be PCM16 mono 24000Hz, Base64 encoded
+- **Event ID**: Recommend setting unique `event_id` for each event for tracking and debugging
+- **Connection Management**: Keep WebSocket connection active, avoid frequent disconnections and reconnections
+- **Error Handling**: Listen to `error` events and implement appropriate error handling logic
+- **Dependencies**:
+  - Python: `pip install websocket-client`
+  - JavaScript: Use native `WebSocket` API or `ws` library
+</Note>
+
+## Best Practices
+
+1. **Connection Reuse**: Reuse the same WebSocket connection for multiple conversation rounds to reduce connection overhead
+2. **Error Retry**: Implement exponential backoff retry mechanism for network errors
+3. **Audio Buffering**: Recommend sending audio data in chunks to avoid sending too large at once
+4. **Usage Statistics**: Pay attention to `usage` information in `response.done` to control costs reasonably
+5. **Timeout Handling**: Set reasonable timeout to avoid long waits

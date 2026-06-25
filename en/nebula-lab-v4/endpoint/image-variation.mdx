@@ -1,0 +1,91 @@
+---
+title: 'AI Image - Variation'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/imageVariationSubmit'
+---
+
+## Introduction
+
+Submit image variation task, used to generate variations of an image.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="batchImageGenerationDTO.model" type="string" required>
+  Model name
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.prompt" type="string" required>
+  Image description prompt
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.n" type="integer" required>
+  Number of images to generate
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.size" type="string" required>
+  Image size
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.temperature" type="integer" required>
+  Generation temperature
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.watermark" type="boolean" required>
+  Whether to add watermark
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.image" type="string">
+  Reference image URL
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.promptOptions" type="object">
+  Prompt options
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.optimizePrompt" type="string">
+  Optimize prompt
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.quality" type="string">
+  Image quality
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.responseFormat" type="string">
+  Response format
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.score" type="number">
+  Score threshold
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.sequentialImageGeneration" type="string">
+  Sequential image generation switch
+</ParamField>
+
+<ParamField body="batchImageGenerationDTO.sequentialImageGenerationOptions" type="object">
+  Sequential image generation options
+</ParamField>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "images": [{
+      "url": "https://example.com/image1.jpg"
+    }, {
+      "url": "https://example.com/image2.jpg"
+    }]
+  }
+}
+```
+</ResponseExample>

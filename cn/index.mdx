@@ -1,0 +1,148 @@
+---
+title: "基本介绍"
+description: "企业级专业稳定的AI大模型API中转站，支持200+热门AI模型"
+---
+
+## 欢迎使用 Nebula Api
+
+**Nebula Api** 是企业级专业稳定的 AI 大模型 API 中转站，基于统一的 OpenAI API 标准，支持 200+ 热门 AI 模型。一个令牌，即可轻松调用 OpenAI、Claude、Gemini、DeepSeek、Qwen、Kimi、GLM 等所有主流大模型。
+
+## 📖 产品基础
+
+<Columns cols={2}>
+  <Card title="快速开始" icon="rocket" href="/cn/quickstart">
+    三步完成接入，立即开始使用 AI 模型
+  </Card>
+  <Card title="API 手册" icon="book" href="/cn/api-reference/models">
+    完整的接口文档和开发者指南
+  </Card>
+</Columns>
+
+## 🔧 核心接口
+
+<Columns cols={2}>
+  <Card title="对话补全 API" icon="comments" href="/cn/api-reference/endpoint/chat">
+    Chat Completions - 创建多轮对话和文本生成
+  </Card>
+  <Card title="图像生成 API" icon="image" href="/cn/api-reference/endpoint/image-generation">
+    支持文生图、图生图、上下文图文生图
+  </Card>
+  <Card title="实时语音 API" icon="microphone" href="/cn/api-reference/realtime">
+    低时延文本/语音实时对话能力
+  </Card>
+  <Card title="模型列表 API" icon="list" href="/cn/api-reference/introduction">
+    获取所有可用模型信息
+  </Card>
+</Columns>
+
+## 💡 支持的模型
+
+### OpenAI 系列
+- GPT-5.4 / GPT-5.3 / GPT-5.2 系列
+- o3-mini（推理模型）
+- GPT-Image-1/1.5（图像生成）
+
+### Anthropic 系列
+- **Claude Sonnet 4.6**（最新旗舰）
+- Claude Opus 4.6
+- Claude Haiku 4.5（高性价比）
+
+### Google 系列
+- **Gemini 3.1 Pro Preview**（最新多模态）
+- Gemini 3.1 Flash 系列（快速响应）
+
+### 国产模型
+- DeepSeek V3.2 / R1（混合推理）
+- Kimi K2.5（月之暗面）
+- 通义千问 Qwen 3.5 / Qwen3-Max
+- GLM-5（智谱）
+
+## 🎯 使用场景
+
+<Columns cols={2}>
+  <Card title="对话型 AI" icon="message" href="/cn/integrations/cherry-studio">
+    Cherry Studio、Chatbox 等 AI 对话客户端
+  </Card>
+  <Card title="编程开发" icon="code" href="/cn/integrations/cursor">
+    Cursor、Claude Code、Cline 等 AI 编程工具
+  </Card>
+  <Card title="开发框架" icon="cube" href="/cn/integrations/langchain">
+    LangChain、Dify 等 AI 应用开发框架
+  </Card>
+  <Card title="翻译场景" icon="language" href="/cn/integrations/immersive-translate">
+    沉浸式翻译、Bob 翻译等工具
+  </Card>
+</Columns>
+
+## 🚀 为什么选择 Nebula Api？
+
+### 一个接口，多种模型
+
+无需为每个 AI 服务单独申请账号和管理 API 密钥：
+- **一个账号**：管理所有 AI 服务
+- **一个 API 密钥**：访问所有模型
+- **一套接口标准**：兼容 OpenAI API 格式
+
+### 🔧 简单易用
+
+切换模型就像修改一个参数一样简单：
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-xxxxxxxxxx",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+# 使用 GPT-5.4
+response = client.chat.completions.create(
+    model="gpt-5.4",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+
+# 切换到 Claude - 只需修改模型名称
+response = client.chat.completions.create(
+    model="claude-sonnet-4-6",
+    messages=[{"role": "user", "content": "Hello!"}]
+)
+```
+
+### 🛡️ 稳定可靠
+
+- **高可用性**：多节点部署，智能路由
+- **自动降级**：模型不可用时自动切换
+- **负载均衡**：智能分配请求，避免限流
+- **实时监控**：24/7 服务状态监控
+
+### 💰 成本优化
+
+- **统一计费**：所有模型使用统一余额
+- **透明定价**：清晰的价格体系
+- **用量统计**：详细的使用报告
+- **灵活充值**：支持多种支付方式
+
+## 🚀 开始使用
+
+<Steps>
+  <Step title="注册账号">
+    访问 [Nebula Api](https://ai-nebula.com) 创建您的账号
+  </Step>
+  <Step title="获取密钥">
+    在控制台生成您的 API 密钥
+  </Step>
+  <Step title="接入使用">
+    查看 [API 文档](/cn/api-reference/introduction) 开始集成
+  </Step>
+</Steps>
+
+## 🔗 快速链接
+
+<Columns cols={2}>
+  <Card title="立即注册" icon="user-plus" href="https://ai-nebula.com">
+    注册账号，获取免费测试额度
+  </Card>
+  <Card title="管理控制台" icon="gauge" href="https://ai-nebula.com">
+    管理 API Key，查看使用统计和账单
+  </Card>
+</Columns>

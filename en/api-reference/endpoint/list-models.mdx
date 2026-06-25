@@ -1,0 +1,89 @@
+---
+title: 'List Models'
+api: 'GET https://llm.ai-nebula.com/v1/models'
+---
+
+## Introduction
+
+Get list of available models. Response format is auto-detected by headers:
+
+- With `x-api-key` and `anthropic-version` headers: Anthropic format
+- With `x-goog-api-key` header or `key` query param: Gemini format
+- Otherwise: OpenAI format
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g. `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## cURL Example
+
+```bash
+curl https://llm.ai-nebula.com/v1/models \
+  -H "Authorization: Bearer sk-XyLy**************************mIqSt"
+```
+
+## Python Example
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-XyLy**************************mIqSt",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+models = client.models.list()
+
+for model in models.data:
+    print(model.id)
+```
+
+<ResponseExample>
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "gpt-4o",
+      "object": "model",
+      "created": 1234567890,
+      "owned_by": "openai"
+    },
+    {
+      "id": "claude-sonnet-4-20250514",
+      "object": "model",
+      "created": 1234567890,
+      "owned_by": "anthropic"
+    },
+    {
+      "id": "gemini-2.5-pro",
+      "object": "model",
+      "created": 1234567890,
+      "owned_by": "google"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Response Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| object | string | Always `list` |
+| data | array | Model list |
+| data[].id | string | Model identifier |
+| data[].object | string | Always `model` |
+| data[].created | integer | Creation timestamp |
+| data[].owned_by | string | Model provider |
+
+## Notes
+
+<Note>
+- Model list varies based on your API Key permissions
+- Use to check if a specific model is available
+- Requires `openai`: `pip install openai`
+</Note>
+

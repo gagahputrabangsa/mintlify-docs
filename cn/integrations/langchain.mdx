@@ -1,0 +1,273 @@
+---
+title: 'LangChain'
+description: 'LangChain 开发框架集成指南'
+---
+
+## 一、简介
+
+LangChain 是一个用于开发基于语言模型的应用程序的强大框架。通过集成 **Nebula Api**，可在 LangChain 中灵活调用各类主流 AI 模型。
+
+## 二、快速开始
+
+### 1. 安装依赖
+
+```bash
+pip install langchain langchain-openai
+```
+
+### 2. 基础配置
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+os.environ["OPENAI_API_KEY"] = "您的Nebula Api密钥"
+os.environ["OPENAI_BASE_URL"] = "https://llm.ai-nebula.com/v1"
+
+llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    temperature=0.7
+)
+```
+
+## 三、核心功能
+
+### 1. 基础对话
+
+```python
+from langchain.schema import HumanMessage, SystemMessage
+
+messages = [
+    SystemMessage(content="你是一个有帮助的助手"),
+    HumanMessage(content="介绍一下 Python 的主要特点")
+]
+
+response = llm.invoke(messages)
+print(response.content)
+```
+
+### 2. 对话链（带记忆）
+
+```python
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationChain
+
+memory = ConversationBufferMemory()
+conversation = ConversationChain(llm=llm, memory=memory, verbose=True)
+
+conversation.predict(input="我想学习机器学习")
+conversation.predict(input="推荐一些入门资源")
+```
+
+### 3. 文档问答系统（RAG）
+
+```python
+from langchain.document_loaders import TextLoader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import FAISS
+from langchain.chains import RetrievalQA
+
+embeddings = OpenAIEmbeddings(
+    api_key="您的Nebula lab密钥",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+loader = TextLoader("document.txt")
+documents = loader.load()
+
+text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
+texts = text_splitter.split_documents(documents)
+
+vectorstore = FAISS.from_documents(texts, embeddings)
+
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vectorstore.as_retriever()
+)
+
+result = qa.run("文档中的关键概念是什么？")
+```
+
+## 四、模型切换
+
+```python
+gpt4 = ChatOpenAI(
+    model="gpt-4",
+    api_key="您的Nebula lab密钥",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+claude = ChatOpenAI(
+    model="claude-opus-4-5-20251101",
+    api_key="您的Nebula lab密钥",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+```
+
+## 五、高级应用
+
+### 1. Agent 系统
+
+```python
+from langchain.agents import create_openai_functions_agent, AgentExecutor
+from langchain.tools import Tool
+from langchain import hub
+
+def get_weather(location: str) -> str:
+    return f"{location}的天气是晴天，温度25°C"
+
+weather_tool = Tool(
+    name="Weather",
+    func=get_weather,
+    description="获取指定地点的天气信息"
+)
+
+prompt = hub.pull("hwchase17/openai-functions-agent")
+agent = create_openai_functions_agent(llm, [weather_tool], prompt)
+agent_executor = AgentExecutor(agent=agent, tools=[weather_tool])
+
+result = agent_executor.invoke({"input": "北京今天天气怎么样？"})
+```
+
+### 2. 批量处理
+
+```python
+prompts = ["解释人工智能", "什么是机器学习", "深度学习的应用"]
+
+responses = llm.batch([HumanMessage(content=p) for p in prompts])
+
+for response in responses:
+    print(response.content)
+```
+
+### 3. 流式输出
+
+```python
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+streaming_llm = ChatOpenAI(
+    model="gpt-3.5-turbo",
+    streaming=True,
+    callbacks=[StreamingStdOutCallbackHandler()]
+)
+
+streaming_llm.invoke("写一首关于春天的诗")
+```
+
+### 4. 成本监控
+
+```python
+from langchain.callbacks import get_openai_callback
+
+with get_openai_callback() as cb:
+    response = llm.invoke("你好，介绍一下LangChain")
+    print(f"Token数: {cb.total_tokens}")
+    print(f"成本: ${cb.total_cost:.6f}")
+```
+
+## 六、最佳实践
+
+### 模型选择策略
+
+| 任务类型 | 推荐模型 | 原因 |
+|---------|---------|------|
+| 简单对话 | gpt-3.5-turbo | 响应快、成本低 |
+| 复杂推理 | gpt-4 | 准确度高、逻辑能力强 |
+| 长文本处理 | claude-3-opus | 支持更长上下文 |
+| 创意写作 | claude-sonnet-4-5-20250929 | 生成内容流畅 |
+
+### 成本优化
+
+```python
+class CostOptimizedLLM:
+    def __init__(self):
+        self.cheap_model = ChatOpenAI(model="gpt-3.5-turbo")
+        self.premium_model = ChatOpenAI(model="gpt-4")
+    
+    def smart_invoke(self, message, complexity="low"):
+        model = self.premium_model if complexity == "high" else self.cheap_model
+        return model.invoke(message)
+```
+
+### 缓存策略
+
+```python
+from langchain.cache import InMemoryCache
+from langchain.globals import set_llm_cache
+
+set_llm_cache(InMemoryCache())
+
+response1 = llm.invoke("什么是人工智能？")
+response2 = llm.invoke("什么是人工智能？")  # 使用缓存
+```
+
+### 异步处理
+
+```python
+import asyncio
+from langchain_openai import AsyncChatOpenAI
+
+async def async_chat():
+    async_llm = AsyncChatOpenAI(
+        model="gpt-3.5-turbo",
+        api_key="您的Nebula lab密钥",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+    response = await async_llm.ainvoke("异步生成的内容")
+    return response.content
+
+result = asyncio.run(async_chat())
+```
+
+## 七、部署建议
+
+### 生产环境配置
+
+```python
+import os
+from langchain_openai import ChatOpenAI
+
+class ProductionLLM:
+    def __init__(self):
+        self.llm = ChatOpenAI(
+            model=os.getenv("LLM_MODEL", "gpt-3.5-turbo"),
+            temperature=float(os.getenv("LLM_TEMPERATURE", "0.7")),
+            max_tokens=int(os.getenv("LLM_MAX_TOKENS", "1000")),
+            request_timeout=int(os.getenv("LLM_REQUEST_TIMEOUT", "60"))
+        )
+    
+    def chat(self, message):
+        try:
+            return self.llm.invoke(message)
+        except Exception as e:
+            return "抱歉，服务暂时不可用"
+```
+
+### 容错机制
+
+```python
+import time
+from functools import wraps
+
+def retry_llm_call(max_retries=3, delay=1):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_retries):
+                try:
+                    return func(*args, **kwargs)
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(delay * (2 ** attempt))
+            return None
+        return wrapper
+    return decorator
+
+@retry_llm_call(max_retries=3)
+def robust_llm_call(llm, message):
+    return llm.invoke(message)
+```
+

@@ -1,0 +1,372 @@
+---
+title: 'OpenAI SDK Usage'
+description: 'Seamlessly integrate Nebula Api using official OpenAI SDKs'
+---
+
+## Using Official OpenAI Libraries
+
+Nebula Api is fully compatible with OpenAI API format. You can use official OpenAI SDKs with just a simple configuration change.
+
+## Supported SDKs
+
+- Python (`openai`)
+- Node.js (`openai`)
+- .NET (`OpenAI`)
+- Go (`go-openai`)
+- Java (third-party)
+- PHP (third-party)
+- Ruby (third-party)
+
+## Python SDK
+
+### Installation
+
+```bash
+pip install openai
+```
+
+### Basic Configuration
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {"role": "user", "content": "Hello!"}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+### Environment Variables
+
+```python
+import os
+from openai import OpenAI
+
+os.environ["OPENAI_API_KEY"] = "YOUR_API_KEY"
+os.environ["OPENAI_BASE_URL"] = "https://llm.ai-nebula.com/v1"
+
+client = OpenAI()
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Explain quantum computing"}]
+)
+```
+
+### Async Usage
+
+```python
+import asyncio
+from openai import AsyncOpenAI
+
+async def main():
+    client = AsyncOpenAI(
+        api_key="YOUR_API_KEY",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+    
+    response = await client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Hello!"}]
+    )
+    
+    print(response.choices[0].message.content)
+
+asyncio.run(main())
+```
+
+### Streaming
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+stream = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Write a short story"}],
+    stream=True
+)
+
+for chunk in stream:
+    if chunk.choices[0].delta.content is not None:
+        print(chunk.choices[0].delta.content, end="")
+```
+
+## Node.js SDK
+
+### Installation
+
+```bash
+npm install openai
+```
+
+### Basic Configuration
+
+```javascript
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: 'YOUR_API_KEY',
+  baseURL: 'https://llm.ai-nebula.com/v1'
+});
+
+const response = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello!' }]
+});
+
+console.log(response.choices[0].message.content);
+```
+
+### Streaming
+
+```javascript
+const stream = await openai.chat.completions.create({
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Tell me a joke' }],
+  stream: true
+});
+
+for await (const chunk of stream) {
+  if (chunk.choices[0]?.delta?.content) {
+    process.stdout.write(chunk.choices[0].delta.content);
+  }
+}
+```
+
+### TypeScript
+
+```typescript
+import OpenAI from 'openai';
+import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/chat/completions';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY!,
+  baseURL: 'https://llm.ai-nebula.com/v1'
+});
+
+const params: ChatCompletionCreateParamsNonStreaming = {
+  model: 'gpt-4o',
+  messages: [{ role: 'user', content: 'Hello TypeScript!' }],
+  temperature: 0.7
+};
+
+const response = await openai.chat.completions.create(params);
+```
+
+## .NET SDK
+
+### Installation
+
+```bash
+dotnet add package OpenAI
+```
+
+### Basic Configuration
+
+```csharp
+using OpenAI;
+using OpenAI.Chat;
+
+var client = new OpenAIClient("YOUR_API_KEY", new OpenAIClientOptions
+{
+    Endpoint = new Uri("https://llm.ai-nebula.com/v1")
+});
+
+var chatClient = client.GetChatClient("gpt-4o");
+var response = await chatClient.CompleteChatAsync("Hello!");
+
+Console.WriteLine(response.Value.Content[0].Text);
+```
+
+## Go SDK
+
+### Installation
+
+```bash
+go get github.com/sashabaranov/go-openai
+```
+
+### Basic Configuration
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    openai "github.com/sashabaranov/go-openai"
+)
+
+func main() {
+    config := openai.DefaultConfig("YOUR_API_KEY")
+    config.BaseURL = "https://llm.ai-nebula.com/v1"
+    
+    client := openai.NewClientWithConfig(config)
+    
+    resp, err := client.CreateChatCompletion(
+        context.Background(),
+        openai.ChatCompletionRequest{
+            Model: "gpt-4o",
+            Messages: []openai.ChatCompletionMessage{
+                {Role: openai.ChatMessageRoleUser, Content: "Hello!"},
+            },
+        },
+    )
+    
+    if err != nil {
+        fmt.Printf("Error: %v\n", err)
+        return
+    }
+    
+    fmt.Println(resp.Choices[0].Message.Content)
+}
+```
+
+## Model Switching
+
+```python
+client = OpenAI(
+    api_key="YOUR_API_KEY",
+    base_url="https://llm.ai-nebula.com/v1"
+)
+
+# GPT model
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+
+# Claude model
+response = client.chat.completions.create(
+    model="claude-sonnet-4-20250514",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+
+# Gemini model
+response = client.chat.completions.create(
+    model="gemini-2.5-pro",
+    messages=[{"role": "user", "content": "Hello"}]
+)
+```
+
+## Advanced Features
+
+### Function Calling
+
+```python
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_weather",
+            "description": "Get weather info for a city",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "location": {"type": "string", "description": "City name"}
+                },
+                "required": ["location"]
+            }
+        }
+    }
+]
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[{"role": "user", "content": "What's the weather in Beijing?"}],
+    tools=tools,
+    tool_choice="auto"
+)
+```
+
+### Image Input
+
+```python
+response = client.chat.completions.create(
+    model="gpt-4o",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What's in this image?"},
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "https://example.com/image.jpg"}
+                }
+            ]
+        }
+    ]
+)
+```
+
+### Embeddings
+
+```python
+response = client.embeddings.create(
+    model="text-embedding-3-small",
+    input="Text to embed"
+)
+
+embedding = response.data[0].embedding
+print(f"Dimensions: {len(embedding)}")
+```
+
+## Error Handling
+
+```python
+from openai import (
+    OpenAI, 
+    APIError, 
+    APIConnectionError, 
+    RateLimitError,
+    InternalServerError
+)
+
+try:
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Hello"}]
+    )
+except RateLimitError:
+    print("Rate limited, please retry later")
+except APIConnectionError:
+    print("Network connection error")
+except InternalServerError:
+    print("Server internal error")
+except APIError as e:
+    print(f"API error: {e}")
+```
+
+## Migration Guide
+
+### From OpenAI
+
+```python
+# Original config
+client = OpenAI(api_key="sk-...")
+
+# Change to Nebula Api
+client = OpenAI(
+    api_key="YOUR_NEBULA_KEY", 
+    base_url="https://llm.ai-nebula.com/v1"
+)
+```
+
+<Tip>
+No code changes needed. All other code stays the same including method calls, parameter formats, and response handling.
+</Tip>
+

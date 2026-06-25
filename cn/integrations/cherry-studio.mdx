@@ -1,0 +1,96 @@
+---
+title: 'Cherry Studio'
+description: 'Cherry Studio 客户端集成指南'
+---
+
+## 一、产品简介
+
+Cherry Studio 是一款功能强大的 AI 对话客户端，支持多种大语言模型。通过 **Nebula Api**，您可以在 Cherry Studio 中便捷使用各种主流 AI 模型。
+
+## 二、快速集成步骤
+
+### 1. 获取 API 密钥
+
+访问 [Nebula Api](https://ai-nebula.com) 获取您的 API 密钥。
+
+### 2. 配置步骤
+
+1. 打开 Cherry Studio 应用
+2. 点击左侧的设置图标进入设置页面
+3. 选择"模型服务"选项
+4. 填写配置信息：
+   - API 地址：`https://llm.ai-nebula.com`
+   - API 密钥：输入从 Nebula Api 控制台获取的密钥
+5. 点击底部的"➕ 添加"按钮保存配置
+
+<Warning>
+API 地址必须为 `https://llm.ai-nebula.com`，不可修改
+</Warning>
+
+### 3. 添加模型
+
+1. 在模型搜索框中查找目标模型（如 `gemini-3.1-pro-preview`）
+2. 点击模型名称旁的图标选择或配置模型
+3. 根据需求启用/禁用不同模型变体
+4. 可通过右侧按钮进行详细配置
+
+## 三、支持的模型
+
+### 最新推荐模型
+
+| 模型系列 | 模型 ID | 特点 |
+|---------|---------|------|
+| Gemini 3.1 Pro | `gemini-3.1-pro-preview` | Google 新一代核心智能模型，多模态与复杂任务能力更强 |
+| GPT-5.4 | `gpt-5.4` | OpenAI 新一代主力模型，综合能力强 |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` | Anthropic 新版 Sonnet，长文本与代码能力优秀 |
+| DeepSeek V3.2 | `deepseek-v3-2-251201` | 高性价比混合推理模型，通用场景稳定 |
+
+### 经典稳定模型
+
+| 模型系列 | 模型 ID | 适用场景 |
+|---------|---------|----------|
+| Claude Opus 4.6 | `claude-opus-4-6` | 高难度任务、复杂推理、代码审查 |
+| Gemini 3.1 Flash Lite | `gemini-3.1-flash-lite-preview` | 快速响应、低成本高并发对话 |
+
+### 模型选择建议
+
+- **多模态任务**：推荐 `gemini-3.1-pro-preview`
+- **日常对话**：推荐 `gpt-5.4` 或 `gemini-3.1-flash-lite-preview`
+- **长文本处理**：推荐 `claude-sonnet-4-6` 或 `claude-opus-4-6`
+- **复杂推理**：推荐 `gpt-5.4-pro`、`claude-opus-4-6`、`deepseek-r1-250528`
+
+## 四、高级功能
+
+### 图片支持
+
+若使用支持图片的模型（如 `GPT-4V`）：
+
+1. 在设置中开启"图片"选项
+2. 选择支持视觉的模型
+3. 在对话中直接上传图片
+
+### 流式输出
+
+Cherry Studio 默认支持流式输出，提供更流畅的对话体验。
+
+## 五、故障排除
+
+<AccordionGroup>
+  <Accordion title="连接失败">
+    - 检查 API 密钥是否正确
+    - 确认 API 地址为 `https://llm.ai-nebula.com`
+    - 验证网络连接状态
+  </Accordion>
+  <Accordion title="模型不可用">
+    - 确认账户余额充足
+    - 检查模型是否在订阅计划内
+    - 尝试切换其他模型
+  </Accordion>
+</AccordionGroup>
+
+## 六、使用技巧
+
+1. **合理选择模型**：根据任务需求匹配最合适的模型
+2. **定期更新**：关注新模型发布，及时体验最新功能
+3. **监控使用**：通过 Nebula Api 控制台查看使用情况，优化资源分配
+

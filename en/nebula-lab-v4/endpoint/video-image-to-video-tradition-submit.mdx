@@ -1,0 +1,57 @@
+---
+title: 'Image to Video - Traditional Mode - Submit Task'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/image2VideoTradition'
+---
+
+## Introduction
+
+Submit image-to-video task in traditional mode, used to generate video based on input image.
+
+## Authentication
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token, e.g., `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  How to get: Obtain via the POST interface in the Authentication module at the top left, `https://docs.openai-nebula.com/en/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## Request Parameters
+
+<ParamField body="image2VideoTraditionalDTO.image_urls" type="array[string]" required>
+  Input image URL array:
+  0: source image (RGB, 3-channel)
+  1: optional mask (grayscale, 1-channel; 0 black = keep, 255 white = remove)
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.prompt" type="string" required>
+  Prompt describing desired video effect
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.duration" type="string" required>
+  Video duration, supported values: 3, 5, 8, 10, 12
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.resolution" type="string" required>
+  Video resolution (enum): 480p, 720p, 1080p
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.req_key" type="string">
+  Request key for business correlation or de-duplication
+</ParamField>
+
+<ParamField body="image2VideoTraditionalDTO.return_url" type="boolean">
+  Whether to return the result URL directly (default off)
+</ParamField>
+
+### Response Example
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "Operation successful",
+  "data": {
+    "id": "task-1234567890"
+  }
+}
+```
+</ResponseExample>

@@ -1,0 +1,831 @@
+---
+title: '创建对话请求(openai)'
+api: 'POST https://llm.ai-nebula.com/v1/chat/completions'
+---
+
+## 简介
+
+通用文本对话接口，支持 OpenAI 兼容的大语言模型生成对话回答。通过统一的 API 接口，您可以调用 OpenAI、Claude、DeepSeek、Grok、通义千问等多个主流大模型。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer sk-xxxxxxxxxx`
+</ParamField>
+
+## 请求参数
+
+<ParamField body="model" type="string" required>
+  模型标识，支持的模型包括：
+  - OpenAI 系列：`o4-mini`、`o3-mini`、`gpt-5.2`、`gpt-5.1`、`gpt-4o`、`gpt-4o-mini` 等
+  - Claude 系列：`claude-opus-4-6`、`claude-sonnet-4-5-20250929`、`claude-haiku-4-5-20251001` 等
+  - DeepSeek 系列：`deepseek-v3-1-250821`、`deepseek-v3`、`deepseek-r1` 等
+  - Grok 系列：`grok-4`、`grok-4-fast-reasoning`、`grok-3` 等
+  - Gemini 系列：`gemini-3-pro-preview`、`gemini-3-flash-preview`、`nano-banana-pro` 及其 `-thinking/-nothinking` / `-thinking-<预算>` / `-thinking-low/-thinking-high` 后缀变体
+  - 国产模型系列：`glm-5`、`glm-4.7`、`doubao-seed-1-8-251228`（豆包 Seed 系列）、`qwen3-coder-plus`、`kimi-k2.5` 等
+</ParamField>
+
+<ParamField body="messages" type="array" required>
+  对话消息列表，每个元素包含 `role`（user/system/assistant）和 `content`
+</ParamField>
+
+<ParamField body="temperature" type="number" default="0.7">
+  随机性控制，0-2，值越高回复越随机
+</ParamField>
+
+<ParamField body="stream" type="boolean" default="false">
+  是否启用流式输出，返回 SSE 格式的分片数据
+</ParamField>
+
+<ParamField body="max_tokens" type="number">
+  最大生成 token 数，控制回复长度
+</ParamField>
+
+<ParamField body="top_p" type="number">
+  核采样参数，0-1，控制生成的多样性
+</ParamField>
+
+## 基础示例
+
+<Tab>
+  <Tab title="非流式请求">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "glm-5",
+        "messages": [
+          {"role": "system", "content": "你是一个有用的助手"},
+          {"role": "user", "content": "请用中文简要介绍人工智能"}
+        ],
+        "temperature": 0.7
+      }'
+    ```
+  </Tab>
+
+  <Tab title="流式请求（SSE）">
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "doubao-seed-1-8-251228",
+        "stream": true,
+        "messages": [
+          {"role": "system", "content": "你是一个有用的助手"},
+          {"role": "user", "content": "请用中文简要介绍人工智能"}
+        ]
+      }'
+    ```
+  </Tab>
+
+  <Tab title="Python 示例">
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    # 非流式
+    completion = client.chat.completions.create(
+        model="glm-5",
+        messages=[
+            {"role": "system", "content": "你是一个有用的助手"},
+            {"role": "user", "content": "请用中文简要介绍人工智能"}
+        ],
+        temperature=0.7
+    )
+    print(completion.choices[0].message.content)
+
+    # 流式
+    stream = client.chat.completions.create(
+        model="doubao-seed-1-8-251228",
+        messages=[
+            {"role": "user", "content": "请用中文简要介绍人工智能"}
+        ],
+        stream=True
+    )
+    for chunk in stream:
+        if chunk.choices[0].delta.content:
+            print(chunk.choices[0].delta.content, end="")
+    ```
+  </Tab>
+</Tab>
+
+<ResponseExample>
+```json
+{
+  "id": "chatcmpl-xxx",
+  "object": "chat.completion",
+  "created": 1234567890,
+  "model": "glm-5",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": "人工智能是研究、开发用于模拟、延伸和扩展人的智能的理论、方法、技术及应用系统的一门新的技术科学..."
+      },
+      "finish_reason": "stop"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 25,
+    "completion_tokens": 100,
+    "total_tokens": 125
+  }
+}
+```
+</ResponseExample>
+
+## 高级功能
+
+### 工具调用（Functions / Tools）
+
+支持 OpenAI 兼容的工具调用格式，适用于 GPT、Claude、DeepSeek、Grok、通义千问等模型。
+
+<Tabs>
+  <Tab title="第一阶段：模型返回工具调用">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "glm-5",
+        "messages": [
+          {"role": "user", "content": "上海的天气怎么样？"}
+        ],
+        "tools": [
+          {
+            "type": "function",
+            "function": {
+              "name": "get_weather",
+              "description": "根据城市获取天气信息",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "city": {"type": "string"}
+                },
+                "required": ["city"]
+              }
+            }
+          }
+        ],
+        "tool_choice": "auto"
+      }'
+    ```
+  </Tab>
+
+  <Tab title="第二阶段：返回工具执行结果">
+    模型返回 `tool_calls` 后，需要执行工具并将结果回传给模型：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "glm-5",
+        "messages": [
+          {"role": "user", "content": "上海的天气怎么样？"},
+          {
+            "role": "assistant",
+            "tool_calls": [
+              {
+                "id": "call_xxx",
+                "type": "function",
+                "function": {
+                  "name": "get_weather",
+                  "arguments": "{\"city\":\"上海\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "call_xxx",
+            "content": "{\"temp\":\"22°C\",\"condition\":\"多云\",\"aqi\":53}"
+          }
+        ]
+      }'
+    ```
+
+    <Note>
+    - `tool_call_id` 必须与第一阶段返回的 ID 一致
+    - 工具执行失败时应返回可读的错误信息，避免阻塞后续补全
+    - 第二阶段也支持流式输出
+    </Note>
+  </Tab>
+</Tabs>
+
+### 结构化输出（JSON Schema）
+
+支持通过 `response_format` 参数控制输出格式，适用于 GPT、Claude、Grok 等模型。
+
+```bash
+curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-xxxxxxxxxx" \
+  -d '{
+    "model": "doubao-seed-1-8-251228",
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "Answer",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "summary": {"type": "string"}
+          },
+          "required": ["summary"]
+        }
+      }
+    },
+    "messages": [
+      {"role": "user", "content": "返回一个包含 summary 字段的 JSON"}
+    ]
+  }'
+```
+
+<Tip>
+严格的结构化输出建议降低 `temperature` 值（如 0.1-0.3），并设置合适的 `max_tokens` 以提升一致性。
+</Tip>
+
+### 思考能力
+
+部分模型支持思考能力（Thinking/Reasoning），可以在生成回复时展示推理过程。不同模型的实现方式不同：
+
+<Tabs>
+  <Tab title="DeepSeek">
+    DeepSeek 模型支持通过 `thinking` 字段开启思考能力：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "deepseek-v3-1-250821",
+        "messages": [
+          {"role": "system", "content": "你是一个有用的助手"},
+          {"role": "user", "content": "给出一道中等难度的几何题并分步解析"}
+        ],
+        "thinking": {"type": "enabled"}
+      }'
+    ```
+
+    <Note>
+    - 默认 `thinking.type` 为 `"disabled"`，需要显式设置为 `"enabled"` 开启
+    - 思考能力的输出形态可能因模型版本而异
+    - 建议配合 `stream: true` 以获得更好的交互体验
+    </Note>
+  </Tab>
+
+  <Tab title="通义千问">
+    通义千问支持深度思考功能，需要配合流式输出：
+
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "qwen3-omni-flash",
+        "stream": true,
+        "enable_thinking": true,
+        "parameters": {
+          "incremental_output": true
+        },
+        "messages": [
+          {"role": "system", "content": "你是一名优秀的数学家"},
+          {"role": "user", "content": "汉诺塔的公式是啥"}
+        ]
+      }'
+    ```
+
+    **将推理过程内联到 content**：
+
+    如果客户端不展示 `reasoning_content`，可以使用 `nebula_thinking_to_content: true` 将推理内容内联到 `content` 中：
+
+    ```bash
+    curl -N -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "qwen3-omni-flash",
+        "stream": true,
+        "enable_thinking": true,
+        "nebula_thinking_to_content": true,
+        "parameters": {
+          "incremental_output": true
+        },
+        "messages": [
+          {"role": "user", "content": "汉诺塔的公式是啥"}
+        ]
+      }'
+    ```
+
+    <Warning>
+    通义千问的深度思考功能必须配合 `stream: true` 使用。如果设置了 `enable_thinking: true` 但 `stream: false`，系统会自动关闭深度思考以避免上游报错。
+    </Warning>
+  </Tab>
+
+  <Tab title="Gemini">
+    参考 Gemini 思考模式文档，主要开启方式：
+
+    - **模型后缀**：`-thinking` 自动预算；`-thinking-<数字>` 精确预算（如 `gemini-2.5-flash-thinking-8192`）；`-nothinking` 关闭；`gemini-3-pro-preview-thinking-low/high` 直接指定级别
+    - **extra_body 配置**：`extra_body.google.thinking_config.thinking_budget` + `include_thoughts`，支持特殊值：`-1` 自动开启、`0` 关闭、`>0` 指定预算；需 `stream: true`
+    - **reasoning_effort**：在 `-thinking` 且未设置 `max_tokens` 时可用（`low/medium/high`≈20%/50%/80% 预算）
+    - **Gemini 3 Pro Preview**：使用 `thinking_level`（`LOW`/`HIGH`，默认 HIGH），可同时结合搜索
+    - **搜索开启**：推荐 OpenAI 兼容工具 `"tools":[{"type":"function","function":{"name":"googleSearch"}}]`；或透传 `extra_body.google.tools:[{"googleSearch":{}}]`
+    - **注意**：需启用思考适配器（服务端配置），思考预算占用输出 token，务必使用 `stream: true` 才能看到 `reasoning_content`
+
+    示例（2.5 指定预算）：
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gemini-3-flash-preview",
+        "messages": [
+          {"role":"user","content":"给出一道中等难度的几何题并分步解析。"}
+        ],
+        "extra_body": {
+          "google": {
+            "thinking_config": { "thinking_budget": 6000, "include_thoughts": true }
+          }
+        },
+        "stream": true
+      }'
+    ```
+
+    示例（3 Pro Preview 思考+搜索）：
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "gemini-3-pro-preview",
+        "messages": [
+          {"role":"user","content":"Google 搜索一下今天广州的天气怎么样"}
+        ],
+        "generationConfig": {
+          "thinkingConfig": { "thinkingLevel": "LOW" }
+        },
+        "tools": [
+          { "type": "function", "function": { "name": "googleSearch" } }
+        ],
+        "stream": true
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+### 通义千问扩展功能
+
+通义千问模型支持搜索、语音识别等扩展功能，所有扩展参数需放入 `parameters` 对象中。
+
+<Tabs>
+  <Tab title="搜索功能">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "qwen3-omni-flash",
+        "messages": [
+          {"role": "user", "content": "请先检索近期关于费马大定理的常见误解，再回答"}
+        ],
+        "stream": true,
+        "enable_thinking": true,
+        "parameters": {
+          "enable_search": true,
+          "search_options": {
+            "region": "CN",
+            "recency_days": 30
+          },
+          "incremental_output": true
+        }
+      }'
+    ```
+  </Tab>
+
+  <Tab title="语音识别">
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "qwen3-omni-flash",
+        "messages": [
+          {"role": "user", "content": "你好"}
+        ],
+        "parameters": {
+          "asr_options": {
+            "language": "zh"
+          }
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+通义千问的所有扩展参数（如 `enable_search`、`search_options`、`asr_options`、`temperature`、`top_p` 等）都需要放在 `parameters` 对象中，而不是请求体的顶层。
+</Note>
+
+### 联网搜索功能
+
+部分模型支持实时联网搜索，可以获取最新信息并在响应中包含引用来源。
+
+<Tabs>
+  <Tab title="Claude 搜索">
+    Claude   模型不支持通过 `web_search_options` 参数开启网络搜索功能，所以使用只能通过tool工具调用实现，且可能因为网络和提示词等原因不稳定,详细看上面工具调用（Functions / Tools）。
+
+    **基础示例**（展示工具调用流程）：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "glm-5",
+        "messages": [
+          {"role": "user", "content": "最近关于人工智能的新闻有哪些？"},
+          {
+            "role": "assistant",
+            "content": "我来帮你搜索一下最近关于人工智能的新闻。",
+            "tool_calls": [
+              {
+                "id": "toolu_xxx",
+                "type": "function",
+                "function": {
+                  "name": "WebSearch",
+                  "arguments": "{\"query\": \"人工智能 最新新闻 2025\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "toolu_xxx",
+            "name": "WebSearch",
+            "content": "Web search results for query: \"人工智能 最新新闻 2025\"..."
+          }
+        ],
+        "web_search_options": {
+          "search_context_size": "medium"
+        }
+      }'
+    ```
+
+    **带位置信息的示例**（展示工具调用流程）：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "glm-5",
+        "messages": [
+          {"role": "user", "content": "上海今天的天气怎么样？"},
+          {
+            "role": "assistant",
+            "content": "我来帮你搜索一下上海今天的天气情况。",
+            "tool_calls": [
+              {
+                "id": "toolu_xxx",
+                "type": "function",
+                "function": {
+                  "name": "WebSearch",
+                  "arguments": "{\"query\": \"上海今天天气\"}"
+                }
+              }
+            ]
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "toolu_xxx",
+            "name": "WebSearch",
+            "content": "Web search results for query: \"上海今天天气\"..."
+          }
+        ],
+        "web_search_options": {
+          "search_context_size": "medium",
+          "user_location": {
+            "approximate": {
+              "timezone": "Asia/Shanghai",
+              "country": "CN",
+              "region": "Shanghai",
+              "city": "Shanghai"
+            }
+          }
+        }
+      }'
+    ```
+
+    <Note>
+    - 搜索功能会增加响应时间和 token 消耗（包含搜索结果内容）
+    - 搜索结果会在响应中自动包含引用来源
+    - 支持的模型包括 Claude Sonnet 4、Claude 3 Opus 等
+    - 在多轮对话中，工具调用和结果会在消息历史中可见，模型可以基于之前的搜索结果继续对话
+    </Note>
+
+    <Note type="warning">
+    **稳定性说明**：
+    - 联网搜索功能依赖上游代理服务和外部搜索服务，可能存在以下不稳定性：
+      - **网络波动**：网络连接问题可能导致搜索请求超时或失败
+      - **服务限制**：搜索服务可能有频率限制、超时限制或临时不可用
+      - **搜索结果质量**：某些查询可能无法找到相关信息，或搜索结果质量不佳
+      - **模型判断**：模型会根据问题自动判断是否需要搜索，某些情况下可能不会触发搜索
+    </Note>
+  </Tab>
+
+  <Tab title="Grok 搜索">
+    Grok 模型支持通过 `search_parameters` 参数控制实时搜索行为。
+
+    <ParamField body="search_parameters" type="object">
+      搜索参数配置
+      - `mode`（可选）：搜索模式，可选值：
+        - `"off"`：禁用搜索
+        - `"auto"`：模型自动判断是否需要搜索（推荐）
+        - `"on"`：强制使用搜索
+      - `return_citations`（可选）：是否在响应中返回引用链接，默认为 `true`
+    </ParamField>
+
+    **基础示例**：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "grok-4",
+        "messages": [
+          {"role": "user", "content": "2026年人工智能领域有什么最新进展？"}
+        ],
+        "search_parameters": {
+          "mode": "auto"
+        }
+      }'
+    ```
+
+    **强制搜索示例**：
+
+    ```bash
+    curl -X POST "https://llm.ai-nebula.com/v1/chat/completions" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "model": "grok-4",
+        "messages": [
+          {"role": "user", "content": "最新的科技新闻有哪些？"}
+        ],
+        "search_parameters": {
+          "mode": "on",
+          "return_citations": true
+        }
+      }'
+    ```
+
+    **Python 示例**：
+
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    completion = client.chat.completions.create(
+        model="grok-4",
+        messages=[
+            {"role": "user", "content": "2026年人工智能领域有什么最新进展？"}
+        ],
+        extra_body={
+            "search_parameters": {
+                "mode": "auto"
+            }
+        }
+    )
+    print(completion.choices[0].message.content)
+    ```
+
+    <Note>
+    - 推荐使用 `"auto"` 模式，让模型自动判断是否需要搜索
+    - 搜索功能会增加响应时间，但能获取最新的实时信息
+    - 支持的模型包括 `grok-4`、`grok-3` 等系列
+    - 搜索结果会在响应中包含引用来源
+    </Note>
+  </Tab>
+</Tabs>
+
+### GPT 文件输入（Responses API）
+
+GPT-5 等模型支持文件输入功能，需要通过 `/v1/responses` 接口调用，而不是 `/v1/chat/completions`。
+
+<Tabs>
+  <Tab title="通过文件 URL 上传">
+    您可以通过链接外部网址上传 PDF 文件：
+
+    ```python
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com/v1/responses?api-version=2025-03-01-preview"
+    )
+
+    response = client.responses.create(
+        model="gpt-5.2",
+        input=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": "分析这封信，并总结其关键点"
+                    },
+                    {
+                        "type": "input_file",
+                        "file_url": "https://www.example.com/document.pdf"
+                    }
+                ]
+            }
+        ]
+    )
+    print(response.output_text)
+    ```
+  </Tab>
+
+  <Tab title="通过 Base64 编码上传">
+    作为 Base64 编码的输入发送：
+
+    ```python
+    import base64
+    from openai import OpenAI
+
+    client = OpenAI(
+        api_key="sk-xxxxxxxxxx",
+        base_url="https://llm.ai-nebula.com/v1"
+    )
+
+    with open("document.pdf", "rb") as f:
+        data = f.read()
+
+    base64_string = base64.b64encode(data).decode("utf-8")
+
+    response = client.responses.create(
+        model="gpt-5.2",
+        input=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_file",
+                        "filename": "document.pdf",
+                        "file_data": f"data:application/pdf;base64,{base64_string}"
+                    },
+                    {
+                        "type": "input_text",
+                        "text": "这份文档的主要内容是什么？"
+                    }
+                ]
+            }
+        ]
+    )
+    print(response.output_text)
+    ```
+  </Tab>
+</Tabs>
+
+<Note>
+- 文件大小限制：单个文件不超过 50 MB，单个请求中所有文件总大小不超过 50 MB
+- 支持的模型：`gpt-4o`、`gpt-4o-mini`、`gpt-5-chat` 等支持文本和图像输入的模型
+- 推理模型（o1、o3-mini、o4-mini）如需使用推理能力，也应使用 `/v1/responses` 接口
+</Note>
+
+### Grok 推理能力
+
+Grok 模型（特别是 `grok-4-fast-reasoning`）支持推理能力，响应中的 `usage` 会区分 `completion_tokens` 和 `reasoning_tokens`：
+
+```json
+{
+  "usage": {
+    "prompt_tokens": 100,
+    "completion_tokens": 500,
+    "total_tokens": 600,
+    "completion_tokens_details": {
+      "reasoning_tokens": 300
+    }
+  }
+}
+```
+
+实际输出文本的 token 数 = `completion_tokens - reasoning_tokens`
+
+## 响应格式
+
+<Tabs>
+  <Tab title="非流式响应">
+    ```json
+    {
+      "id": "chatcmpl-xxx",
+      "object": "chat.completion",
+      "created": 1234567890,
+      "model": "glm-5",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "回复内容..."
+          },
+          "finish_reason": "stop"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 25,
+        "completion_tokens": 100,
+        "total_tokens": 125
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab title="流式响应">
+    流式响应以 SSE（Server-Sent Events）格式返回，每个分片包含部分内容：
+
+    ```json
+    data: {"id":"chatcmpl-xxx","object":"chat.completion.chunk","created":1234567890,"model":"doubao-seed-1-8-251228","choices":[{"index":0,"delta":{"content":"回"},"finish_reason":null}]}
+
+    data: {"id":"chatcmpl-xxx","object":"chat.completion.chunk","created":1234567890,"model":"doubao-seed-1-8-251228","choices":[{"index":0,"delta":{"content":"复"},"finish_reason":null}]}
+
+    data: [DONE]
+    ```
+
+    最后一个分片通常包含 `usage` 统计信息。
+  </Tab>
+</Tabs>
+
+## 错误处理
+
+| 异常类型 | 触发场景 | 返回信息 |
+|---------|---------|---------|
+| AuthenticationError | API密钥无效或未授权 | 错误：API密钥无效或未授权 |
+| NotFoundError | 模型不存在或不被支持 | 错误：模型 [model] 不存在或不被支持 |
+| APIConnectionError | 网络中断或服务器未响应 | 错误：无法连接到API服务器 |
+| APIError | 请求格式错误等服务端异常 | API请求失败：[错误详情] |
+
+## 支持的模型系列
+
+### OpenAI 系列
+- GPT-4.1、GPT-4o、GPT-4o Mini、GPT-3.5-turbo
+- 推理模型：o3-mini、o4-mini（需使用 `/v1/responses` 接口）
+
+### Claude 系列（Anthropic）
+- Claude Sonnet 4、Claude 3 Opus、Claude 3 Haiku
+
+### DeepSeek 系列
+- DeepSeek V3、DeepSeek R1
+
+### Grok 系列（xAI）
+- Grok-4、Grok-3、Grok-3-fast、Grok-4-fast-reasoning
+
+### 通义千问系列（Qwen）
+- Qwen3-omni-flash 等
+
+### 豆包 Seed 系列（Doubao）
+- doubao-seed-1-8-251228 等
+
+### 其他模型
+- Gemini 系列、GLM 系列（含 glm-5）、Kimi 系列等
+
+完整模型列表请查看 [模型信息页面](/cn/api-reference/models)。
+
+## 注意事项
+
+<Note>
+- `messages` 列表中 `system` 角色用于设定模型行为，`user` 角色为用户提问
+- 多轮对话需追加历史记录（包含 `assistant` 角色的回复）
+- 依赖 `openai` 库：`pip install openai`
+- 不同模型对某些功能的支持程度可能不同，建议在使用前查看具体模型的文档
+</Note>
+
+<Tip>
+- 使用流式输出可以提升首字响应时间和交互体验
+- 工具调用需要做好超时与重试机制，避免阻塞模型响应
+- 通义千问的扩展参数必须放在 `parameters` 对象中
+</Tip>
+
+## 相关资源
+
+<Columns cols={2}>
+  <Card title="常见问题" icon="question-circle" href="/cn/faq/chat-completions">
+    查看对话接口的常见问题解答
+  </Card>
+  <Card title="模型列表" icon="list" href="/cn/api-reference/models">
+    查看所有支持的模型信息
+  </Card>
+</Columns>

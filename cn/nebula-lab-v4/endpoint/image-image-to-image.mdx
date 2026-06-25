@@ -1,0 +1,100 @@
+---
+title: 'AI生图-图生图'
+api: 'POST https://ai-nebula.com/prod-api/nebula/v4/api/img2imgSubmit'
+---
+
+## 简介
+
+提交图生图任务，用于根据输入图片生成新的图片。请求体使用 **VolcImageDTO**，根级为 `volcImageBo` 对象（与 OpenAPI 默认模块一致）。
+
+## 认证
+
+<ParamField header="Authorization" type="string" required>
+  Bearer Token，如 `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`
+  获取方法：依照左侧最上面认证模块的post接口获取，`https://docs.openai-nebula.com/cn/nebula-lab-v4/endpoint/get-token`
+</ParamField>
+
+## 请求参数
+
+请求体为 JSON，根级字段 `volcImageBo` 对应图生图参数对象。
+
+<ParamField body="volcImageBo.imageUrl" type="string" required>
+  图片链接（单图）
+</ParamField>
+
+<ParamField body="volcImageBo.image_urls" type="array[string]">
+  图片 url 数组。0：输入图片（三通道 RGB）；1：输入 mask（单通道灰度，原图保持为 0/黑色，待消除区域为 255/白色）
+</ParamField>
+
+<ParamField body="volcImageBo.prompt" type="string" required>
+  提示词
+</ParamField>
+
+<ParamField body="volcImageBo.req_key" type="string">
+  请求标识
+</ParamField>
+
+<ParamField body="volcImageBo.return_url" type="boolean">
+  是否返回图片 URL
+</ParamField>
+
+### 示例代码
+
+<Tabs>
+  <Tab title="cURL示例">
+    ```bash
+    curl -X POST "https://ai-nebula.com/prod-api/nebula/v4/api/img2imgSubmit" \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer sk-xxxxxxxxxx" \
+      -d '{
+        "volcImageBo": {
+          "imageUrl": "https://example.com/source.jpg",
+          "image_urls": ["https://example.com/source.jpg"],
+          "prompt": "变成油画风格",
+          "req_key": "img2img_001",
+          "return_url": true
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="Python示例">
+    ```python
+    import requests
+    import json
+
+    url = "https://ai-nebula.com/prod-api/nebula/v4/api/img2imgSubmit"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer sk-xxxxxxxxxx"
+    }
+    data = {
+        "volcImageBo": {
+            "imageUrl": "https://example.com/source.jpg",
+            "image_urls": ["https://example.com/source.jpg"],
+            "prompt": "变成油画风格",
+            "req_key": "img2img_001",
+            "return_url": True
+        }
+    }
+
+    response = requests.post(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    ```
+  </Tab>
+</Tabs>
+
+### 响应示例
+
+<ResponseExample>
+```json
+{
+  "code": 200,
+  "msg": "操作成功",
+  "data": {
+    "images": [{
+      "url": "https://example.com/image.jpg"
+    }]
+  }
+}
+```
+</ResponseExample>
